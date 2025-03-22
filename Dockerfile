@@ -1,15 +1,12 @@
-FROM denoland/deno:1.40.2
+FROM node:20-slim
 
 WORKDIR /app
 
-# キャッシュレイヤーを活用するために依存関係を先にコピー
-COPY deps.ts .
-RUN deno cache deps.ts
+# 依存関係のインストール
+COPY package*.json ./
+RUN npm install
 
 # ソースコードをコピー
 COPY . .
 
-# 必要な権限を付与
-RUN deno cache src/index.ts
-
-CMD ["deno", "run", "--allow-net", "--allow-env", "--allow-read", "src/index.ts"] 
+CMD ["npm", "start"] 

@@ -11,7 +11,7 @@ services:
     build: .
     volumes:
       - .:/app
-      - deno-cache:/deno-dir/deps
+      - /app/node_modules
     env_file:
       - .env
     restart: unless-stopped
