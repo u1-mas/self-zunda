@@ -1,7 +1,10 @@
 import { load } from "@std/dotenv";
 
 // 環境変数の読み込み
-await load({ export: true });
+const env = await load();
+Object.entries(env).forEach(([key, value]) => {
+  Deno.env.set(key, value);
+});
 
 import { bot } from "./src/bot.ts";
 
