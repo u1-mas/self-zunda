@@ -1,7 +1,8 @@
-import { Client, GatewayIntentBits } from "discord.js";
-import * as dotenv from "dotenv";
+import { Client, Events, GatewayIntentBits } from "discord.js";
+import { config } from "dotenv";
+import { commands } from "./handlers/commands";
 
-dotenv.config();
+config();
 
 const client = new Client({
     intents: [
@@ -11,17 +12,31 @@ const client = new Client({
     ],
 });
 
-client.once("ready", () => {
-    console.log(
-        `ぼくは準備ができたのだ！ ${client.user?.tag} としてログインしたのだ！`,
-    );
+client.once(Events.ClientReady, () => {
+    console.log(`${client.user?.tag} としてログインしたのだ！`);
 });
 
-client.on("messageCreate", async (message) => {
-    if (message.author.bot) return;
+client.on(Events.InteractionCreate, async (interaction) => {
+    if (!interaction.isChatInputCommand()) return;
 
-    if (message.content === "ping") {
-        await message.reply("ぽんなのだ！");
+    const command = commands.get(interaction.commandName);
+    if (!command) return;
+
+    try {
+        await command.execute(interaction);
+    } catch (error) {
+        console.error(error);
+        if (interaction.replied || interaction.deferred) {
+            await interaction.followUp({
+                content: "コマンドの実行中にエラーが発生したのだ...",
+                ephemeral: true,
+            });
+        } else {
+            await interaction.reply({
+                content: "コマンドの実行中にエラーが発生したのだ...",
+                ephemeral: true,
+            });
+        }
     }
 });
 
