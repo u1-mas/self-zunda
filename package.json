@@ -1,34 +1,35 @@
 {
-	"name": "self-zunda",
-	"version": "1.0.0",
-	"description": "ずんだもんのDiscord Bot なのだ！",
-	"main": "src/mod.js",
-	"scripts": {
-		"dev": "node src/mod.js",
-		"test": "jest",
-		"deploy-commands": "node src/deploy-commands.js",
-		"check": "biome check --write ."
-	},
-	"dependencies": {
-		"@discordjs/voice": "^0.18.0",
-		"axios": "^1.8.4",
-		"discord.js": "^14.14.1",
-		"dotenv": "^16.4.5"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "^1.9.4",
-		"@jest/globals": "^29.7.0",
-		"@types/jest": "^29.5.12",
-		"@types/node": "^20.11.24",
-		"jest": "^29.7.0",
-		"ts-jest": "^29.1.2",
-		"typescript": "^5.3.3"
-	},
-	"jest": {
-		"preset": "ts-jest",
-		"testEnvironment": "node",
-		"transform": {
-			"^.+\\.ts$": "ts-jest"
-		}
-	}
+  "name": "self-zunda",
+  "version": "1.0.0",
+  "description": "ずんだもんのDiscord Bot なのだ！",
+  "main": "src/mod.js",
+  "scripts": {
+    "dev": "ts-node src/mod.ts",
+    "test": "jest",
+    "deploy-commands": "ts-node src/deploy-commands.ts",
+    "check": "biome check --write ."
+  },
+  "dependencies": {
+    "@discordjs/voice": "^0.18.0",
+    "axios": "^1.8.4",
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@jest/globals": "^29.7.0",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.24",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "transform": {
+      "^.+\\.ts$": "ts-jest"
+    }
+  }
 }

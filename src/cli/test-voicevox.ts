@@ -1,5 +1,5 @@
-import { join } from "path";
-import { writeFile } from "fs/promises";
+import { writeFile } from "node:fs/promises";
+import { join } from "node:path";
 import { generateVoice, testVoicevox } from "../utils/voicevox";
 
 async function main() {

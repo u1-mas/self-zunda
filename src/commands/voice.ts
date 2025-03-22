@@ -1,14 +1,10 @@
 import {
-	VoiceConnectionStatus,
 	entersState,
 	getVoiceConnection,
 	joinVoiceChannel,
+	VoiceConnectionStatus,
 } from "@discordjs/voice";
-import {
-	type CommandInteraction,
-	SlashCommandBuilder,
-	VoiceBasedChannel,
-} from "discord.js";
+import { type CommandInteraction, SlashCommandBuilder } from "discord.js";
 import {
 	disableTextToSpeech,
 	enableTextToSpeech,
@@ -55,10 +51,11 @@ export const join = {
 			await entersState(connection, VoiceConnectionStatus.Ready, 30_000);
 
 			// 読み上げを有効化
-			enableTextToSpeech(interaction.guild.id, interaction.channel!.id);
+			enableTextToSpeech(interaction.guild.id, interaction.channel?.id);
 
 			await interaction.reply({
-				content: `${voiceChannel.name}に参加して、このチャンネルの読み上げを開始したのだ！`,
+				content:
+					`${voiceChannel.name}に参加して、このチャンネルの読み上げを開始したのだ！`,
 				ephemeral: true,
 			});
 		} catch (error) {
