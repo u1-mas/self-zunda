@@ -1,4 +1,4 @@
-import { Bot, createBot, GatewayIntents } from "../deps.ts";
+import { Bot, createBot, GatewayIntents } from "discordeno";
 
 // 環境変数からトークンを取得
 const token = Deno.env.get("DISCORD_TOKEN");

@@ -1,4 +1,4 @@
-import { load } from "./deps.ts";
+import { load } from "dotenv";
 import { bot } from "./src/bot.ts";
 
 // 環境変数の読み込み
