@@ -15,6 +15,24 @@ import { join } from "node:path";
 // アクティブな音声プレイヤーを保持
 const players = new Map<string, AudioPlayer>();
 
+async function createAndPlayAudio(
+	player: AudioPlayer,
+	tempFile: string,
+	audioBuffer: Buffer,
+): Promise<void> {
+	// バッファを一時ファイルに保存
+	await writeFile(tempFile, audioBuffer);
+
+	// ファイルからストリームを作成
+	const stream = createReadStream(tempFile);
+
+	const resource = createAudioResource(stream, {
+		inputType: StreamType.Arbitrary,
+	});
+
+	player.play(resource);
+}
+
 export async function playAudio(
 	connection: VoiceConnection,
 	audioBuffer: Buffer,
@@ -33,57 +51,45 @@ export async function playAudio(
 			// 一時ファイルのパスを生成
 			const tempFile = join(tmpdir(), `${randomUUID()}.wav`);
 
-			// バッファを一時ファイルに保存
-			writeFile(tempFile, audioBuffer)
-				.then(() => {
-					// ファイルからストリームを作成
-					const stream = createReadStream(tempFile);
+			createAndPlayAudio(player, tempFile, audioBuffer).catch((error) => {
+				console.error(
+					"音声リソースの作成中にエラーが発生したのだ:",
+					error,
+				);
+				reject(error);
+			});
 
-					const resource = createAudioResource(stream, {
-						inputType: StreamType.Arbitrary,
-					});
-
-					player.play(resource);
-
-					player.once("stateChange", (oldState, newState) => {
-						if (newState.status === AudioPlayerStatus.Idle) {
-							// 一時ファイルを削除する処理を追加する（エラーハンドリングは省略）
-							try {
-								require("node:fs").unlinkSync(tempFile);
-							} catch (error) {
-								console.error(
-									"一時ファイルの削除に失敗したのだ:",
-									error,
-								);
-							}
-							resolve();
-						}
-					});
-
-					player.once("error", (error) => {
+			player.once("stateChange", (oldState, newState) => {
+				if (newState.status === AudioPlayerStatus.Idle) {
+					// 一時ファイルを削除する処理を追加する（エラーハンドリングは省略）
+					try {
+						require("node:fs").unlinkSync(tempFile);
+					} catch (error) {
 						console.error(
-							"音声の再生中にエラーが発生したのだ:",
+							"一時ファイルの削除に失敗したのだ:",
 							error,
 						);
-						// エラー時も一時ファイルを削除
-						try {
-							require("node:fs").unlinkSync(tempFile);
-						} catch (deleteError) {
-							console.error(
-								"一時ファイルの削除に失敗したのだ:",
-								deleteError,
-							);
-						}
-						reject(error);
-					});
-				})
-				.catch((error) => {
+					}
+					resolve();
+				}
+			});
+
+			player.once("error", (error) => {
+				console.error(
+					"音声の再生中にエラーが発生したのだ:",
+					error,
+				);
+				// エラー時も一時ファイルを削除
+				try {
+					require("node:fs").unlinkSync(tempFile);
+				} catch (deleteError) {
 					console.error(
-						"音声リソースの作成中にエラーが発生したのだ:",
-						error,
+						"一時ファイルの削除に失敗したのだ:",
+						deleteError,
 					);
-					reject(error);
-				});
+				}
+				reject(error);
+			});
 		} catch (error) {
 			console.error("音声リソースの作成中にエラーが発生したのだ:", error);
 			reject(error);
