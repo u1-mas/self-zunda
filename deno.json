@@ -6,8 +6,8 @@
         ".": "./main.ts"
     },
     "tasks": {
-        "dev": "deno run --allow-net --allow-env --allow-read main.ts",
-        "start": "deno run --allow-net --allow-env --allow-read main.ts",
+        "dev": "deno run --allow-net --allow-env --allow-read --env main.ts",
+        "start": "deno run --allow-net --allow-env --allow-read --env main.ts",
         "format": "deno fmt",
         "lint": "deno lint"
     },
