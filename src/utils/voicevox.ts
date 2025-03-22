@@ -31,7 +31,7 @@ export async function generateVoice(text: string): Promise<Buffer> {
         );
 
         // 読み上げ速度を調整（0.8 = 20%遅く）
-        query.data.speedScale = 0.8;
+        query.data.speedScale = 1;
         // イントネーションを少し強く
         query.data.intonationScale = 1.2;
         // 音の長さを少し伸ばす

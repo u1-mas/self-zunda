@@ -5,7 +5,6 @@ import {
     StreamType,
     VoiceConnection,
 } from "@discordjs/voice";
-import { Readable } from "stream";
 import { writeFile } from "fs/promises";
 import { createReadStream } from "fs";
 import { join } from "path";
