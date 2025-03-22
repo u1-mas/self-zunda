@@ -1,6 +1,7 @@
 .clinerules
 .cursorrules
 .cursor/
+cursor_docs/
 .env
 .env.*
 !.env.example
