@@ -2,6 +2,7 @@ import { Client, Events, GatewayIntentBits } from "discord.js";
 import { config } from "dotenv";
 import { commands } from "./handlers/commands";
 import { handleMessage } from "./features/textToSpeech";
+import { getVoiceConnection } from "@discordjs/voice";
 
 config();
 
@@ -44,5 +45,26 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 // メッセージイベントのハンドラーを追加
 client.on(Events.MessageCreate, handleMessage);
+
+// プロセス終了時の処理
+process.on("SIGINT", () => handleShutdown());
+process.on("SIGTERM", () => handleShutdown());
+
+function handleShutdown() {
+    console.log("シャットダウン処理を開始するのだ...");
+
+    // 全てのギルドのボイスチャンネルから切断
+    for (const guild of client.guilds.cache.values()) {
+        const connection = getVoiceConnection(guild.id);
+        if (connection) {
+            console.log(`${guild.name} のボイスチャンネルから切断するのだ...`);
+            connection.destroy();
+        }
+    }
+
+    // クライアントを破棄してプロセスを終了
+    client.destroy();
+    process.exit(0);
+}
 
 client.login(process.env.DISCORD_TOKEN);
