@@ -6,4 +6,17 @@ services:
       - "50021:50021"
     environment:
       - VOICEVOX_CPU_NUM_THREADS=4
-    restart: unless-stopped 
+    restart: unless-stopped
+  bot:
+    build: .
+    volumes:
+      - .:/app
+      - deno-cache:/deno-dir/deps
+    env_file:
+      - .env
+    restart: unless-stopped
+    depends_on:
+      - voicevox
+
+volumes:
+  deno-cache: 
