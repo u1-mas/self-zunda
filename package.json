@@ -2,12 +2,14 @@
   "name": "self-zunda",
   "version": "1.0.0",
   "description": "ずんだもんのDiscord Bot なのだ！",
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "scripts": {
     "dev": "ts-node src/index.ts",
     "test": "jest",
     "deploy-commands": "ts-node src/deploy-commands.ts",
-    "check": "biome check --write ."
+    "check": "biome check --write .",
+    "build": "tsc",
+    "start": "node dist/index.js"
   },
   "dependencies": {
     "@discordjs/voice": "^0.18.0",

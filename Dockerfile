@@ -9,4 +9,7 @@ RUN npm install
 # ソースコードをコピー
 COPY . .
 
+# TypeScriptのビルド
+RUN npm run build
+
 CMD ["npm", "start"] 
