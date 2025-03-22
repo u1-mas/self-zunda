@@ -5,6 +5,7 @@ import {
     StreamType,
     VoiceConnection,
 } from "@discordjs/voice";
+import { Readable } from "stream";
 
 // アクティブな音声プレイヤーを保持
 const players = new Map<string, AudioPlayer>();
@@ -24,7 +25,10 @@ export function playAudio(
                 connection.subscribe(player);
             }
 
-            const resource = createAudioResource(Buffer.from(audioBuffer), {
+            // BufferをReadableStreamに変換
+            const stream = Readable.from(audioBuffer);
+
+            const resource = createAudioResource(stream, {
                 inputType: StreamType.Raw,
             });
 
