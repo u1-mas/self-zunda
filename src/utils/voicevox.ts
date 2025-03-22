@@ -1,20 +1,8 @@
 import axios from "axios";
 
-const VOICEVOX_URL = "http://voicevox:50021";
+const VOICEVOX_API_URL = "http://localhost:50021";
+const SPEAKER_ID = 1; // ずんだもん（あまあま）
 
-export async function generateVoice(text: string): Promise<Buffer> {
-	try {
-		// 音声合成用のクエリを作成
-		const queryResponse = await axios.post(`${VOICEVOX_URL}/audio_query`, {
-			text,
-			speaker: 1, // ずんだもん（ノーマル）
-		});
-
-		// 音声合成を実行
-		const synthesisResponse = await axios.post(
-			`${VOICEVOX_URL}/synthesis`,
-			queryResponse.data,
-			{
 interface AudioQuery {
 	accent_phrases: any[];
 	speedScale: number;
@@ -84,7 +72,8 @@ export async function testVoicevox(): Promise<{
 
 		return {
 			success: true,
-			message: "VOICEVOXサーバーに正常に接続できて、音声生成もできるのだ！",
+			message:
+				"VOICEVOXサーバーに正常に接続できて、音声生成もできるのだ！",
 		};
 	} catch (error) {
 		let message = "VOICEVOXサーバーに接続できないのだ...";
