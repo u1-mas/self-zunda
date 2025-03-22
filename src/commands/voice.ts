@@ -49,9 +49,11 @@ export const join = {
 			});
 
 			await entersState(connection, VoiceConnectionStatus.Ready, 30_000);
-
 			// 読み上げを有効化
-			enableTextToSpeech(interaction.guild.id, interaction.channel?.id);
+			if (!interaction.channel?.id) {
+				throw new Error("チャンネルIDが取得できませんでした");
+			}
+			enableTextToSpeech(interaction.guild.id, interaction.channel.id);
 
 			await interaction.reply({
 				content:

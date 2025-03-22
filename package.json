@@ -2,9 +2,9 @@
   "name": "self-zunda",
   "version": "1.0.0",
   "description": "ずんだもんのDiscord Bot なのだ！",
-  "main": "src/mod.js",
+  "main": "src/index.js",
   "scripts": {
-    "dev": "ts-node src/mod.ts",
+    "dev": "ts-node src/index.ts",
     "test": "jest",
     "deploy-commands": "ts-node src/deploy-commands.ts",
     "check": "biome check --write ."
