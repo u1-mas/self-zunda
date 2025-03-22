@@ -12,7 +12,12 @@ if (!token) {
 }
 
 // ボットの作成
-const desiredProperties = createDesiredPropertiesObject({});
+const desiredProperties = createDesiredPropertiesObject({
+  user: {
+    id: true,
+    username: true,
+  },
+});
 export interface BotDesiredProperties
   extends Required<typeof desiredProperties> {}
 export const readTextBot = createBot({
@@ -20,7 +25,8 @@ export const readTextBot = createBot({
   intents: Intents.Guilds | Intents.GuildVoiceStates | Intents.GuildMessages |
     Intents.MessageContent,
   events: {
-    ready: (_bot, payload) => {
+    ready: (payload, _rawPayload) => {
+      console.log(payload);
       console.log(`Logged in as ${payload.user.username}!`);
     },
   },
