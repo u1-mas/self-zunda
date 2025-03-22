@@ -1,10 +1,31 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 
 const VOICEVOX_API_URL = "http://localhost:50021";
 const SPEAKER_ID = 1; // ずんだもん（あまあま）
 
+interface AccentPhrase {
+    moras: {
+        text: string;
+        consonant?: string;
+        consonant_length?: number;
+        vowel: string;
+        vowel_length: number;
+        pitch: number;
+    }[];
+    accent: number;
+    pause_mora?: {
+        text: string;
+        consonant?: string;
+        consonant_length?: number;
+        vowel: string;
+        vowel_length: number;
+        pitch: number;
+    };
+    is_interrogative: boolean;
+}
+
 interface AudioQuery {
-    accent_phrases: any[];
+    accent_phrases: AccentPhrase[];
     speedScale: number;
     pitchScale: number;
     intonationScale: number;
@@ -76,7 +97,7 @@ export async function testVoicevox(): Promise<
         };
     } catch (error) {
         let message = "VOICEVOXサーバーに接続できないのだ...";
-        if (axios.isAxiosError(error)) {
+        if (error instanceof AxiosError) {
             if (error.code === "ECONNREFUSED") {
                 message = "VOICEVOXサーバーが起動していないのだ！";
             } else {

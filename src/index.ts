@@ -1,8 +1,8 @@
+import { getVoiceConnection } from "@discordjs/voice";
 import { Client, Events, GatewayIntentBits } from "discord.js";
 import { config } from "dotenv";
-import { commands } from "./handlers/commands";
 import { handleMessage } from "./features/textToSpeech";
-import { getVoiceConnection } from "@discordjs/voice";
+import { commands } from "./handlers/commands";
 
 config();
 
