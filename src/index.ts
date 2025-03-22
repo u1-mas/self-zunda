@@ -1,6 +1,7 @@
 import { Client, Events, GatewayIntentBits } from "discord.js";
 import { config } from "dotenv";
 import { commands } from "./handlers/commands";
+import { handleMessage } from "./features/textToSpeech";
 
 config();
 
@@ -40,5 +41,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
         }
     }
 });
+
+// メッセージイベントのハンドラーを追加
+client.on(Events.MessageCreate, handleMessage);
 
 client.login(process.env.DISCORD_TOKEN);
