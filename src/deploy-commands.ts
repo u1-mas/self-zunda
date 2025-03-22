@@ -7,25 +7,21 @@ config();
 const { DISCORD_TOKEN, CLIENT_ID } = process.env;
 
 if (!DISCORD_TOKEN || !CLIENT_ID) {
-    throw new Error("必要な環境変数が設定されていないのだ！");
+	throw new Error("必要な環境変数が設定されていないのだ！");
 }
 
 const rest = new REST().setToken(DISCORD_TOKEN);
 
 (async () => {
-    try {
-        console.log("スラッシュコマンドの登録を開始するのだ...");
+	try {
+		console.log("スラッシュコマンドの登録を開始するのだ...");
 
-        await rest.put(
-            Routes.applicationCommands(CLIENT_ID),
-            { body: commandsData },
-        );
+		await rest.put(Routes.applicationCommands(CLIENT_ID), {
+			body: commandsData,
+		});
 
-        console.log("スラッシュコマンドの登録が完了したのだ！");
-    } catch (error) {
-        console.error(
-            "スラッシュコマンドの登録中にエラーが発生したのだ:",
-            error,
-        );
-    }
+		console.log("スラッシュコマンドの登録が完了したのだ！");
+	} catch (error) {
+		console.error("スラッシュコマンドの登録中にエラーが発生したのだ:", error);
+	}
 })();
