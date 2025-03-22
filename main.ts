@@ -1,8 +1,9 @@
 import { load } from "@std/dotenv";
-import { bot } from "./src/bot.ts";
 
 // 環境変数の読み込み
 await load({ export: true });
+
+import { bot } from "./src/bot.ts";
 
 try {
   console.log("Starting bot...");
