@@ -1,9 +1,16 @@
 {
+    "name": "discord-voice-bot",
+    "version": "1.0.0",
+    "description": "VOICEVOXを使用したDiscord読み上げボット",
     "tasks": {
-        "dev": "deno run --watch main.ts"
+        "dev": "deno run --allow-net --allow-env --allow-read main.ts",
+        "start": "deno run --allow-net --allow-env --allow-read main.ts",
+        "format": "deno fmt",
+        "lint": "deno lint"
     },
     "imports": {
         "@std/assert": "jsr:@std/assert@1",
-        "discordeno": "npm:discordeno@21.0.0"
+        "discordeno": "npm:discordeno@21.0.0",
+        "@std/dotenv": "jsr:@std/dotenv@0.218.2"
     }
 }
