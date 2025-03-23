@@ -9,13 +9,11 @@ services:
     restart: unless-stopped
   bot:
     build: .
-    volumes:
-      - .:/app
-      - /app/node_modules
     env_file:
       - .env
     environment:
       - VOICEVOX_API_URL=http://voicevox:50021
+      - DEBUG=true
     restart: unless-stopped
     depends_on:
-      - voicevox 
+      - voicevox
