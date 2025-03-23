@@ -52,13 +52,8 @@ async function initializeClient() {
     if (client) {
         await client.destroy();
         client = null;
-    }
 
-    // HMRによる再起動かどうかを判定するのだ！
-    const isHotReload = process.env.VITE_HMR === "true";
-
-    // HMRによる再起動のときだけメッセージを表示するのだ！
-    if (isHotReload) {
+        // 既存のクライアントを破棄した場合のみ再起動メッセージを表示するのだ！
         console.log(
             `${colors.blue}[${getTimeString()}] ずんだもんが再起動したのだ！${colors.reset}`,
         );
@@ -77,12 +72,9 @@ async function initializeClient() {
         console.log(
             `${colors.green}[${getTimeString()}] ずんだもんが起動したのだ！${colors.reset}`,
         );
-        console.log(
-            `${colors.green}[${getTimeString()}] HMRのテストなのだ！${colors.reset}`,
-        );
 
-        // リロード時はVOICEVOXのチェックをスキップするのだ！
-        if (!isHotReload) {
+        // VOICEVOXのチェックは最初の起動時だけ行うのだ！
+        if (!hasCheckedVoicevox) {
             await checkVoicevoxServer();
         }
     });
@@ -214,20 +206,18 @@ function registerSignalHandlers() {
 // シグナルハンドラーを登録して初期化を実行するのだ！
 registerSignalHandlers();
 
-// 初回起動時のみinitializeClientを呼び出すのだ！
-if (!import.meta.hot) {
-    initializeClient();
-}
-
 // HMR機能を実装するのだ！
 if (import.meta.hot) {
+    // 初回のHMR起動時
+    initializeClient();
+
     import.meta.hot.accept((newModule) => {
         console.log(
             `${colors.blue}[${getTimeString()}] モジュールの更新を検知したのだ！${colors.reset}`,
         );
         initializeClient();
     });
-
-    // 初回のHMR起動時
+} else {
+    // 通常の起動時
     initializeClient();
 }
