@@ -112,15 +112,20 @@ function handleShutdown() {
             // ボイスチャンネルから退出
             const me = guild.members.cache.get(client.user?.id || "");
             if (me?.voice.channel) {
+                console.log(
+                    `${guild.name} の ${me.voice.channel.name} から退出するのだ...`,
+                );
                 me.voice.disconnect();
             }
             // ボイスコネクションを破棄
             connection.destroy();
+            console.log(`${guild.name} のボイスコネクションを破棄したのだ！`);
         }
     }
 
     // クライアントを破棄してプロセスを終了
     client.destroy();
+    console.log("クライアントを破棄して、シャットダウンを完了するのだ！");
     process.exit(0);
 }
 
