@@ -77,6 +77,9 @@ async function initializeClient() {
         console.log(
             `${colors.green}[${getTimeString()}] ずんだもんが起動したのだ！${colors.reset}`,
         );
+        console.log(
+            `${colors.green}[${getTimeString()}] HMRのテストなのだ！${colors.reset}`,
+        );
 
         // リロード時はVOICEVOXのチェックをスキップするのだ！
         if (!isHotReload) {
@@ -211,3 +214,13 @@ function registerSignalHandlers() {
 // シグナルハンドラーを登録して初期化を実行するのだ！
 registerSignalHandlers();
 initializeClient();
+
+// HMR機能を実装するのだ！
+if (import.meta.hot) {
+    import.meta.hot.accept((newModule) => {
+        console.log(
+            `${colors.blue}[${getTimeString()}] モジュールの更新を検知したのだ！${colors.reset}`,
+        );
+        initializeClient();
+    });
+}
