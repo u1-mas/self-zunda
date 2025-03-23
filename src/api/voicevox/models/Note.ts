@@ -6,21 +6,20 @@
  * 音符ごとの情報
  */
 export type Note = {
-    /**
-     * ID
-     */
-    id?: (string | null);
-    /**
-     * 音階
-     */
-    key?: number;
-    /**
-     * 音符のフレーム長
-     */
-    frame_length: number;
-    /**
-     * 音符の歌詞
-     */
-    lyric: string;
+	/**
+	 * ID
+	 */
+	id?: string | null;
+	/**
+	 * 音階
+	 */
+	key?: number;
+	/**
+	 * 音符のフレーム長
+	 */
+	frame_length: number;
+	/**
+	 * 音符の歌詞
+	 */
+	lyric: string;
 };
-

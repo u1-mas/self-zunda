@@ -6,6 +6,6 @@
  * CORSの許可モード
  */
 export enum CorsPolicyMode {
-    ALL = 'all',
-    LOCALAPPS = 'localapps',
+	ALL = "all",
+	LOCALAPPS = "localapps",
 }
