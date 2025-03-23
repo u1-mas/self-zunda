@@ -12,6 +12,82 @@ const DEFAULT_SPEAKER_ID = Number(process.env.DEFAULT_SPEAKER) || 1; // ずん�
 OpenAPI.BASE = VOICEVOX_API_URL;
 
 /**
+ * ユーザー音声設定の型定義
+ */
+export interface VoiceParameters {
+	speakerId: number;
+	speedScale: number;
+	pitchScale: number;
+	intonationScale: number;
+	volumeScale: number;
+}
+
+/**
+ * デフォルトの音声パラメータ
+ */
+export const DEFAULT_VOICE_PARAMETERS: VoiceParameters = {
+	speakerId: DEFAULT_SPEAKER_ID,
+	speedScale: 1.0,
+	pitchScale: 0.0,
+	intonationScale: 1.2,
+	volumeScale: 1.0,
+};
+
+/**
+ * ユーザー設定から音声パラメータを取得する
+ * @param serverId サーバーID
+ * @param userId ユーザーID
+ * @returns 音声パラメータのオブジェクト
+ * @throws ユーザーの読み上げが無効の場合はエラーをスロー
+ */
+export function getVoiceParameters(serverId?: string, userId?: string): VoiceParameters {
+	// サーバーIDとユーザーIDが指定されていなければデフォルト設定を返す
+	if (!serverId || !userId) {
+		return { ...DEFAULT_VOICE_PARAMETERS };
+	}
+
+	// ユーザー設定を取得
+	const settings = getUserSettings(serverId, userId);
+
+	// ユーザーの設定が有効でないなら、エラーをスロー
+	if (!settings.enabled) {
+		throw new Error("ユーザーの読み上げが無効になっているのだ");
+	}
+
+	// 設定から音声パラメータを取得
+	return {
+		speakerId: settings.speakerId,
+		speedScale: settings.speedScale,
+		pitchScale: settings.pitchScale,
+		intonationScale: settings.intonationScale,
+		volumeScale: settings.volumeScale,
+	};
+}
+
+/**
+ * AudioQueryに音声パラメータを適用する
+ * @param query AudioQueryオブジェクト
+ * @param params 音声パラメータ
+ * @returns 更新されたAudioQueryオブジェクト
+ */
+function applyVoiceParameters(query: AudioQuery, params: VoiceParameters): AudioQuery {
+	// クエリのコピーを作成して変更
+	const updatedQuery = { ...query };
+
+	// 音声パラメータの設定
+	Object.assign(updatedQuery, {
+		speedScale: params.speedScale,
+		pitchScale: params.pitchScale,
+		intonationScale: params.intonationScale,
+		volumeScale: params.volumeScale,
+		prePhonemeLength: 0.1, // 音の前後の長さを少し伸ばす
+		postPhonemeLength: 0.1,
+	});
+
+	return updatedQuery;
+}
+
+/**
  * 音声合成を実行する
  * @param text 音声合成するテキスト
  * @param serverId サーバーID（ユーザー設定のため）
@@ -24,65 +100,24 @@ export async function generateVoice(
 	userId?: string,
 ): Promise<Buffer> {
 	try {
-		// ユーザー設定を取得
-		let speakerId = DEFAULT_SPEAKER_ID;
-		let speedScale = 1.0;
-		let pitchScale = 0.0;
-		let intonationScale = 1.2;
-		let volumeScale = 1.0;
-
-		// ユーザーIDが指定されていれば設定を適用
-		if (serverId && userId) {
-			const settings = getUserSettings(serverId, userId);
-
-			// ユーザーの設定が有効でないなら、処理を中止
-			if (!settings.enabled) {
-				throw new Error("ユーザーの読み上げが無効になっているのだ");
-			}
-
-			speakerId = settings.speakerId;
-			speedScale = settings.speedScale;
-			pitchScale = settings.pitchScale;
-			intonationScale = settings.intonationScale;
-			volumeScale = settings.volumeScale;
-		}
+		// ユーザー設定から音声パラメータを取得
+		const voiceParams = getVoiceParameters(serverId, userId);
 
 		// 音声合成用のクエリを作成
-		debug(`「${text}」の音声合成クエリを作成するのだ (話者ID: ${speakerId})`);
-		const query = await Service.audioQuery(text, speakerId);
+		debug(`「${text}」の音声合成クエリを作成するのだ (話者ID: ${voiceParams.speakerId})`);
+		const query = await Service.audioQuery(text, voiceParams.speakerId);
 
 		// 音声パラメータの設定
 		debug("音声パラメータを設定するのだ");
-		Object.assign(query, {
-			speedScale,
-			pitchScale,
-			intonationScale,
-			volumeScale,
-			prePhonemeLength: 0.1, // 音の前後の長さを少し伸ばす
-			postPhonemeLength: 0.1,
-		});
+		const updatedQuery = applyVoiceParameters(query, voiceParams);
 
 		// 音声合成を実行
 		debug("音声合成を実行するのだ");
-		const audioBlob = await Service.synthesis(speakerId, query);
+		const audioBlob = await Service.synthesis(voiceParams.speakerId, updatedQuery);
 
 		// Blobをバッファに変換
 		debug("合成結果をバッファに変換するのだ");
-		let audioBuffer: Buffer;
-
-		// テスト環境対応: 実際のBlobかどうかを確認
-		if (
-			typeof audioBlob === "object" &&
-			audioBlob !== null &&
-			"arrayBuffer" in audioBlob &&
-			typeof audioBlob.arrayBuffer === "function"
-		) {
-			const arrayBuffer = await audioBlob.arrayBuffer();
-			audioBuffer = Buffer.from(arrayBuffer);
-		} else {
-			// テスト環境では既にBufferまたはarrayBufferが返される想定
-			audioBuffer = Buffer.from(audioBlob as unknown as ArrayBuffer);
-		}
+		const audioBuffer = await convertBlobToBuffer(audioBlob);
 
 		debug("音声合成が成功したのだ");
 		return audioBuffer;
@@ -100,6 +135,27 @@ export async function generateVoice(
 }
 
 /**
+ * BlobまたはArrayBufferをNodeのBufferに変換
+ * @param blob 変換するBlob
+ * @returns Buffer
+ */
+async function convertBlobToBuffer(blob: Blob | ArrayBuffer): Promise<Buffer> {
+	// テスト環境対応: 実際のBlobかどうかを確認
+	if (
+		typeof blob === "object" &&
+		blob !== null &&
+		"arrayBuffer" in blob &&
+		typeof blob.arrayBuffer === "function"
+	) {
+		const arrayBuffer = await blob.arrayBuffer();
+		return Buffer.from(arrayBuffer);
+	}
+
+	// テスト環境では既にBufferまたはarrayBufferが返される想定
+	return Buffer.from(blob as unknown as ArrayBuffer);
+}
+
+/**
  * VOICEVOXサーバーのバージョンを取得する
  * @returns VOICEVOXサーバーのバージョン
  */
@@ -113,7 +169,11 @@ export async function getVoicevoxVersion(): Promise<string> {
 	}
 }
 
-// VOICEVOXのエラーメッセージを生成する関数
+/**
+ * VOICEVOXのエラーメッセージを生成する関数
+ * @param err エラーオブジェクト
+ * @returns 整形されたエラーメッセージ
+ */
 function getVoicevoxErrorMessage(err: unknown): string {
 	// ApiErrorかどうかをチェック
 	if (err && typeof err === "object" && "status" in err && "message" in err) {
@@ -126,12 +186,17 @@ function getVoicevoxErrorMessage(err: unknown): string {
 		return `VOICEVOXサーバーが起動していないのだ！接続先: ${VOICEVOX_API_URL}`;
 	}
 
+	// その他のエラー
 	return `VOICEVOXでの音声生成に失敗したのだ: ${
 		err instanceof Error ? err.message : "予期せぬエラーが発生したのだ..."
 	}`;
 }
 
-// VOICEVOXの接続テスト用関数
+/**
+ * VOICEVOXの接続テスト用関数
+ * @returns 接続テストが成功した場合はtrue
+ * @throws 接続テストが失敗した場合はエラーをスロー
+ */
 export async function checkVoicevoxServerHealth(): Promise<boolean> {
 	log(`VOICEVOXサーバーの接続テストを開始するのだ！使用するURL: ${VOICEVOX_API_URL}`);
 	try {
