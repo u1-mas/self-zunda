@@ -202,28 +202,6 @@ async function handleShutdown() {
     }
 }
 
-// シグナルハンドラーは一度だけ登録するのだ！
-let hasRegisteredSignalHandlers = false;
-
-function registerSignalHandlers() {
-    if (hasRegisteredSignalHandlers) return;
-
-    process.once("SIGINT", async () => {
-        console.log("SIGINTを受信したのだ...");
-        await handleShutdown();
-    });
-
-    process.once("SIGTERM", async () => {
-        console.log("SIGTERMを受信したのだ...");
-        await handleShutdown();
-    });
-
-    hasRegisteredSignalHandlers = true;
-}
-
-// シグナルハンドラーを登録するのだ！
-registerSignalHandlers();
-
 // HMR機能を実装するのだ！
 if (import.meta.hot) {
     // 初回のHMR起動時
@@ -236,7 +214,37 @@ if (import.meta.hot) {
         );
         initializeClient();
     });
+
+    // HMRの破棄時の処理なのだ！
+    import.meta.hot.dispose(() => {
+        console.log(
+            `${colors.blue}[${getTimeString()}] モジュールを破棄するのだ！${colors.reset}`,
+        );
+        handleShutdown();
+    });
+
+    // プロセスの終了シグナルを受け取ったときの処理なのだ！
+    process.once("SIGINT", async () => {
+        console.log("SIGINTを受信したのだ...");
+        await handleShutdown();
+    });
+
+    process.once("SIGTERM", async () => {
+        console.log("SIGTERMを受信したのだ...");
+        await handleShutdown();
+    });
 } else {
     // 通常の起動時
     initializeClient();
+
+    // 通常起動時のシグナルハンドラーを登録するのだ！
+    process.once("SIGINT", async () => {
+        console.log("SIGINTを受信したのだ...");
+        await handleShutdown();
+    });
+
+    process.once("SIGTERM", async () => {
+        console.log("SIGTERMを受信したのだ...");
+        await handleShutdown();
+    });
 }
