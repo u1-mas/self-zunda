@@ -1,6 +1,4 @@
-import axios from "axios";
 import { vi } from "vitest";
-import { error, log } from "./logger";
 import { checkVoicevoxServerHealth, generateVoice } from "./voicevox";
 
 // モックの設定
@@ -16,9 +14,7 @@ vi.mock("./voicevox", () => {
 });
 
 // モック関数に型を付ける
-const mockedAxios = vi.mocked(axios);
-const mockedLog = vi.mocked(log);
-const mockedError = vi.mocked(error);
+// 必要なモックのみを残す
 const mockedGenerateVoice = vi.mocked(generateVoice);
 const mockedCheckVoicevoxServerHealth = vi.mocked(checkVoicevoxServerHealth);
 

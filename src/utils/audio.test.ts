@@ -26,10 +26,10 @@ vi.mock("./audio", () => {
 
 	return {
 		getPlayer: vi.fn((guildId: string) => players.get(guildId)),
-		playAudio: vi.fn().mockImplementation((connection: VoiceConnection, audioBuffer: Buffer) => {
+		playAudio: vi.fn().mockImplementation((_connection: VoiceConnection, _audioBuffer: Buffer) => {
 			return new Promise<void>((resolve, reject) => {
 				try {
-					const guildId = connection.joinConfig.guildId;
+					const guildId = _connection.joinConfig.guildId;
 					let player = players.get(guildId);
 
 					if (!player) {
@@ -60,7 +60,7 @@ vi.mock("./audio", () => {
 						} as unknown as MockedObject<AudioPlayer>;
 
 						players.set(guildId, player);
-						connection.subscribe(player);
+						_connection.subscribe(player);
 					}
 
 					// 成功シナリオの処理

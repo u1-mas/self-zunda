@@ -29,7 +29,7 @@ describe("ping command", () => {
 
 			const mockReply = vi
 				.fn()
-				.mockImplementation(async (options: string | MessagePayload | InteractionReplyOptions) => {
+				.mockImplementation(async (_options: string | MessagePayload | InteractionReplyOptions) => {
 					return {
 						createdTimestamp: 1000,
 					} as Message<boolean>;
@@ -38,7 +38,7 @@ describe("ping command", () => {
 			const mockEditReply = vi
 				.fn()
 				.mockImplementation(
-					async (options: string | MessagePayload | InteractionEditReplyOptions) => {
+					async (_options: string | MessagePayload | InteractionEditReplyOptions) => {
 						return {} as Message<boolean>;
 					},
 				);
