@@ -4,7 +4,7 @@ import { config } from "dotenv";
 import { handleMessage } from "./features/textToSpeech";
 import { commands } from "./handlers/commands";
 import { playAudio } from "./utils/audio";
-import { generateVoice } from "./utils/voicevox";
+import { checkVoicevoxServerHealth, generateVoice } from "./utils/voicevox";
 
 config();
 
@@ -17,8 +17,20 @@ const client = new Client({
     ],
 });
 
-client.once(Events.ClientReady, () => {
-    console.log(`${client.user?.tag} としてログインしたのだ！`);
+client.once(Events.ClientReady, async () => {
+    console.log("ずんだもんが起動したのだ！");
+
+    try {
+        // VOICEVOXサーバーの状態をチェック
+        await checkVoicevoxServerHealth();
+    } catch (error) {
+        console.error(
+            error instanceof Error
+                ? error.message
+                : "予期せぬエラーが発生したのだ...",
+        );
+        process.exit(1);
+    }
 });
 
 // ボイスチャンネルの状態変更を監視

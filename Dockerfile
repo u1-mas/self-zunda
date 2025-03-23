@@ -24,4 +24,4 @@ RUN npm ci --only=production
 # ビルド済みのファイルをコピー
 COPY --from=builder /app/dist ./dist
 
-CMD ["npm", "start"] 
+CMD ["npm", "start"]

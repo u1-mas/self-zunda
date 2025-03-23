@@ -58,10 +58,7 @@ export async function generateVoice(text: string): Promise<Buffer> {
 }
 
 // VOICEVOXの接続テスト用関数
-export async function testVoicevox(): Promise<{
-	success: boolean;
-	message: string;
-}> {
+export async function checkVoicevoxServerHealth(): Promise<void> {
 	try {
 		// VOICEVOXサーバーの状態を確認
 		await axios.get(`${VOICEVOX_API_URL}/version`);
@@ -70,23 +67,16 @@ export async function testVoicevox(): Promise<{
 		const testText = "テストなのだ！";
 		await generateVoice(testText);
 
-		return {
-			success: true,
-			message:
-				"VOICEVOXサーバーに正常に接続できて、音声生成もできるのだ！",
-		};
+		console.log(
+			"VOICEVOXサーバーに正常に接続できて、音声生成もできるのだ！",
+		);
 	} catch (error) {
-		let message = "VOICEVOXサーバーに接続できないのだ...";
 		if (axios.isAxiosError(error)) {
 			if (error.code === "ECONNREFUSED") {
-				message = "VOICEVOXサーバーが起動していないのだ！";
-			} else {
-				message = `エラーが発生したのだ: ${error.message}`;
+				throw new Error("VOICEVOXサーバーが起動していないのだ！");
 			}
+			throw new Error(`エラーが発生したのだ: ${error.message}`);
 		}
-		return {
-			success: false,
-			message,
-		};
+		throw new Error("VOICEVOXサーバーに接続できないのだ...");
 	}
 }
