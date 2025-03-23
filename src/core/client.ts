@@ -29,7 +29,7 @@ let previousVoiceStates: VoiceState[] = [];
 
 // ボイスチャンネルの状態を保存
 function saveVoiceStates() {
-    if (!client) return;
+    if (!client || previousVoiceStates.length === 0) return;
 
     previousVoiceStates = [];
     for (const guild of client.guilds.cache.values()) {

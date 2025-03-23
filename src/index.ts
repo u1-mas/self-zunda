@@ -4,6 +4,7 @@ import { handleShutdown } from "./handlers/shutdownHandler";
 import { log } from "./utils/logger";
 
 config();
+initializeClient();
 
 // HMR機能を実装するのだ！
 if (import.meta.hot) {
@@ -16,25 +17,27 @@ if (import.meta.hot) {
         log("モジュールを破棄するのだ！");
     });
 
-    process.on("SIGINT", () => {
+    process.once("SIGINT", () => {
         log("SIGINTを受信したのだ...");
         void handleShutdown();
+        process.exit(0);
     });
 
-    process.on("SIGTERM", () => {
+    process.once("SIGTERM", () => {
         log("SIGTERMを受信したのだ...");
         void handleShutdown();
+        process.exit(0);
     });
 } else {
-    void initializeClient();
-
-    process.on("SIGINT", () => {
+    process.once("SIGINT", () => {
         log("SIGINTを受信したのだ...");
         void handleShutdown();
+        process.exit(0);
     });
 
-    process.on("SIGTERM", () => {
+    process.once("SIGTERM", () => {
         log("SIGTERMを受信したのだ...");
         void handleShutdown();
+        process.exit(0);
     });
 }

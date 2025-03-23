@@ -110,7 +110,6 @@ export async function generateVoice(text: string): Promise<Buffer> {
 
 // VOICEVOXの接続テスト用関数
 export async function checkVoicevoxServerHealth(): Promise<void> {
-	log("VOICEVOXサーバーの状態をチェックするのだ！");
 	try {
 		// VOICEVOXサーバーの状態を確認
 		await axios.get(`${VOICEVOX_API_URL}/version`, {
