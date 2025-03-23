@@ -21,27 +21,47 @@ const getTimeString = () => {
     }:${now.getSeconds().toString().padStart(2, "0")}`;
 };
 
-// HMRによる再起動かどうかを判定するのだ！
-const isHotReload = process.env.VITE_HMR === "true";
-
-// HMRによる再起動のときだけメッセージを表示するのだ！
-if (isHotReload) {
-    console.log(
-        `${colors.blue}[${getTimeString()}] ずんだもんが再起動したのだ！${colors.reset}`,
-    );
-}
-
 config();
 
 // シャットダウン中かどうかを管理するのだ！
 let isShuttingDown = false;
 let client: Client | null = null;
 
+// VOICEVOXのチェックは最初の起動時だけ行うのだ！
+let hasCheckedVoicevox = false;
+
+async function checkVoicevoxServer() {
+    if (hasCheckedVoicevox) return;
+
+    try {
+        console.log("VOICEVOXサーバーの状態をチェックするのだ！");
+        await checkVoicevoxServerHealth();
+        hasCheckedVoicevox = true;
+    } catch (error) {
+        console.error(
+            error instanceof Error
+                ? error.message
+                : "予期せぬエラーが発生したのだ...",
+        );
+        process.exit(1);
+    }
+}
+
 async function initializeClient() {
     // 既存のクライアントがあれば破棄するのだ！
     if (client) {
         await client.destroy();
         client = null;
+    }
+
+    // HMRによる再起動かどうかを判定するのだ！
+    const isHotReload = process.env.VITE_HMR === "true";
+
+    // HMRによる再起動のときだけメッセージを表示するのだ！
+    if (isHotReload) {
+        console.log(
+            `${colors.blue}[${getTimeString()}] ずんだもんが再起動したのだ！${colors.reset}`,
+        );
     }
 
     client = new Client({
@@ -60,17 +80,7 @@ async function initializeClient() {
 
         // リロード時はVOICEVOXのチェックをスキップするのだ！
         if (!isHotReload) {
-            try {
-                // VOICEVOXサーバーの状態をチェック
-                await checkVoicevoxServerHealth();
-            } catch (error) {
-                console.error(
-                    error instanceof Error
-                        ? error.message
-                        : "予期せぬエラーが発生したのだ...",
-                );
-                process.exit(1);
-            }
+            await checkVoicevoxServer();
         }
     });
 
@@ -158,21 +168,9 @@ async function handleShutdown() {
                 console.log(
                     `${guild.name} のボイスコネクションを破棄したのだ！`,
                 );
-
-                // その後、ボイスチャンネルから退出
-                const me = guild.members.cache.get(client.user?.id || "");
-                if (me?.voice.channel) {
-                    console.log(
-                        `${guild.name} の ${me.voice.channel.name} から退出するのだ...`,
-                    );
-                    me.voice.disconnect();
-                    console.log(
-                        `${guild.name} の ${me.voice.channel.name} から退出完了したのだ！`,
-                    );
-                }
             } catch (error) {
                 console.error(
-                    `${guild.name} のボイスチャンネルからの切断中にエラーが発生したのだ:`,
+                    `${guild.name} のボイスコネクションの破棄中にエラーが発生したのだ:`,
                     error,
                 );
             }
@@ -180,21 +178,36 @@ async function handleShutdown() {
     }
 
     // クライアントを破棄してプロセスを終了
-    await client.destroy();
-    client = null;
-    console.log("クライアントを破棄して、シャットダウンを完了するのだ！");
-    process.exit(0);
+    try {
+        await client.destroy();
+        client = null;
+        console.log("クライアントを破棄して、シャットダウンを完了するのだ！");
+    } catch (error) {
+        console.error("クライアントの破棄中にエラーが発生したのだ:", error);
+    } finally {
+        process.exit(0);
+    }
 }
 
-process.on("SIGINT", async () => {
-    console.log("SIGINTを受信したのだ...");
-    await handleShutdown();
-});
+// シグナルハンドラーは一度だけ登録するのだ！
+let hasRegisteredSignalHandlers = false;
 
-process.on("SIGTERM", async () => {
-    console.log("SIGTERMを受信したのだ...");
-    await handleShutdown();
-});
+function registerSignalHandlers() {
+    if (hasRegisteredSignalHandlers) return;
 
-// 初期化を実行するのだ！
+    process.once("SIGINT", async () => {
+        console.log("SIGINTを受信したのだ...");
+        await handleShutdown();
+    });
+
+    process.once("SIGTERM", async () => {
+        console.log("SIGTERMを受信したのだ...");
+        await handleShutdown();
+    });
+
+    hasRegisteredSignalHandlers = true;
+}
+
+// シグナルハンドラーを登録して初期化を実行するのだ！
+registerSignalHandlers();
 initializeClient();
