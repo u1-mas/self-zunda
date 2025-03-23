@@ -8,6 +8,9 @@ export default defineConfig({
     // vite-nodeの設定
     define: {
         // プロセス環境変数を有効化
-        "process.env": process.env,
+        "process.env": {
+            ...process.env,
+            VITE_HMR: "true",
+        },
     },
 });
