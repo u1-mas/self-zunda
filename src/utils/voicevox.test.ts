@@ -1,5 +1,5 @@
 import axios from "axios";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { vi } from "vitest";
 import { error, log } from "./logger";
 import { checkVoicevoxServerHealth, generateVoice } from "./voicevox";
 
@@ -7,7 +7,7 @@ import { checkVoicevoxServerHealth, generateVoice } from "./voicevox";
 vi.mock("axios");
 vi.mock("./logger");
 // モジュール全体をモック化
-vi.mock("../utils/voicevox", () => {
+vi.mock("./voicevox", () => {
 	// 実際のexportsを取得する代わりに、必要な関数だけをモック化
 	return {
 		generateVoice: vi.fn().mockResolvedValue(Buffer.from("test")),

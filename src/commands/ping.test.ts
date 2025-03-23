@@ -7,7 +7,7 @@ import {
 	type MessagePayload,
 	SlashCommandBuilder,
 } from "discord.js";
-import { describe, expect, it, vi } from "vitest";
+import { vi } from "vitest";
 import { ping } from "./ping";
 
 describe("ping command", () => {

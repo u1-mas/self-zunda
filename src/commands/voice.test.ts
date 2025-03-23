@@ -11,7 +11,7 @@ import type {
 	ChatInputCommandInteraction,
 	VoiceBasedChannel,
 } from "discord.js";
-import { type MockedFunction, describe, expect, test, vi } from "vitest";
+import { type MockedFunction, vi } from "vitest";
 import { disableTextToSpeech, enableTextToSpeech } from "../features/textToSpeech";
 import { join, leave } from "./voice";
 

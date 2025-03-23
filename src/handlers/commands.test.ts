@@ -1,5 +1,4 @@
 import { Collection } from "discord.js";
-import { describe, expect, it } from "vitest";
 import { ping } from "../commands/ping";
 import { join, leave } from "../commands/voice";
 import { commands, commandsData } from "./commands";
