@@ -85,12 +85,14 @@
   - コマンドハンドラーを対応するように修正
   - クライアント初期化ロジックを改善して新しいコマンド構造に対応
   - 分離したコマンドのテスト実装と成功確認
+  - deploy-commandsとhandlers/commandsのテストを修正
+  - 古いvoice.tsファイルとvoice.test.tsを削除
 
 ## 今後の予定
 - deploy-commandsのテスト修正
   - 新しいコマンド構造（join, leave, status）に対応するようにテストを更新
-  - エラーメッセージ：`(intermediate value).setName(...).setDescription(...).addChannelOption is not a function`の解決
-- voice.tsファイルと関連テストの削除
+  - エラーメッセージ：`(intermediate value).setName(...).setDescription(...).addChannelOption is not a function`の解決 ✅
+- voice.tsファイルと関連テストの削除 ✅
   - 古いコードの安全な削除と影響範囲の確認
 - コマンド登録部分のリファクタリングと共通化
   - 新しいコマンド構造に合わせたコマンド登録処理の最適化
