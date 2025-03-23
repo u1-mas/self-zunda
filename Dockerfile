@@ -12,9 +12,8 @@ COPY . .
 # TypeScriptのビルド
 RUN npm run build
 
-# ビルドされたJSファイルのimportパスに拡張子を追加
-RUN find dist -name "*.js" -exec sed -i 's/from "\(\.\.\/\)*\([^"]*\)"/from "\1\2.js"/g' {} \;
-RUN find dist -name "*.js" -exec sed -i 's/from "\.\//from ".\//' {} \;
+# 相対パスのインポートのみ拡張子を追加（外部パッケージには追加しない）
+RUN find dist -name "*.js" -exec sed -i 's/from "\.\.\//from "\.\.\//g; s/from "\.\//from "\.\//g; s/from "\.\.\/\([^"]*\)"/from "\.\.\/\1.js"/g; s/from "\.\/\([^"]*\)"/from "\.\/\1.js"/g' {} \;
 
 # 実行用のイメージ
 FROM node:20-slim
