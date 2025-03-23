@@ -1,59 +1,59 @@
 {
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "開発サーバー起動",
-            "type": "npm",
-            "script": "dev",
-            "problemMatcher": [],
-            "presentation": {
-                "reveal": "always",
-                "panel": "new"
-            },
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
-        },
-        {
-            "label": "Type Check",
-            "type": "npm",
-            "script": "type-check",
-            "problemMatcher": ["$tsc"],
-            "presentation": {
-                "reveal": "silent",
-                "panel": "shared"
-            }
-        },
-        {
-            "label": "Biome Check",
-            "type": "npm",
-            "script": "check",
-            "problemMatcher": [],
-            "presentation": {
-                "reveal": "silent",
-                "panel": "shared"
-            }
-        },
-        {
-            "label": "テスト実行",
-            "type": "npm",
-            "script": "test",
-            "problemMatcher": [],
-            "presentation": {
-                "reveal": "always",
-                "panel": "dedicated"
-            }
-        },
-        {
-            "label": "全検証（TypeCheck+Biome+Test）",
-            "type": "npm",
-            "script": "validate",
-            "problemMatcher": ["$tsc"],
-            "presentation": {
-                "reveal": "always",
-                "panel": "dedicated"
-            }
-        }
-    ]
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "開発サーバー起動",
+			"type": "npm",
+			"script": "dev",
+			"problemMatcher": [],
+			"presentation": {
+				"reveal": "always",
+				"panel": "new"
+			},
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"label": "Type Check",
+			"type": "npm",
+			"script": "type-check",
+			"problemMatcher": ["$tsc"],
+			"presentation": {
+				"reveal": "silent",
+				"panel": "shared"
+			}
+		},
+		{
+			"label": "Biome Check",
+			"type": "npm",
+			"script": "check",
+			"problemMatcher": [],
+			"presentation": {
+				"reveal": "silent",
+				"panel": "shared"
+			}
+		},
+		{
+			"label": "テスト実行",
+			"type": "npm",
+			"script": "test",
+			"problemMatcher": [],
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated"
+			}
+		},
+		{
+			"label": "全検証（TypeCheck+Biome+Test）",
+			"type": "npm",
+			"script": "validate",
+			"problemMatcher": ["$tsc"],
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated"
+			}
+		}
+	]
 }

@@ -5,10 +5,7 @@ import {
 	joinVoiceChannel,
 } from "@discordjs/voice";
 import { type CommandInteraction, SlashCommandBuilder } from "discord.js";
-import {
-	disableTextToSpeech,
-	enableTextToSpeech,
-} from "../features/textToSpeech";
+import { disableTextToSpeech, enableTextToSpeech } from "../features/textToSpeech";
 import { error } from "../utils/logger";
 import { checkVoicevoxServerHealth } from "../utils/voicevox";
 

@@ -2,9 +2,7 @@ import { SlashCommandBuilder } from "discord.js";
 import type { Command } from "./types";
 
 export const ping: Command = {
-	data: new SlashCommandBuilder()
-		.setName("ping")
-		.setDescription("ぽんと返すのだ！"),
+	data: new SlashCommandBuilder().setName("ping").setDescription("ぽんと返すのだ！"),
 
 	async execute(interaction) {
 		const sent = await interaction.reply({

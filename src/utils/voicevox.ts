@@ -1,8 +1,7 @@
 import axios from "axios";
 import { error, log } from "./logger";
 
-const VOICEVOX_API_URL =
-	process.env.VOICEVOX_API_URL || "http://localhost:50021";
+const VOICEVOX_API_URL = process.env.VOICEVOX_API_URL || "http://localhost:50021";
 const SPEAKER_ID = Number(process.env.DEFAULT_SPEAKER) || 1; // ずんだもん（あまあま）
 
 interface AccentPhrase {
@@ -42,16 +41,12 @@ interface AudioQuery {
 export async function generateVoice(text: string): Promise<Buffer> {
 	try {
 		// 音声合成用のクエリを作成
-		const query = await axios.post<AudioQuery>(
-			`${VOICEVOX_API_URL}/audio_query`,
-			null,
-			{
-				params: {
-					text,
-					speaker: SPEAKER_ID,
-				},
+		const query = await axios.post<AudioQuery>(`${VOICEVOX_API_URL}/audio_query`, null, {
+			params: {
+				text,
+				speaker: SPEAKER_ID,
 			},
-		);
+		});
 
 		// 音声パラメータの設定
 		Object.assign(query.data, {
@@ -62,14 +57,10 @@ export async function generateVoice(text: string): Promise<Buffer> {
 		});
 
 		// 音声合成を実行
-		const synthesis = await axios.post(
-			`${VOICEVOX_API_URL}/synthesis`,
-			query.data,
-			{
-				params: { speaker: SPEAKER_ID },
-				responseType: "arraybuffer",
-			},
-		);
+		const synthesis = await axios.post(`${VOICEVOX_API_URL}/synthesis`, query.data, {
+			params: { speaker: SPEAKER_ID },
+			responseType: "arraybuffer",
+		});
 
 		return Buffer.from(synthesis.data);
 	} catch (err) {

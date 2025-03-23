@@ -12,6 +12,4 @@ commands.set(join.data.name, join);
 commands.set(leave.data.name, leave);
 
 // コマンドのJSONデータを取得（スラッシュコマンドの登録に使用）
-export const commandsData = Array.from(commands.values()).map((command) =>
-	command.data.toJSON(),
-);
+export const commandsData = Array.from(commands.values()).map((command) => command.data.toJSON());

@@ -18,11 +18,7 @@ async function main() {
 		await writeFile(outputPath, audioBuffer);
 		console.log(`音声ファイルを保存したのだ: ${outputPath}`);
 	} catch (error) {
-		console.error(
-			error instanceof Error
-				? error.message
-				: "予期せぬエラーが発生したのだ...",
-		);
+		console.error(error instanceof Error ? error.message : "予期せぬエラーが発生したのだ...");
 		process.exit(1);
 	}
 }

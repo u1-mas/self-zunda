@@ -2,9 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { commandsData } from "./handlers/commands";
 
 // RESTクラスのモック
-const mockPut = vi
-	.fn<() => Promise<Record<string, unknown>>>()
-	.mockResolvedValue({});
+const mockPut = vi.fn().mockResolvedValue({});
 const mockREST = {
 	setToken: vi.fn().mockReturnThis(),
 	put: mockPut,
@@ -14,8 +12,7 @@ const mockREST = {
 vi.mock("discord.js", () => ({
 	REST: vi.fn().mockImplementation(() => mockREST),
 	Routes: {
-		applicationCommands: (clientId: string) =>
-			`/applications/${clientId}/commands`,
+		applicationCommands: (clientId: string) => `/applications/${clientId}/commands`,
 	},
 	SlashCommandBuilder: vi.fn().mockImplementation(() => ({
 		setName: vi.fn().mockReturnThis(),
@@ -41,8 +38,7 @@ vi.mock("discord.js", () => ({
 			},
 			at: (key: number) => items.get([...items.keys()][key]),
 			get: (key: string) => items.get(key),
-			forEach: (callback: (value: unknown, key: string) => void) =>
-				items.forEach(callback),
+			forEach: (callback: (value: unknown, key: string) => void) => items.forEach(callback),
 			values: () => items.values(),
 		};
 	}),
@@ -97,9 +93,8 @@ describe("deploy-commands", () => {
 		await import("./deploy-commands");
 
 		expect(mockREST.setToken).toHaveBeenCalledWith("test-token");
-		expect(mockPut).toHaveBeenCalledWith(
-			"/applications/test-client-id/commands",
-			{ body: commandsData },
-		);
+		expect(mockPut).toHaveBeenCalledWith("/applications/test-client-id/commands", {
+			body: commandsData,
+		});
 	});
 });

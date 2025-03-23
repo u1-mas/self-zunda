@@ -33,10 +33,7 @@ async function createAndPlayAudio(
 	player.play(resource);
 }
 
-export async function playAudio(
-	connection: VoiceConnection,
-	audioBuffer: Buffer,
-): Promise<void> {
+export async function playAudio(connection: VoiceConnection, audioBuffer: Buffer): Promise<void> {
 	return new Promise((resolve, reject) => {
 		try {
 			const guildId = connection.joinConfig.guildId;

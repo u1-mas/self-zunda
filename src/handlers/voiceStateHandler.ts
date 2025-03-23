@@ -4,10 +4,7 @@ import { playAudio } from "../utils/audio";
 import { error } from "../utils/logger";
 import { generateVoice } from "../utils/voicevox";
 
-export async function handleVoiceStateUpdate(
-	oldState: VoiceState,
-	newState: VoiceState,
-) {
+export async function handleVoiceStateUpdate(oldState: VoiceState, newState: VoiceState) {
 	if (newState.member?.user.bot) return;
 
 	if (oldState.channelId !== newState.channelId) {

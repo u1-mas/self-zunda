@@ -20,10 +20,7 @@ export async function handleShutdown() {
 				connection.destroy();
 				log(`${guild.name} のボイスコネクションを破棄したのだ！`);
 			} catch (err) {
-				error(
-					`${guild.name} のボイスコネクションの破棄中にエラーが発生したのだ:`,
-					err,
-				);
+				error(`${guild.name} のボイスコネクションの破棄中にエラーが発生したのだ:`, err);
 			}
 		}
 	}

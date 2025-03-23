@@ -15,9 +15,7 @@ const signalHandler = async () => {
 
 const errorHandler = (error: unknown) => {
 	logger.log("予期せぬエラーが発生したのだ！");
-	logger.error(
-		error instanceof Error ? error.message : "予期せぬエラーが発生したのだ！",
-	);
+	logger.error(error instanceof Error ? error.message : "予期せぬエラーが発生したのだ！");
 	process.exit(1);
 };
 

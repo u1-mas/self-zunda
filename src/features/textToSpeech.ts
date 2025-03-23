@@ -7,10 +7,7 @@ import { generateVoice } from "../utils/voicevox";
 // 読み上げを有効にしているチャンネルを保持
 const activeChannels = new Map<string, string>(); // guildId -> channelId
 
-export function isTextToSpeechEnabled(
-	guildId: string,
-	channelId: string,
-): boolean {
+export function isTextToSpeechEnabled(guildId: string, channelId: string): boolean {
 	return activeChannels.get(guildId) === channelId;
 }
 
