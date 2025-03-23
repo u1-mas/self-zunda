@@ -1,7 +1,7 @@
 import type { Blob } from "node:buffer";
+import { type AudioQuery, OpenAPI, Service } from "../api/voicevox";
 import { getUserSettings } from "../models/userSettings";
 import { debug, error, log } from "./logger";
-import { OpenAPI, Service, type AudioQuery } from "../api/voicevox";
 
 // VOICEVOXのAPIの設定
 const VOICEVOX_API_URL = process.env.VOICEVOX_API_URL || "http://localhost:50021";

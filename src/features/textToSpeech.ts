@@ -91,17 +91,26 @@ export async function handleMessage(message: Message): Promise<void> {
 async function validateMessageForProcessing(message: Message): Promise<void> {
 	// ボットのメッセージは無視
 	if (message.author.bot) {
-		return Promise.reject();
+		throw new MessageProcessingError(
+			"ボットのメッセージは読み上げないのだ",
+			MessageProcessingErrorType.USER_DISABLED,
+		);
 	}
 
 	// DMは無視
 	if (!message.guild) {
-		return Promise.reject();
+		throw new MessageProcessingError(
+			"DMでは読み上げできないのだ",
+			MessageProcessingErrorType.NO_CONNECTION,
+		);
 	}
 
 	// チャンネルが有効化されているか確認
 	if (!isTextToSpeechEnabled(message.guild.id, message.channel.id)) {
-		return Promise.reject();
+		throw new MessageProcessingError(
+			"このチャンネルでは読み上げが有効になっていないのだ",
+			MessageProcessingErrorType.NO_CONNECTION,
+		);
 	}
 }
 
