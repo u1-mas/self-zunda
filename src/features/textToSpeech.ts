@@ -1,6 +1,7 @@
 import { getVoiceConnection } from "@discordjs/voice";
 import { type Message, TextChannel } from "discord.js";
 import { playAudio } from "../utils/audio";
+import { error } from "../utils/logger";
 import { generateVoice } from "../utils/voicevox";
 
 // 読み上げを有効にしているチャンネルを保持
@@ -33,7 +34,10 @@ export async function handleMessage(message: Message): Promise<void> {
 
 	// ボイスコネクションを取得
 	const connection = getVoiceConnection(message.guild.id);
-	if (!connection) return;
+	if (!connection) {
+		error("ボイスコネクションが見つからないのだ！");
+		return;
+	}
 
 	try {
 		// メッセージを整形
@@ -43,10 +47,20 @@ export async function handleMessage(message: Message): Promise<void> {
 		// 音声を生成して再生
 		const audioBuffer = await generateVoice(text);
 		await playAudio(connection, audioBuffer);
-	} catch (error) {
-		console.error("メッセージの読み上げに失敗したのだ:", error);
+	} catch (err) {
+		error(
+			`メッセージの読み上げに失敗したのだ: ${
+				err instanceof Error
+					? err.message
+					: "予期せぬエラーが発生したのだ..."
+			}\n詳細: ${err}`,
+		);
 		if (message.channel instanceof TextChannel) {
-			await message.channel.send("メッセージの読み上げに失敗したのだ...");
+			await message.channel.send(
+				err instanceof Error
+					? `メッセージの読み上げに失敗したのだ: ${err.message}`
+					: "メッセージの読み上げに失敗したのだ...",
+			);
 		}
 	}
 }

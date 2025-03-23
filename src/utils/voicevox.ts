@@ -1,10 +1,33 @@
 import axios from "axios";
+import { error, log } from "./logger";
 
-const VOICEVOX_API_URL = "http://localhost:50021";
-const SPEAKER_ID = 1; // ずんだもん（あまあま）
+const VOICEVOX_API_URL = process.env.VOICEVOX_API_URL ||
+	"http://localhost:50021";
+const SPEAKER_ID = Number(process.env.DEFAULT_SPEAKER) || 1; // ずんだもん（あまあま）
+
+interface AccentPhrase {
+	moras: {
+		text: string;
+		consonant?: string;
+		consonant_length?: number;
+		vowel: string;
+		vowel_length: number;
+		pitch: number;
+	}[];
+	accent: number;
+	pause_mora?: {
+		text: string;
+		consonant?: string;
+		consonant_length?: number;
+		vowel: string;
+		vowel_length: number;
+		pitch: number;
+	};
+	is_interrogative?: boolean;
+}
 
 interface AudioQuery {
-	accent_phrases: any[];
+	accent_phrases: AccentPhrase[];
 	speedScale: number;
 	pitchScale: number;
 	intonationScale: number;
@@ -51,15 +74,43 @@ export async function generateVoice(text: string): Promise<Buffer> {
 		);
 
 		return Buffer.from(synthesis.data);
-	} catch (error) {
-		console.error("VOICEVOXでの音声生成に失敗したのだ:", error);
-		throw error;
+	} catch (err) {
+		if (axios.isAxiosError(err)) {
+			if (err.code === "ECONNREFUSED") {
+				error("VOICEVOXサーバーが起動していないのだ！");
+				throw new Error("VOICEVOXサーバーが起動していないのだ！");
+			}
+			if (err.response) {
+				error(
+					`VOICEVOXサーバーからエラーレスポンスが返ってきたのだ: ${err.response.status} ${err.response.statusText}\n詳細: ${
+						JSON.stringify(err.response.data)
+					}`,
+				);
+				throw new Error(
+					`VOICEVOXサーバーエラー: ${err.response.status} ${err.response.statusText}`,
+				);
+			}
+			error(
+				`VOICEVOXサーバーへのリクエストに失敗したのだ: ${err.message}\n詳細: ${err}`,
+			);
+			throw new Error(
+				`VOICEVOXサーバーへのリクエストに失敗: ${err.message}`,
+			);
+		}
+		error(
+			`VOICEVOXでの音声生成に失敗したのだ: ${
+				err instanceof Error
+					? err.message
+					: "予期せぬエラーが発生したのだ..."
+			}\n詳細: ${err}`,
+		);
+		throw err;
 	}
 }
 
 // VOICEVOXの接続テスト用関数
 export async function checkVoicevoxServerHealth(): Promise<void> {
-	console.log("VOICEVOXサーバーの状態をチェックするのだ！");
+	log("VOICEVOXサーバーの状態をチェックするのだ！");
 	try {
 		// VOICEVOXサーバーの状態を確認
 		await axios.get(`${VOICEVOX_API_URL}/version`, {
@@ -70,16 +121,37 @@ export async function checkVoicevoxServerHealth(): Promise<void> {
 		const testText = "テストなのだ！";
 		await generateVoice(testText);
 
-		console.log(
-			"VOICEVOXサーバーに正常に接続できて、音声生成もできるのだ！",
-		);
-	} catch (error) {
-		if (axios.isAxiosError(error)) {
-			if (error.code === "ECONNREFUSED") {
+		log("VOICEVOXサーバーに正常に接続できて、音声生成もできるのだ！");
+	} catch (err) {
+		if (axios.isAxiosError(err)) {
+			if (err.code === "ECONNREFUSED") {
+				error("VOICEVOXサーバーが起動していないのだ！");
 				throw new Error("VOICEVOXサーバーが起動していないのだ！");
 			}
-			throw new Error(`エラーが発生したのだ: ${error.message}`);
+			if (err.response) {
+				error(
+					`VOICEVOXサーバーからエラーレスポンスが返ってきたのだ: ${err.response.status} ${err.response.statusText}\n詳細: ${
+						JSON.stringify(err.response.data)
+					}`,
+				);
+				throw new Error(
+					`VOICEVOXサーバーエラー: ${err.response.status} ${err.response.statusText}`,
+				);
+			}
+			error(
+				`VOICEVOXサーバーへのリクエストに失敗したのだ: ${err.message}\n詳細: ${err}`,
+			);
+			throw new Error(
+				`VOICEVOXサーバーへのリクエストに失敗: ${err.message}`,
+			);
 		}
-		throw new Error("VOICEVOXサーバーに接続できないのだ...");
+		error(
+			`VOICEVOXサーバーの状態チェックに失敗したのだ: ${
+				err instanceof Error
+					? err.message
+					: "予期せぬエラーが発生したのだ..."
+			}\n詳細: ${err}`,
+		);
+		throw err;
 	}
 }
