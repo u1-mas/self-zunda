@@ -7,3 +7,4 @@ cursor_docs/
 !.env.example
 node_modules/
 dist/
+data/
