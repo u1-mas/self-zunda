@@ -6,5 +6,18 @@
 		"source.organizeImports": "explicit",
 		"source.fixAll.biome": "explicit"
 	},
-	"biome.enabled": true
+	"biome.enabled": true,
+	"typescript.tsdk": "node_modules/typescript/lib",
+	"typescript.enablePromptUseWorkspaceTsdk": true,
+	"editor.quickSuggestions": {
+		"strings": true
+	},
+	"editor.inlineSuggest.enabled": true,
+	"javascript.updateImportsOnFileMove.enabled": "always",
+	"typescript.updateImportsOnFileMove.enabled": "always",
+	"typescript.preferences.importModuleSpecifier": "relative",
+	"[typescript]": {
+		"editor.formatOnSave": true,
+		"editor.defaultFormatter": "biomejs.biome"
+	}
 }
