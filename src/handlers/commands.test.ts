@@ -1,16 +1,20 @@
 import { Collection } from "discord.js";
+import { join } from "../commands/join";
+import { leave } from "../commands/leave";
 import { ping } from "../commands/ping";
 import { settings } from "../commands/settings";
-import { voice } from "../commands/voice";
+import { status } from "../commands/status";
 import { commands, commandsData } from "./commands";
 
 describe("commands", () => {
 	describe("commands collection", () => {
 		it("コマンドが正しく登録されているか", () => {
 			expect(commands).toBeInstanceOf(Collection);
-			expect(commands.size).toBe(3);
+			expect(commands.size).toBe(5);
 			expect(commands.get("ping")).toBe(ping);
-			expect(commands.get("voice")).toBe(voice);
+			expect(commands.get("join")).toBe(join);
+			expect(commands.get("leave")).toBe(leave);
+			expect(commands.get("status")).toBe(status);
 			expect(commands.get("settings")).toBe(settings);
 		});
 	});
@@ -18,7 +22,7 @@ describe("commands", () => {
 	describe("commandsData", () => {
 		it("コマンドデータが正しく変換されているか", () => {
 			expect(Array.isArray(commandsData)).toBe(true);
-			expect(commandsData.length).toBe(3);
+			expect(commandsData.length).toBe(5);
 
 			// 各コマンドのデータが正しい形式であることを確認
 			for (const data of commandsData) {

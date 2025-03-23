@@ -18,6 +18,7 @@ vi.mock("discord.js", () => ({
 		setName: vi.fn().mockReturnThis(),
 		setDescription: vi.fn().mockReturnThis(),
 		addSubcommand: vi.fn().mockReturnThis(),
+		addChannelOption: vi.fn().mockReturnThis(),
 		toJSON: vi.fn().mockReturnValue({ name: "test-command" }),
 	})),
 	ContextMenuCommandBuilder: vi.fn().mockImplementation(() => ({
