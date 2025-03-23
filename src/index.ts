@@ -35,115 +35,115 @@ config();
 
 // シャットダウン中かどうかを管理するのだ！
 let isShuttingDown = false;
+let client: Client | null = null;
 
-const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildVoiceStates,
-    ],
-});
-
-client.once(Events.ClientReady, async () => {
-    console.log(
-        `${colors.green}[${getTimeString()}] ずんだもんが起動したのだ！${colors.reset}`,
-    );
-
-    // リロード時はVOICEVOXのチェックをスキップするのだ！
-    if (!isHotReload) {
-        try {
-            // VOICEVOXサーバーの状態をチェック
-            await checkVoicevoxServerHealth();
-        } catch (error) {
-            console.error(
-                error instanceof Error
-                    ? error.message
-                    : "予期せぬエラーが発生したのだ...",
-            );
-            process.exit(1);
-        }
+async function initializeClient() {
+    // 既存のクライアントがあれば破棄するのだ！
+    if (client) {
+        await client.destroy();
+        client = null;
     }
-});
 
-// ボイスチャンネルの状態変更を監視
-client.on(
-    Events.VoiceStateUpdate,
-    async (oldState: VoiceState, newState: VoiceState) => {
-        // ボットの状態変更は無視
-        if (newState.member?.user.bot) return;
+    client = new Client({
+        intents: [
+            GatewayIntentBits.Guilds,
+            GatewayIntentBits.GuildMessages,
+            GatewayIntentBits.MessageContent,
+            GatewayIntentBits.GuildVoiceStates,
+        ],
+    });
 
-        // チャンネルが変更された場合
-        if (oldState.channelId !== newState.channelId) {
-            const connection = getVoiceConnection(newState.guild.id);
-            if (!connection) return;
+    client.once(Events.ClientReady, async () => {
+        console.log(
+            `${colors.green}[${getTimeString()}] ずんだもんが起動したのだ！${colors.reset}`,
+        );
 
+        // リロード時はVOICEVOXのチェックをスキップするのだ！
+        if (!isHotReload) {
             try {
-                const memberName = newState.member?.displayName ||
-                    "不明なユーザー";
-
-                // 新しいチャンネルに参加した場合
-                if (newState.channelId) {
-                    const text = `${memberName}が参加したのだ！`;
-                    const audioBuffer = await generateVoice(text);
-                    await playAudio(connection, audioBuffer);
-                } // チャンネルから抜けた場合
-                else if (oldState.channelId) {
-                    const text = `${memberName}が抜けたのだ！`;
-                    const audioBuffer = await generateVoice(text);
-                    await playAudio(connection, audioBuffer);
-                }
+                // VOICEVOXサーバーの状態をチェック
+                await checkVoicevoxServerHealth();
             } catch (error) {
                 console.error(
-                    "ボイスチャンネルの状態変更の読み上げに失敗したのだ:",
-                    error,
+                    error instanceof Error
+                        ? error.message
+                        : "予期せぬエラーが発生したのだ...",
                 );
+                process.exit(1);
             }
         }
-    },
-);
+    });
 
-client.on(Events.InteractionCreate, async (interaction) => {
-    if (!interaction.isChatInputCommand()) return;
+    // ボイスチャンネルの状態変更を監視
+    client.on(
+        Events.VoiceStateUpdate,
+        async (oldState: VoiceState, newState: VoiceState) => {
+            // ボットの状態変更は無視
+            if (newState.member?.user.bot) return;
 
-    const command = commands.get(interaction.commandName);
-    if (!command) return;
+            // チャンネルが変更された場合
+            if (oldState.channelId !== newState.channelId) {
+                const connection = getVoiceConnection(newState.guild.id);
+                if (!connection) return;
 
-    try {
-        await command.execute(interaction);
-    } catch (error) {
-        console.error(error);
-        if (interaction.replied || interaction.deferred) {
-            await interaction.followUp({
-                content: "コマンドの実行中にエラーが発生したのだ...",
-                ephemeral: true,
-            });
-        } else {
-            await interaction.reply({
-                content: "コマンドの実行中にエラーが発生したのだ...",
-                ephemeral: true,
-            });
+                try {
+                    const memberName = newState.member?.displayName ||
+                        "不明なユーザー";
+
+                    // 新しいチャンネルに参加した場合
+                    if (newState.channelId) {
+                        const text = `${memberName}が参加したのだ！`;
+                        const audioBuffer = await generateVoice(text);
+                        await playAudio(connection, audioBuffer);
+                    } // チャンネルから抜けた場合
+                    else if (oldState.channelId) {
+                        const text = `${memberName}が抜けたのだ！`;
+                        const audioBuffer = await generateVoice(text);
+                        await playAudio(connection, audioBuffer);
+                    }
+                } catch (error) {
+                    console.error(
+                        "ボイスチャンネルの状態変更の読み上げに失敗したのだ:",
+                        error,
+                    );
+                }
+            }
+        },
+    );
+
+    client.on(Events.InteractionCreate, async (interaction) => {
+        if (!interaction.isChatInputCommand()) return;
+
+        const command = commands.get(interaction.commandName);
+        if (!command) return;
+
+        try {
+            await command.execute(interaction);
+        } catch (error) {
+            console.error(error);
+            if (interaction.replied || interaction.deferred) {
+                await interaction.followUp({
+                    content: "コマンドの実行中にエラーが発生したのだ...",
+                    ephemeral: true,
+                });
+            } else {
+                await interaction.reply({
+                    content: "コマンドの実行中にエラーが発生したのだ...",
+                    ephemeral: true,
+                });
+            }
         }
-    }
-});
+    });
 
-// メッセージイベントのハンドラーを追加
-client.on(Events.MessageCreate, handleMessage);
+    // メッセージイベントのハンドラーを追加
+    client.on(Events.MessageCreate, handleMessage);
+
+    await client.login(process.env.DISCORD_TOKEN);
+}
 
 // プロセス終了時の処理
-process.on("SIGINT", async () => {
-    if (isShuttingDown) return;
-    console.log("SIGINTを受信したのだ...");
-    await handleShutdown();
-});
-process.on("SIGTERM", async () => {
-    if (isShuttingDown) return;
-    console.log("SIGTERMを受信したのだ...");
-    await handleShutdown();
-});
-
 async function handleShutdown() {
-    if (isShuttingDown) return;
+    if (isShuttingDown || !client) return;
     isShuttingDown = true;
     console.log("シャットダウン処理を開始するのだ...");
 
@@ -181,8 +181,20 @@ async function handleShutdown() {
 
     // クライアントを破棄してプロセスを終了
     await client.destroy();
+    client = null;
     console.log("クライアントを破棄して、シャットダウンを完了するのだ！");
     process.exit(0);
 }
 
-client.login(process.env.DISCORD_TOKEN);
+process.on("SIGINT", async () => {
+    console.log("SIGINTを受信したのだ...");
+    await handleShutdown();
+});
+
+process.on("SIGTERM", async () => {
+    console.log("SIGTERMを受信したのだ...");
+    await handleShutdown();
+});
+
+// 初期化を実行するのだ！
+initializeClient();
