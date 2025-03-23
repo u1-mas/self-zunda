@@ -101,7 +101,7 @@ client.on(Events.MessageCreate, handleMessage);
 process.on("SIGINT", () => handleShutdown());
 process.on("SIGTERM", () => handleShutdown());
 
-function handleShutdown() {
+async function handleShutdown() {
     console.log("シャットダウン処理を開始するのだ...");
 
     // 全てのギルドのボイスチャンネルから切断
@@ -109,22 +109,34 @@ function handleShutdown() {
         const connection = getVoiceConnection(guild.id);
         if (connection) {
             console.log(`${guild.name} のボイスチャンネルから切断するのだ...`);
-            // ボイスチャンネルから退出
-            const me = guild.members.cache.get(client.user?.id || "");
-            if (me?.voice.channel) {
+            try {
+                // ボイスチャンネルから退出
+                const me = guild.members.cache.get(client.user?.id || "");
+                if (me?.voice.channel) {
+                    console.log(
+                        `${guild.name} の ${me.voice.channel.name} から退出するのだ...`,
+                    );
+                    await me.voice.setChannel(null);
+                    console.log(
+                        `${guild.name} の ${me.voice.channel.name} から退出完了したのだ！`,
+                    );
+                }
+                // ボイスコネクションを破棄
+                connection.destroy();
                 console.log(
-                    `${guild.name} の ${me.voice.channel.name} から退出するのだ...`,
+                    `${guild.name} のボイスコネクションを破棄したのだ！`,
                 );
-                me.voice.disconnect();
+            } catch (error) {
+                console.error(
+                    `${guild.name} のボイスチャンネルからの切断中にエラーが発生したのだ:`,
+                    error,
+                );
             }
-            // ボイスコネクションを破棄
-            connection.destroy();
-            console.log(`${guild.name} のボイスコネクションを破棄したのだ！`);
         }
     }
 
     // クライアントを破棄してプロセスを終了
-    client.destroy();
+    await client.destroy();
     console.log("クライアントを破棄して、シャットダウンを完了するのだ！");
     process.exit(0);
 }
