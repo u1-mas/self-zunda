@@ -1,5 +1,11 @@
 import { getVoiceConnection } from "@discordjs/voice";
-import { Client, Events, GatewayIntentBits, type VoiceState } from "discord.js";
+import {
+    Client,
+    Events,
+    GatewayIntentBits,
+    type Interaction,
+    type VoiceState,
+} from "discord.js";
 import { config } from "dotenv";
 import { handleMessage } from "./features/textToSpeech";
 import { commands } from "./handlers/commands";
@@ -17,7 +23,10 @@ const colors = {
 const getTimeString = () => {
     const now = new Date();
     return `${now.getHours().toString().padStart(2, "0")}:${
-        now.getMinutes().toString().padStart(2, "0")
+        now
+            .getMinutes()
+            .toString()
+            .padStart(2, "0")
     }:${now.getSeconds().toString().padStart(2, "0")}`;
 };
 
@@ -48,105 +57,114 @@ async function checkVoicevoxServer() {
 }
 
 async function initializeClient() {
-    // 既存のクライアントがあれば破棄するのだ！
-    if (client) {
-        await client.destroy();
-        client = null;
+    // シャットダウン中は初期化しないのだ！
+    if (isShuttingDown) return;
 
-        // 既存のクライアントを破棄した場合のみ再起動メッセージを表示するのだ！
-        console.log(
-            `${colors.blue}[${getTimeString()}] ずんだもんが再起動したのだ！${colors.reset}`,
-        );
-    }
+    try {
+        // 既存のクライアントがあれば破棄するのだ！
+        if (client) {
+            await client.destroy();
+            client = null;
+            console.log(
+                `${colors.blue}[${getTimeString()}] ずんだもんが再起動したのだ！${colors.reset}`,
+            );
+        }
 
-    client = new Client({
-        intents: [
-            GatewayIntentBits.Guilds,
-            GatewayIntentBits.GuildMessages,
-            GatewayIntentBits.MessageContent,
-            GatewayIntentBits.GuildVoiceStates,
-        ],
-    });
+        client = new Client({
+            intents: [
+                GatewayIntentBits.Guilds,
+                GatewayIntentBits.GuildMessages,
+                GatewayIntentBits.MessageContent,
+                GatewayIntentBits.GuildVoiceStates,
+            ],
+        });
 
-    client.once(Events.ClientReady, async () => {
-        console.log(
-            `${colors.green}[${getTimeString()}] ずんだもんが起動したのだ！${colors.reset}`,
-        );
+        client.once(Events.ClientReady, async () => {
+            console.log(
+                `${colors.green}[${getTimeString()}] ずんだもんが起動したのだ！${colors.reset}`,
+            );
+            console.log(
+                `${colors.green}[${getTimeString()}] ホットリロードのテスト2なのだ！${colors.reset}`,
+            );
 
-        // VOICEVOXのチェックは最初の起動時だけ行うのだ！
-        if (!hasCheckedVoicevox) {
+            // VOICEVOXのチェックは最初の起動時だけ行うのだ！
             await checkVoicevoxServer();
-        }
-    });
+        });
 
-    // ボイスチャンネルの状態変更を監視
-    client.on(
-        Events.VoiceStateUpdate,
-        async (oldState: VoiceState, newState: VoiceState) => {
-            // ボットの状態変更は無視
-            if (newState.member?.user.bot) return;
+        // イベントハンドラーを設定するのだ！
+        client.on(Events.VoiceStateUpdate, handleVoiceStateUpdate);
+        client.on(Events.InteractionCreate, handleInteraction);
+        client.on(Events.MessageCreate, handleMessage);
 
-            // チャンネルが変更された場合
-            if (oldState.channelId !== newState.channelId) {
-                const connection = getVoiceConnection(newState.guild.id);
-                if (!connection) return;
-
-                try {
-                    const memberName = newState.member?.displayName ||
-                        "不明なユーザー";
-
-                    // 新しいチャンネルに参加した場合
-                    if (newState.channelId) {
-                        const text = `${memberName}が参加したのだ！`;
-                        const audioBuffer = await generateVoice(text);
-                        await playAudio(connection, audioBuffer);
-                    } // チャンネルから抜けた場合
-                    else if (oldState.channelId) {
-                        const text = `${memberName}が抜けたのだ！`;
-                        const audioBuffer = await generateVoice(text);
-                        await playAudio(connection, audioBuffer);
-                    }
-                } catch (error) {
-                    console.error(
-                        "ボイスチャンネルの状態変更の読み上げに失敗したのだ:",
-                        error,
-                    );
-                }
-            }
-        },
-    );
-
-    client.on(Events.InteractionCreate, async (interaction) => {
-        if (!interaction.isChatInputCommand()) return;
-
-        const command = commands.get(interaction.commandName);
-        if (!command) return;
-
-        try {
-            await command.execute(interaction);
-        } catch (error) {
-            console.error(error);
-            if (interaction.replied || interaction.deferred) {
-                await interaction.followUp({
-                    content: "コマンドの実行中にエラーが発生したのだ...",
-                    ephemeral: true,
-                });
-            } else {
-                await interaction.reply({
-                    content: "コマンドの実行中にエラーが発生したのだ...",
-                    ephemeral: true,
-                });
-            }
-        }
-    });
-
-    // メッセージイベントのハンドラーを追加
-    client.on(Events.MessageCreate, handleMessage);
-
-    await client.login(process.env.DISCORD_TOKEN);
+        await client.login(process.env.DISCORD_TOKEN);
+    } catch (error) {
+        console.error("クライアントの初期化に失敗したのだ:", error);
+        process.exit(1);
+    }
 }
 
-// プロセス終了時の処理
+// イベントハンドラーを定義するのだ！
+async function handleVoiceStateUpdate(
+    oldState: VoiceState,
+    newState: VoiceState,
+) {
+    // ボットの状態変更は無視
+    if (newState.member?.user.bot) return;
+
+    // チャンネルが変更された場合
+    if (oldState.channelId !== newState.channelId) {
+        const connection = getVoiceConnection(newState.guild.id);
+        if (!connection) return;
+
+        try {
+            const memberName = newState.member?.displayName ||
+                "不明なユーザー";
+
+            // 新しいチャンネルに参加した場合
+            if (newState.channelId) {
+                const text = `${memberName}が参加したのだ！`;
+                const audioBuffer = await generateVoice(text);
+                await playAudio(connection, audioBuffer);
+            } // チャンネルから抜けた場合
+            else if (oldState.channelId) {
+                const text = `${memberName}が抜けたのだ！`;
+                const audioBuffer = await generateVoice(text);
+                await playAudio(connection, audioBuffer);
+            }
+        } catch (error) {
+            console.error(
+                "ボイスチャンネルの状態変更の読み上げに失敗したのだ:",
+                error,
+            );
+        }
+    }
+}
+
+async function handleInteraction(interaction: Interaction) {
+    if (!interaction.isChatInputCommand()) return;
+
+    const command = commands.get(interaction.commandName);
+    if (!command) return;
+
+    try {
+        await command.execute(interaction);
+    } catch (error) {
+        console.error(error);
+        if (interaction.replied || interaction.deferred) {
+            await interaction.followUp({
+                content: "コマンドの実行中にエラーが発生したのだ...",
+                ephemeral: true,
+            });
+        } else {
+            await interaction.reply({
+                content: "コマンドの実行中にエラーが発生したのだ...",
+                ephemeral: true,
+            });
+        }
+    }
+}
+
+// プロセス終了時の処理なのだ！
 async function handleShutdown() {
     if (isShuttingDown || !client) return;
     isShuttingDown = true;
@@ -203,7 +221,7 @@ function registerSignalHandlers() {
     hasRegisteredSignalHandlers = true;
 }
 
-// シグナルハンドラーを登録して初期化を実行するのだ！
+// シグナルハンドラーを登録するのだ！
 registerSignalHandlers();
 
 // HMR機能を実装するのだ！
@@ -211,7 +229,8 @@ if (import.meta.hot) {
     // 初回のHMR起動時
     initializeClient();
 
-    import.meta.hot.accept((newModule) => {
+    // モジュールの更新を検知したときの処理なのだ！
+    import.meta.hot.accept(() => {
         console.log(
             `${colors.blue}[${getTimeString()}] モジュールの更新を検知したのだ！${colors.reset}`,
         );
