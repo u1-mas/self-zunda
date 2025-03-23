@@ -74,13 +74,13 @@ function formatMessage(message: Message): string {
 	text = text.replace(/<a?:\w+:\d+>/g, "");
 
 	// メンションを置換
-	text = text.replace(/<@!?(\d+)>/g, (match, id) => {
+	text = text.replace(/<@!?(\d+)>/g, (_match, id) => {
 		const member = message.guild?.members.cache.get(id);
 		return member ? `${member.displayName}さん` : "";
 	});
 
 	// チャンネルメンションを置換
-	text = text.replace(/<#(\d+)>/g, (match, id) => {
+	text = text.replace(/<#(\d+)>/g, (_match, id) => {
 		const channel = message.guild?.channels.cache.get(id);
 		return channel ? `${channel.name}チャンネル` : "";
 	});

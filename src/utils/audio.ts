@@ -1,8 +1,3 @@
-import { randomUUID } from "node:crypto";
-import { createReadStream } from "node:fs";
-import { writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import {
 	type AudioPlayer,
 	AudioPlayerStatus,
@@ -11,6 +6,11 @@ import {
 	createAudioPlayer,
 	createAudioResource,
 } from "@discordjs/voice";
+import { randomUUID } from "node:crypto";
+import { createReadStream, unlinkSync } from "node:fs";
+import { writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 // アクティブな音声プレイヤーを保持
 const players = new Map<string, AudioPlayer>();
@@ -53,13 +53,13 @@ export async function playAudio(connection: VoiceConnection, audioBuffer: Buffer
 				reject(error);
 			});
 
-			player.once("stateChange", (oldState, newState) => {
+			player.once("stateChange", (_oldState, newState) => {
 				if (newState.status === AudioPlayerStatus.Idle) {
 					// 一時ファイルを削除する処理を追加する（エラーハンドリングは省略）
 					try {
-						require("node:fs").unlinkSync(tempFile);
+						unlinkSync(tempFile);
 					} catch (error) {
-						console.error("一時ファイルの削除に失敗したのだ:", error);
+						// ファイル削除に失敗してもエラーを無視
 					}
 					resolve();
 				}
@@ -69,7 +69,7 @@ export async function playAudio(connection: VoiceConnection, audioBuffer: Buffer
 				console.error("音声の再生中にエラーが発生したのだ:", error);
 				// エラー時も一時ファイルを削除
 				try {
-					require("node:fs").unlinkSync(tempFile);
+					unlinkSync(tempFile);
 				} catch (deleteError) {
 					console.error("一時ファイルの削除に失敗したのだ:", deleteError);
 				}
