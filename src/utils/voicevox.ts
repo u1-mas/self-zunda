@@ -1,15 +1,23 @@
-import axios from "axios";
+import type { Blob } from "node:buffer";
 import { getUserSettings } from "../models/userSettings";
-import type { components } from "../types/voicevox";
 import { debug, error, log } from "./logger";
+import { OpenAPI, Service, type AudioQuery } from "../api/voicevox";
 
+// VOICEVOXのAPIの設定
 const VOICEVOX_API_URL = process.env.VOICEVOX_API_URL || "http://localhost:50021";
 log(`VOICEVOXのAPI URLが設定されました: ${VOICEVOX_API_URL}`);
 const DEFAULT_SPEAKER_ID = Number(process.env.DEFAULT_SPEAKER) || 1; // ずんだもん（あまあま）
 
-// OpenAPI型定義から型をインポート
-type AudioQuery = components["schemas"]["AudioQuery"];
+// OpenAPIの設定
+OpenAPI.BASE = VOICEVOX_API_URL;
 
+/**
+ * 音声合成を実行する
+ * @param text 音声合成するテキスト
+ * @param serverId サーバーID（ユーザー設定のため）
+ * @param userId ユーザーID（ユーザー設定のため）
+ * @returns 音声データのバッファ
+ */
 export async function generateVoice(
 	text: string,
 	serverId?: string,
@@ -41,16 +49,11 @@ export async function generateVoice(
 
 		// 音声合成用のクエリを作成
 		debug(`「${text}」の音声合成クエリを作成するのだ (話者ID: ${speakerId})`);
-		const query = await axios.post<AudioQuery>(`${VOICEVOX_API_URL}/audio_query`, null, {
-			params: {
-				text,
-				speaker: speakerId,
-			},
-		});
+		const query = await Service.audioQuery(text, speakerId);
 
 		// 音声パラメータの設定
 		debug("音声パラメータを設定するのだ");
-		Object.assign(query.data, {
+		Object.assign(query, {
 			speedScale,
 			pitchScale,
 			intonationScale,
@@ -61,13 +64,28 @@ export async function generateVoice(
 
 		// 音声合成を実行
 		debug("音声合成を実行するのだ");
-		const synthesis = await axios.post(`${VOICEVOX_API_URL}/synthesis`, query.data, {
-			params: { speaker: speakerId },
-			responseType: "arraybuffer",
-		});
+		const audioBlob = await Service.synthesis(speakerId, query);
+
+		// Blobをバッファに変換
+		debug("合成結果をバッファに変換するのだ");
+		let audioBuffer: Buffer;
+
+		// テスト環境対応: 実際のBlobかどうかを確認
+		if (
+			typeof audioBlob === "object" &&
+			audioBlob !== null &&
+			"arrayBuffer" in audioBlob &&
+			typeof audioBlob.arrayBuffer === "function"
+		) {
+			const arrayBuffer = await audioBlob.arrayBuffer();
+			audioBuffer = Buffer.from(arrayBuffer);
+		} else {
+			// テスト環境では既にBufferまたはarrayBufferが返される想定
+			audioBuffer = Buffer.from(audioBlob as unknown as ArrayBuffer);
+		}
 
 		debug("音声合成が成功したのだ");
-		return Buffer.from(synthesis.data);
+		return audioBuffer;
 	} catch (err) {
 		// エラーメッセージを生成
 		const message = getVoicevoxErrorMessage(err);
@@ -81,19 +99,33 @@ export async function generateVoice(
 	}
 }
 
+/**
+ * VOICEVOXサーバーのバージョンを取得する
+ * @returns VOICEVOXサーバーのバージョン
+ */
+export async function getVoicevoxVersion(): Promise<string> {
+	try {
+		return await Service.version();
+	} catch (err) {
+		const message = getVoicevoxErrorMessage(err);
+		error(message);
+		throw err instanceof Error ? err : new Error(message);
+	}
+}
+
 // VOICEVOXのエラーメッセージを生成する関数
 function getVoicevoxErrorMessage(err: unknown): string {
-	if (axios.isAxiosError(err)) {
-		if (err.code === "ECONNREFUSED") {
-			return `VOICEVOXサーバーが起動していないのだ！接続先: ${VOICEVOX_API_URL}`;
-		}
-		if (err.response) {
-			return `VOICEVOXサーバーからエラーレスポンスが返ってきたのだ: ${err.response.status} ${err.response.statusText}\n詳細: ${JSON.stringify(
-				err.response.data,
-			)}`;
-		}
-		return `VOICEVOXサーバーへのリクエストに失敗したのだ: ${err.message}`;
+	// ApiErrorかどうかをチェック
+	if (err && typeof err === "object" && "status" in err && "message" in err) {
+		const apiErr = err as { status: number; message: string };
+		return `VOICEVOXサーバーからエラーレスポンスが返ってきたのだ: ${apiErr.status} ${apiErr.message}`;
 	}
+
+	// 接続エラーの場合
+	if (err instanceof Error && err.message.includes("ECONNREFUSED")) {
+		return `VOICEVOXサーバーが起動していないのだ！接続先: ${VOICEVOX_API_URL}`;
+	}
+
 	return `VOICEVOXでの音声生成に失敗したのだ: ${
 		err instanceof Error ? err.message : "予期せぬエラーが発生したのだ..."
 	}`;
@@ -105,7 +137,9 @@ export async function checkVoicevoxServerHealth(): Promise<boolean> {
 	try {
 		// バージョン確認とテスト音声生成を実行
 		debug("VOICEVOXサーバーのバージョンを確認するのだ");
-		await axios.get(`${VOICEVOX_API_URL}/version`);
+		const version = await getVoicevoxVersion();
+		debug(`VOICEVOXバージョン: ${version}`);
+
 		debug("テスト音声を生成するのだ");
 		await generateVoice("テストなのだ！");
 

@@ -48,6 +48,7 @@ describe("textToSpeech", () => {
 		mockMessage = {
 			author: {
 				bot: false,
+				id: "user-123",
 			},
 			guild: mockGuild,
 			channel: mockChannel,
@@ -121,7 +122,7 @@ describe("textToSpeech", () => {
 			enableTextToSpeech("guild-123", "channel-123");
 			await handleMessage(mockMessage);
 
-			expect(generateVoice).toHaveBeenCalledWith("テストメッセージ");
+			expect(generateVoice).toHaveBeenCalledWith("テストメッセージ", "guild-123", "user-123");
 			expect(playAudio).toHaveBeenCalledWith(mockConnection, expect.any(Buffer));
 		});
 
