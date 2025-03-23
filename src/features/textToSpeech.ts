@@ -38,6 +38,7 @@ export class MessageProcessingError extends Error {
  * @param message Discordのメッセージオブジェクト
  * @returns Promise<void>
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: <explanation> TODO: なんとかする
 export async function handleMessage(message: Message): Promise<void> {
 	try {
 		// 読み上げ処理の前提条件をチェック
