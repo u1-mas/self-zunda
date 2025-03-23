@@ -1,4 +1,5 @@
-import { defineConfig } from "vite";
+/// <reference types="vitest/config" />
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
 	// Node.jsのビルトインモジュールをバンドルから除外
@@ -18,5 +19,9 @@ export default defineConfig({
 		hmr: {
 			overlay: true,
 		},
+	},
+	test: {
+		globals: true,
+		environment: "node",
 	},
 });
