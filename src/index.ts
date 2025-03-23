@@ -98,8 +98,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
 client.on(Events.MessageCreate, handleMessage);
 
 // プロセス終了時の処理
-process.on("SIGINT", () => handleShutdown());
-process.on("SIGTERM", () => handleShutdown());
+process.on("SIGINT", () => {
+    console.log("SIGINTを受信したのだ...");
+    void handleShutdown();
+});
+process.on("SIGTERM", () => {
+    console.log("SIGTERMを受信したのだ...");
+    void handleShutdown();
+});
 
 async function handleShutdown() {
     console.log("シャットダウン処理を開始するのだ...");
