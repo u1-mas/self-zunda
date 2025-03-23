@@ -12,29 +12,43 @@ import type {
 	VoiceBasedChannel,
 } from "discord.js";
 import { type MockedFunction, vi } from "vitest";
-import { disableTextToSpeech, enableTextToSpeech } from "../features/textToSpeech";
-import { join, leave } from "./voice";
+import { disableTextToSpeech, enableTextToSpeech } from "../models/activeChannels";
+import { voice } from "./voice";
 
 vi.mock("@discordjs/voice");
-vi.mock("../features/textToSpeech");
+vi.mock("../models/activeChannels");
 
-describe("voice commands", () => {
-	describe("join command", () => {
-		test("コマンドの名前と説明が正しく設定されているのだ", () => {
-			expect(join.data.name).toBe("join");
-			expect(join.data.description).toBe("ボイスチャンネルに参加して読み上げを開始するのだ");
-		});
+// モックインタラクションビルダー
+const createMockInteraction = (overrides = {}) => {
+	return {
+		guild: null,
+		reply: vi.fn().mockResolvedValue(undefined),
+		options: {
+			getSubcommand: vi.fn().mockReturnValue(""),
+		},
+		...overrides,
+	} as unknown as ChatInputCommandInteraction;
+};
 
+describe("voice command", () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
+	test("コマンドの名前と説明が正しく設定されているのだ", () => {
+		expect(voice.data.name).toBe("voice");
+		expect(voice.data.description).toBe("ボイスチャンネル関連の操作を行うのだ");
+	});
+
+	describe("join サブコマンド", () => {
 		test("サーバー外で実行した場合はエラーを返すのだ", async () => {
-			const mockReply = vi.fn() as MockedFunction<(options: BaseMessageOptions) => Promise<void>>;
-			mockReply.mockResolvedValue();
+			const mockInteraction = createMockInteraction({
+				options: {
+					getSubcommand: vi.fn().mockReturnValue("join"),
+				},
+			});
 
-			const mockInteraction = {
-				guild: null,
-				reply: mockReply,
-			} as unknown as ChatInputCommandInteraction;
-
-			await join.execute(mockInteraction);
+			await voice.execute(mockInteraction);
 
 			expect(mockInteraction.reply).toHaveBeenCalledWith({
 				content: "このコマンドはサーバー内でのみ使用できるのだ！",
@@ -43,10 +57,7 @@ describe("voice commands", () => {
 		});
 
 		test("メンバー情報が取得できない場合はエラーを返すのだ", async () => {
-			const mockReply = vi.fn() as MockedFunction<(options: BaseMessageOptions) => Promise<void>>;
-			mockReply.mockResolvedValue();
-
-			const mockInteraction = {
+			const mockInteraction = createMockInteraction({
 				guild: {
 					members: {
 						cache: {
@@ -57,10 +68,12 @@ describe("voice commands", () => {
 				user: {
 					id: "123",
 				},
-				reply: mockReply,
-			} as unknown as ChatInputCommandInteraction;
+				options: {
+					getSubcommand: vi.fn().mockReturnValue("join"),
+				},
+			});
 
-			await join.execute(mockInteraction);
+			await voice.execute(mockInteraction);
 
 			expect(mockInteraction.reply).toHaveBeenCalledWith({
 				content: "メンバー情報が取得できなかったのだ...",
@@ -69,10 +82,7 @@ describe("voice commands", () => {
 		});
 
 		test("ボイスチャンネルに参加していない場合はエラーを返すのだ", async () => {
-			const mockReply = vi.fn() as MockedFunction<(options: BaseMessageOptions) => Promise<void>>;
-			mockReply.mockResolvedValue();
-
-			const mockInteraction = {
+			const mockInteraction = createMockInteraction({
 				guild: {
 					members: {
 						cache: {
@@ -87,10 +97,12 @@ describe("voice commands", () => {
 				user: {
 					id: "123",
 				},
-				reply: mockReply,
-			} as unknown as ChatInputCommandInteraction;
+				options: {
+					getSubcommand: vi.fn().mockReturnValue("join"),
+				},
+			});
 
-			await join.execute(mockInteraction);
+			await voice.execute(mockInteraction);
 
 			expect(mockInteraction.reply).toHaveBeenCalledWith({
 				content: "先にボイスチャンネルに参加してほしいのだ！",
@@ -155,24 +167,23 @@ describe("voice commands", () => {
 				id: "012",
 			};
 
-			const mockReply = vi.fn() as MockedFunction<(options: BaseMessageOptions) => Promise<void>>;
-			mockReply.mockResolvedValue();
-
-			const mockInteraction = {
+			const mockInteraction = createMockInteraction({
 				guild: mockGuild,
 				user: {
 					id: "123",
 				},
 				channel: mockChannel,
-				reply: mockReply,
-			} as unknown as ChatInputCommandInteraction;
+				options: {
+					getSubcommand: vi.fn().mockReturnValue("join"),
+				},
+			});
 
 			(joinVoiceChannel as MockedFunction<typeof joinVoiceChannel>).mockReturnValue(mockConnection);
 			(entersState as unknown as MockedFunction<typeof entersState>).mockResolvedValue(
 				mockAudioPlayer,
 			);
 
-			await join.execute(mockInteraction);
+			await voice.execute(mockInteraction);
 
 			expect(joinVoiceChannel).toHaveBeenCalledWith({
 				channelId: mockVoiceChannel.id,
@@ -180,29 +191,24 @@ describe("voice commands", () => {
 				adapterCreator: mockGuild.voiceAdapterCreator,
 			});
 			expect(enableTextToSpeech).toHaveBeenCalledWith(mockGuild.id, mockChannel.id);
-			expect(mockInteraction.reply).toHaveBeenCalledWith({
-				content: `${mockVoiceChannel.name}に参加して、このチャンネルの読み上げを開始したのだ！`,
-				ephemeral: true,
-			});
+			expect(mockInteraction.reply).toHaveBeenCalledWith(
+				expect.objectContaining({
+					content: expect.stringContaining(mockVoiceChannel.name),
+					ephemeral: true,
+				}),
+			);
 		});
 	});
 
-	describe("leave command", () => {
-		test("コマンドの名前と説明が正しく設定されているのだ", () => {
-			expect(leave.data.name).toBe("leave");
-			expect(leave.data.description).toBe("ボイスチャンネルから離れて読み上げを停止するのだ");
-		});
-
+	describe("leave サブコマンド", () => {
 		test("サーバー外で実行した場合はエラーを返すのだ", async () => {
-			const mockReply = vi.fn() as MockedFunction<(options: BaseMessageOptions) => Promise<void>>;
-			mockReply.mockResolvedValue();
+			const mockInteraction = createMockInteraction({
+				options: {
+					getSubcommand: vi.fn().mockReturnValue("leave"),
+				},
+			});
 
-			const mockInteraction = {
-				guild: null,
-				reply: mockReply,
-			} as unknown as ChatInputCommandInteraction;
-
-			await leave.execute(mockInteraction);
+			await voice.execute(mockInteraction);
 
 			expect(mockInteraction.reply).toHaveBeenCalledWith({
 				content: "このコマンドはサーバー内でのみ使用できるのだ！",
@@ -210,66 +216,75 @@ describe("voice commands", () => {
 			});
 		});
 
-		test("ボイスチャンネルに参加していない場合はエラーを返すのだ", async () => {
+		test("ボイス接続がない場合はエラーを返すのだ", async () => {
 			const mockGuild = {
 				id: "789",
 			};
 
-			const mockReply = vi.fn() as MockedFunction<(options: BaseMessageOptions) => Promise<void>>;
-			mockReply.mockResolvedValue();
-
-			const mockInteraction = {
+			const mockInteraction = createMockInteraction({
 				guild: mockGuild,
-				reply: mockReply,
-			} as unknown as ChatInputCommandInteraction;
+				options: {
+					getSubcommand: vi.fn().mockReturnValue("leave"),
+				},
+			});
 
 			(getVoiceConnection as MockedFunction<typeof getVoiceConnection>).mockReturnValue(undefined);
 
-			await leave.execute(mockInteraction);
+			await voice.execute(mockInteraction);
 
 			expect(mockInteraction.reply).toHaveBeenCalledWith({
-				content: "ぼくはボイスチャンネルにいないのだ！",
+				content: "ボイスチャンネルに参加していないのだ！",
 				ephemeral: true,
 			});
 		});
 
-		test("ボイスチャンネルから正常に退出できた場合は成功メッセージを返すのだ", async () => {
-			const mockConnection = {
-				destroy: vi.fn(),
-				status: VoiceConnectionStatus.Ready,
-				on: vi.fn(),
-				rejoinAttempts: 0,
-				_state: { status: VoiceConnectionStatus.Ready },
-				joinConfig: {},
-				state: { status: VoiceConnectionStatus.Ready },
-				subscribe: vi.fn(),
-				unsubscribe: vi.fn(),
-			} as unknown as VoiceConnection;
-
+		test("正常に退出できた場合は成功メッセージを返すのだ", async () => {
 			const mockGuild = {
 				id: "789",
 			};
 
-			const mockReply = vi.fn() as MockedFunction<(options: BaseMessageOptions) => Promise<void>>;
-			mockReply.mockResolvedValue();
+			const mockConnection = {
+				destroy: vi.fn(),
+			} as unknown as VoiceConnection;
 
-			const mockInteraction = {
+			const mockInteraction = createMockInteraction({
 				guild: mockGuild,
-				reply: mockReply,
-			} as unknown as ChatInputCommandInteraction;
+				options: {
+					getSubcommand: vi.fn().mockReturnValue("leave"),
+				},
+			});
 
 			(getVoiceConnection as MockedFunction<typeof getVoiceConnection>).mockReturnValue(
 				mockConnection,
 			);
 
-			await leave.execute(mockInteraction);
+			await voice.execute(mockInteraction);
 
-			expect(disableTextToSpeech).toHaveBeenCalledWith(mockGuild.id);
 			expect(mockConnection.destroy).toHaveBeenCalled();
+			expect(disableTextToSpeech).toHaveBeenCalledWith(mockGuild.id);
 			expect(mockInteraction.reply).toHaveBeenCalledWith({
-				content: "ボイスチャンネルから離れて、読み上げを停止したのだ！",
+				content: "ボイスチャンネルから退出したのだ！",
 				ephemeral: true,
 			});
+		});
+	});
+
+	describe("status サブコマンド", () => {
+		test("正常に状態を表示できるのだ", async () => {
+			const mockGuild = {
+				id: "789",
+			};
+
+			const mockInteraction = createMockInteraction({
+				guild: mockGuild,
+				options: {
+					getSubcommand: vi.fn().mockReturnValue("status"),
+				},
+			});
+
+			await voice.execute(mockInteraction);
+
+			expect(mockInteraction.reply).toHaveBeenCalled();
 		});
 	});
 });

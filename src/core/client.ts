@@ -1,9 +1,10 @@
 import { VoiceConnectionStatus, getVoiceConnection, joinVoiceChannel } from "@discordjs/voice";
 import type { Guild } from "discord.js";
 import { Client, Events, GatewayIntentBits } from "discord.js";
-import { enableTextToSpeech, getActiveChannels, handleMessage } from "../features/textToSpeech";
+import { handleMessage } from "../features/textToSpeech";
 import { handleInteraction } from "../handlers/interactionHandler";
 import { handleVoiceStateUpdate } from "../handlers/voiceStateHandler";
+import { enableTextToSpeech, getActiveChannels } from "../models/activeChannels";
 import { debug, error, log } from "../utils/logger";
 
 let client: Client | null = null;

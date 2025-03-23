@@ -37,7 +37,7 @@ async function checkVoicevox() {
 	}
 }
 
-export const voiceCommand = {
+export const voice = {
 	data: new SlashCommandBuilder()
 		.setName("voice")
 		.setDescription("ボイスチャンネル関連の操作を行うのだ")
@@ -63,7 +63,10 @@ export const voiceCommand = {
 
 	async execute(interaction: ChatInputCommandInteraction) {
 		if (!interaction.guild) {
-			await interaction.reply("このコマンドはサーバー内でのみ使用できるのだ！");
+			await interaction.reply({
+				content: "このコマンドはサーバー内でのみ使用できるのだ！",
+				ephemeral: true,
+			});
 			return;
 		}
 
@@ -80,7 +83,10 @@ export const voiceCommand = {
 				await handleStatusCommand(interaction);
 				break;
 			default:
-				await interaction.reply("サブコマンドが見つからないのだ...");
+				await interaction.reply({
+					content: "サブコマンドが見つからないのだ...",
+					ephemeral: true,
+				});
 		}
 	},
 };
@@ -98,9 +104,11 @@ async function handleJoinCommand(interaction: ChatInputCommandInteraction) {
 		const memberVoiceChannel = member.voice.channel;
 
 		if (!memberVoiceChannel) {
-			await interaction.reply(
-				"ボイスチャンネルを指定するか、ボイスチャンネルに参加してからコマンドを実行するのだ！",
-			);
+			await interaction.reply({
+				content:
+					"ボイスチャンネルを指定するか、ボイスチャンネルに参加してからコマンドを実行するのだ！",
+				ephemeral: true,
+			});
 			return;
 		}
 
@@ -126,17 +134,23 @@ async function handleJoinCommand(interaction: ChatInputCommandInteraction) {
 		});
 
 		// テキストチャンネルを有効化
-		enableTextToSpeech(interaction.guild.id, interaction.channel!.id);
+		if (interaction.channel) {
+			enableTextToSpeech(interaction.guild.id, interaction.channel.id);
+		}
 
 		log(
 			`サーバー「${interaction.guild.name}」のボイスチャンネル「${voiceChannel.name}」に参加したのだ！`,
 		);
-		await interaction.reply(
-			`<#${voiceChannel.id}> に参加して、このテキストチャンネルの内容を読み上げるのだ！`,
-		);
+		await interaction.reply({
+			content: `<#${voiceChannel.id}> に参加して、このテキストチャンネルの内容を読み上げるのだ！`,
+			ephemeral: true,
+		});
 	} catch (err) {
 		error(`ボイスチャンネル参加エラー: ${err}`);
-		await interaction.reply("ボイスチャンネルへの参加に失敗したのだ…");
+		await interaction.reply({
+			content: "ボイスチャンネルへの参加に失敗したのだ…",
+			ephemeral: true,
+		});
 	}
 }
 
@@ -150,9 +164,15 @@ async function handleLeaveCommand(interaction: ChatInputCommandInteraction) {
 		connection.destroy();
 		disableTextToSpeech(interaction.guild.id);
 		log(`サーバー「${interaction.guild.name}」のボイスチャンネルから退出したのだ！`);
-		await interaction.reply("ボイスチャンネルから退出したのだ！");
+		await interaction.reply({
+			content: "ボイスチャンネルから退出したのだ！",
+			ephemeral: true,
+		});
 	} else {
-		await interaction.reply("ボイスチャンネルに参加していないのだ！");
+		await interaction.reply({
+			content: "ボイスチャンネルに参加していないのだ！",
+			ephemeral: true,
+		});
 	}
 }
 
@@ -164,12 +184,15 @@ async function handleStatusCommand(interaction: ChatInputCommandInteraction) {
 	const activeTextChannel = activeChannels.get(interaction.guild.id);
 
 	if (!guildConnection || !activeTextChannel) {
-		await interaction.reply("現在、ボイスチャンネルに接続していないのだ！");
+		await interaction.reply({
+			content: "現在、ボイスチャンネルに接続していないのだ！",
+			ephemeral: true,
+		});
 		return;
 	}
 
-	await interaction.reply(
-		`現在、<#${activeTextChannel}> の内容を読み上げているのだ！\n` +
-			"読み上げ設定を変更するには `/settings` コマンドを使用するのだ！",
-	);
+	await interaction.reply({
+		content: `現在、<#${activeTextChannel}> の内容を読み上げているのだ！\n読み上げ設定を変更するには \`/settings\` コマンドを使用するのだ！`,
+		ephemeral: true,
+	});
 }

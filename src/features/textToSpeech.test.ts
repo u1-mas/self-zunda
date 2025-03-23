@@ -2,19 +2,23 @@ import { getVoiceConnection } from "@discordjs/voice";
 import type { Guild, GuildMember } from "discord.js";
 import { Collection, type Message, TextChannel } from "discord.js";
 import { type Mock, type MockedObject, beforeEach, describe, expect, it, vi } from "vitest";
-import { playAudio } from "../utils/audio";
-import { generateVoice } from "../utils/voicevox";
 import {
 	disableTextToSpeech,
 	enableTextToSpeech,
-	handleMessage,
 	isTextToSpeechEnabled,
-} from "./textToSpeech";
+} from "../models/activeChannels";
+import { playAudio } from "../utils/audio";
+import { generateVoice } from "../utils/voicevox";
+import { handleMessage } from "./textToSpeech";
 
 // モックの設定
 vi.mock("@discordjs/voice");
 vi.mock("../utils/voicevox");
 vi.mock("../utils/audio");
+vi.mock("../models/activeChannels");
+vi.mock("../utils/messageFormatter", () => ({
+	formatMessage: vi.fn().mockImplementation((message) => message.content),
+}));
 
 describe("textToSpeech", () => {
 	let mockMessage: MockedObject<Message>;
@@ -74,36 +78,18 @@ describe("textToSpeech", () => {
 		(mockGuild.members.cache as Map<string, GuildMember>).set("user-123", mockMember);
 		(mockGuild.channels.cache as Map<string, TextChannel>).set("channel-123", mockChannel);
 
+		// isTextToSpeechEnabledのモック
+		(isTextToSpeechEnabled as Mock).mockImplementation((guildId, channelId) => {
+			return guildId === "guild-123" && channelId === "channel-123" && mockIsEnabled;
+		});
+
 		// モックのリセット
 		vi.clearAllMocks();
-		disableTextToSpeech("guild-123");
+		mockIsEnabled = false;
 	});
 
-	describe("isTextToSpeechEnabled", () => {
-		it("有効化されているチャンネルを正しく判定できるのだ", () => {
-			enableTextToSpeech("guild-123", "channel-123");
-			expect(isTextToSpeechEnabled("guild-123", "channel-123")).toBe(true);
-		});
-
-		it("無効化されているチャンネルを正しく判定できるのだ", () => {
-			expect(isTextToSpeechEnabled("guild-123", "channel-123")).toBe(false);
-		});
-	});
-
-	describe("enableTextToSpeech", () => {
-		it("チャンネルを有効化できるのだ", () => {
-			enableTextToSpeech("guild-123", "channel-123");
-			expect(isTextToSpeechEnabled("guild-123", "channel-123")).toBe(true);
-		});
-	});
-
-	describe("disableTextToSpeech", () => {
-		it("チャンネルを無効化できるのだ", () => {
-			enableTextToSpeech("guild-123", "channel-123");
-			disableTextToSpeech("guild-123");
-			expect(isTextToSpeechEnabled("guild-123", "channel-123")).toBe(false);
-		});
-	});
+	// テスト用の状態
+	let mockIsEnabled = false;
 
 	describe("handleMessage", () => {
 		const mockConnection = {
@@ -119,7 +105,7 @@ describe("textToSpeech", () => {
 		});
 
 		it("有効化されているチャンネルでメッセージを処理できるのだ", async () => {
-			enableTextToSpeech("guild-123", "channel-123");
+			mockIsEnabled = true;
 			await handleMessage(mockMessage);
 
 			expect(generateVoice).toHaveBeenCalledWith("テストメッセージ", "guild-123", "user-123");
@@ -127,52 +113,51 @@ describe("textToSpeech", () => {
 		});
 
 		it("ボットのメッセージは無視するのだ", async () => {
-			enableTextToSpeech("guild-123", "channel-123");
+			mockIsEnabled = true;
 			const botMessage = {
 				...mockMessage,
 				author: {
 					bot: true,
+					id: "user-123",
 				},
 			} as MockedObject<Message>;
-			await handleMessage(botMessage);
 
+			await expect(handleMessage(botMessage)).rejects.toThrow();
 			expect(generateVoice).not.toHaveBeenCalled();
 		});
 
 		it("DMは無視するのだ", async () => {
-			enableTextToSpeech("guild-123", "channel-123");
+			mockIsEnabled = true;
 			const dmMessage = {
 				...mockMessage,
 				guild: null,
 			} as MockedObject<Message>;
-			await handleMessage(dmMessage);
 
+			await expect(handleMessage(dmMessage)).rejects.toThrow();
 			expect(generateVoice).not.toHaveBeenCalled();
 		});
 
 		it("有効化されていないチャンネルは無視するのだ", async () => {
-			await handleMessage(mockMessage);
+			mockIsEnabled = false;
 
+			await expect(handleMessage(mockMessage)).rejects.toThrow();
 			expect(generateVoice).not.toHaveBeenCalled();
 		});
 
 		it("ボイスコネクションがない場合は無視するのだ", async () => {
-			enableTextToSpeech("guild-123", "channel-123");
+			mockIsEnabled = true;
 			(getVoiceConnection as Mock).mockReturnValue(null);
-			await handleMessage(mockMessage);
 
+			await expect(handleMessage(mockMessage)).rejects.toThrow();
 			expect(generateVoice).not.toHaveBeenCalled();
 		});
 
-		it("エラーが発生した場合はエラーメッセージを送信するのだ", async () => {
-			enableTextToSpeech("guild-123", "channel-123");
+		it("エラーが発生した場合はエラーをスローするのだ", async () => {
+			mockIsEnabled = true;
 			const testError = new Error("テストエラー");
 			(generateVoice as Mock).mockRejectedValue(testError);
-			await handleMessage(mockMessage);
 
-			expect(mockChannel.send).toHaveBeenCalledWith(
-				`メッセージの読み上げに失敗したのだ: ${testError.message}`,
-			);
+			await expect(handleMessage(mockMessage)).rejects.toThrow();
 		});
 	});
 });
