@@ -6,6 +6,26 @@ import { commands } from "./handlers/commands";
 import { playAudio } from "./utils/audio";
 import { checkVoicevoxServerHealth, generateVoice } from "./utils/voicevox";
 
+// リロード時の表示をカラフルにするのだ！
+const colors = {
+    green: "\x1b[32m",
+    blue: "\x1b[34m",
+    reset: "\x1b[0m",
+};
+
+// 現在の時刻を取得するのだ！
+const getTimeString = () => {
+    const now = new Date();
+    return `${now.getHours().toString().padStart(2, "0")}:${
+        now.getMinutes().toString().padStart(2, "0")
+    }:${now.getSeconds().toString().padStart(2, "0")}`;
+};
+
+// リロード時のメッセージを表示するのだ！
+console.log(
+    `${colors.blue}[${getTimeString()}] ずんだもんが再起動したのだ！${colors.reset}`,
+);
+
 config();
 
 const client = new Client({
@@ -18,7 +38,9 @@ const client = new Client({
 });
 
 client.once(Events.ClientReady, async () => {
-    console.log("ずんだもんが起動したのだ！");
+    console.log(
+        `${colors.green}[${getTimeString()}] ずんだもんが起動したのだ！${colors.reset}`,
+    );
 
     try {
         // VOICEVOXサーバーの状態をチェック
