@@ -1,115 +1,66 @@
+import * as fs from "node:fs";
+import * as path from "node:path";
+import { Client, Collection, Events, GatewayIntentBits } from "discord.js";
 import { config } from "dotenv";
-import { initializeClient } from "./core/client";
-import { handleShutdown } from "./handlers/shutdownHandler";
-import * as logger from "./utils/logger";
-import { checkVoicevoxServerHealth } from "./utils/voicevox";
+import type { Command } from "./commands/types";
+import { createClient } from "./core/client";
+import { handleMessageCreate } from "./handlers/messageHandler";
+import { handleVoiceStateUpdate } from "./handlers/voiceStateHandler";
+import { error, info } from "./utils/logger";
 
-// 環境変数を最初に読み込む
+// 環境変数の読み込み
 config();
-logger.debug("環境変数を読み込んだのだ！", logger.colors.green);
 
-// シグナルハンドラーを定義
-const signalHandler = async () => {
-	logger.log("SIGINT/SIGTERM 信号を受け取ったのだ！");
-	await handleShutdown();
-	process.exit(0);
-};
+// 起動時のログメッセージを表示
+info("Bot起動中なのだ...");
 
-const errorHandler = (error: unknown) => {
-	logger.log("予期せぬエラーが発生したのだ！");
-	logger.error(error instanceof Error ? error.message : "予期せぬエラーが発生したのだ！");
-	process.exit(1);
-};
+// クライアントの作成
+const client = createClient();
 
-const rejectionHandler = (reason: unknown, promise: Promise<unknown>) => {
-	logger.log("未処理のPromiseが発生したのだ！");
-	logger.error(
-		reason instanceof Error ? reason.message : "予期せぬエラーが発生したのだ！",
-		promise,
-	);
-	process.exit(1);
-};
+// コマンドの読み込み
+const commandsPath = path.join(__dirname, "commands");
+const commandFiles = fs
+	.readdirSync(commandsPath)
+	.filter((file) => file.endsWith(".ts") || file.endsWith(".js"));
 
-// イベントリスナーを設定
-const setupEventListeners = () => {
-	// 既存のリスナーを削除してから新しいリスナーを設定
-	removeEventListeners();
-	logger.debug("プロセスのイベントリスナーを設定するのだ！", logger.colors.blue);
-	process.on("SIGINT", signalHandler);
-	process.on("SIGTERM", signalHandler);
-	process.on("uncaughtException", errorHandler);
-	process.on("unhandledRejection", rejectionHandler);
-	logger.debug("プロセスのイベントリスナーを設定完了したのだ！", logger.colors.green);
-};
+// コマンドコレクションの作成
+client.commands = new Collection<string, Command>();
 
-// イベントリスナーを削除
-const removeEventListeners = () => {
-	process.removeAllListeners("SIGINT");
-	process.removeAllListeners("SIGTERM");
-	process.removeAllListeners("uncaughtException");
-	process.removeAllListeners("unhandledRejection");
-};
+// コマンドの登録
+for (const file of commandFiles) {
+	if (file === "types.ts" || file === "voice.ts" || file.endsWith(".test.ts")) continue;
 
-// 初期化処理
-async function initialize() {
-	logger.log("ボットの初期化処理を開始するのだ！", logger.colors.blue);
+	const filePath = path.join(commandsPath, file);
+	const command = require(filePath);
 
-	if (import.meta.hot) {
-		// HMRの場合
-		logger.debug("HMRモードでの初期化なのだ", logger.colors.blue);
-		if (import.meta.hot.data.checkedVoicevox === undefined) {
-			import.meta.hot.data.checkedVoicevox = false;
-		}
-		if (!import.meta.hot.data.checkedVoicevox) {
-			logger.debug("VOICEVOXサーバーのヘルスチェックを実行するのだ", logger.colors.blue);
-			try {
-				import.meta.hot.data.checkedVoicevox = await checkVoicevoxServerHealth();
-				logger.log("VOICEVOXサーバーのヘルスチェック成功なのだ！", logger.colors.green);
-			} catch (err) {
-				logger.log("VOICEVOXサーバーのヘルスチェックに失敗したのだ...", logger.colors.reset);
-				throw err;
-			}
-		}
-	} else {
-		// 通常起動の場合
-		logger.debug("通常モードでの初期化なのだ", logger.colors.blue);
-		logger.debug("VOICEVOXサーバーのヘルスチェックを実行するのだ", logger.colors.blue);
-		try {
-			await checkVoicevoxServerHealth();
-			logger.log("VOICEVOXサーバーのヘルスチェック成功なのだ！", logger.colors.green);
-		} catch (err) {
-			logger.log("VOICEVOXサーバーのヘルスチェックに失敗したのだ...", logger.colors.reset);
-			throw err;
+	// commandの各キーをチェック
+	const commandKeys = Object.keys(command);
+	for (const key of commandKeys) {
+		const cmd = command[key];
+		// データとexecuteメソッドを持つオブジェクトのみを登録
+		if (cmd.data && cmd.execute) {
+			const commandName = cmd.data.name;
+			client.commands.set(commandName, cmd);
+			info(`コマンド「${commandName}」を登録したのだ！`);
 		}
 	}
-
-	logger.debug("クライアントの初期化を開始するのだ", logger.colors.blue);
-	try {
-		await initializeClient();
-		logger.log("クライアントの初期化に成功したのだ！", logger.colors.green);
-	} catch (err) {
-		logger.log("クライアントの初期化に失敗したのだ...", logger.colors.reset);
-		throw err;
-	}
-
-	setupEventListeners();
-	logger.debug("初期化処理が完了したのだ！", logger.colors.green);
 }
 
-if (import.meta.hot) {
-	import.meta.hot.dispose(async () => {
-		logger.debug("古いクライアントをクリーンアップするのだ！");
-		await handleShutdown();
-		removeEventListeners();
-	});
+// メッセージハンドラの登録
+client.on(Events.MessageCreate, handleMessageCreate);
 
-	import.meta.hot.accept(async () => {
-		logger.debug("HMRが発生したのだ！新しいクライアントを初期化するのだ！");
-		await initialize();
-	});
+// ボイスステータスハンドラの登録
+client.on(Events.VoiceStateUpdate, handleVoiceStateUpdate);
+
+// ログイン処理
+const token = process.env.DISCORD_TOKEN;
+
+if (!token) {
+	error("DISCORD_TOKENがセットされていないのだ！");
+	process.exit(1);
 }
 
-// エントリーポイント
-logger.log("ボットが起動するのだ！", logger.colors.blue);
-await initialize();
-logger.log("ボットの起動が完了したのだ！", logger.colors.green);
+client.login(token).catch((err: Error) => {
+	error("ログインに失敗したのだ：", err);
+	process.exit(1);
+});

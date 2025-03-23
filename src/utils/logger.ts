@@ -23,6 +23,12 @@ export function log(message: string, color = colors.reset) {
 	console.log(`${color}[${getTimeString()}] ${message}${colors.reset}`);
 }
 
+// 情報ログ出力
+export function info(message: string) {
+	// biome-ignore lint/suspicious/noConsoleLog: <explanation>
+	console.log(`${colors.blue}[INFO][${getTimeString()}] ${message}${colors.reset}`);
+}
+
 // デバッグログ出力（DEBUGモード時のみ表示）
 export function debug(message: string, color = colors.yellow) {
 	if (isDebugMode) {

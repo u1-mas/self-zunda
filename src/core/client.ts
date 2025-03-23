@@ -138,3 +138,21 @@ export async function initializeClient() {
 export function getClient(): Client | null {
 	return client;
 }
+
+export function createClient(): Client {
+	if (client) {
+		return client;
+	}
+
+	debug("新しいDiscordクライアントを作成するのだ！");
+	client = new Client({
+		intents: [
+			GatewayIntentBits.Guilds,
+			GatewayIntentBits.GuildMessages,
+			GatewayIntentBits.MessageContent,
+			GatewayIntentBits.GuildVoiceStates,
+		],
+	});
+
+	return client;
+}
