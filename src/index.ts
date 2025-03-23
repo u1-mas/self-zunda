@@ -23,10 +23,7 @@ const colors = {
 const getTimeString = () => {
     const now = new Date();
     return `${now.getHours().toString().padStart(2, "0")}:${
-        now
-            .getMinutes()
-            .toString()
-            .padStart(2, "0")
+        now.getMinutes().toString().padStart(2, "0")
     }:${now.getSeconds().toString().padStart(2, "0")}`;
 };
 
@@ -40,7 +37,10 @@ let client: Client | null = null;
 let hasCheckedVoicevox = false;
 
 async function checkVoicevoxServer() {
-    if (hasCheckedVoicevox) return;
+    if (hasCheckedVoicevox) {
+        console.log("VOICEVOXは既にチェック済みなのだ！");
+        return;
+    }
 
     try {
         console.log("VOICEVOXサーバーの状態をチェックするのだ！");
@@ -82,9 +82,6 @@ async function initializeClient() {
         client.once(Events.ClientReady, async () => {
             console.log(
                 `${colors.green}[${getTimeString()}] ずんだもんが起動したのだ！${colors.reset}`,
-            );
-            console.log(
-                `${colors.green}[${getTimeString()}] ホットリロードのテスト2なのだ！${colors.reset}`,
             );
 
             // VOICEVOXのチェックは最初の起動時だけ行うのだ！
