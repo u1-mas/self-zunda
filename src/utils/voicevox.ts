@@ -2,6 +2,7 @@ import axios from "axios";
 import { debug, error, log } from "./logger";
 
 const VOICEVOX_API_URL = process.env.VOICEVOX_API_URL || "http://localhost:50021";
+log(`VOICEVOXのAPI URLが設定されました: ${VOICEVOX_API_URL}`);
 const SPEAKER_ID = Number(process.env.DEFAULT_SPEAKER) || 1; // ずんだもん（あまあま）
 
 interface AccentPhrase {
@@ -84,7 +85,7 @@ export async function generateVoice(text: string): Promise<Buffer> {
 function getVoicevoxErrorMessage(err: unknown): string {
 	if (axios.isAxiosError(err)) {
 		if (err.code === "ECONNREFUSED") {
-			return "VOICEVOXサーバーが起動していないのだ！";
+			return `VOICEVOXサーバーが起動していないのだ！接続先: ${VOICEVOX_API_URL}`;
 		}
 		if (err.response) {
 			return `VOICEVOXサーバーからエラーレスポンスが返ってきたのだ: ${err.response.status} ${err.response.statusText}\n詳細: ${JSON.stringify(

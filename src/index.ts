@@ -4,6 +4,7 @@ import { handleShutdown } from "./handlers/shutdownHandler";
 import * as logger from "./utils/logger";
 import { checkVoicevoxServerHealth } from "./utils/voicevox";
 
+// 環境変数を最初に読み込む
 config();
 logger.debug("環境変数を読み込んだのだ！", logger.colors.green);
 

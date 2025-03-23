@@ -1,19 +1,11 @@
+import { resolve } from "node:path";
 /// <reference types="vitest/config" />
 import { defineConfig } from "vitest/config";
-import { resolve } from "node:path";
 
 export default defineConfig({
 	// Node.jsのビルトインモジュールをバンドルから除外
 	optimizeDeps: {
 		exclude: ["@discordjs/voice"],
-	},
-	// vite-nodeの設定
-	define: {
-		// プロセス環境変数を有効化
-		"process.env": {
-			...process.env,
-			VITE_HMR: "true",
-		},
 	},
 	// HMRの設定
 	server: {
@@ -52,6 +44,8 @@ export default defineConfig({
 		},
 		// minifyを無効化
 		minify: false,
+		// Top-level awaitをサポートするためのターゲット設定
+		target: "esnext",
 	},
 	test: {
 		globals: true,
