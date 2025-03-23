@@ -3,6 +3,7 @@
 	"version": "1.0.0",
 	"description": "ずんだもんのDiscord Bot なのだ！",
 	"main": "dist/index.js",
+	"type": "module",
 	"scripts": {
 		"dev": "vite-node --watch src/index.ts",
 		"test": "vitest run",
