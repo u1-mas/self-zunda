@@ -53,6 +53,7 @@ describe("textToSpeech", () => {
 			author: {
 				bot: false,
 				id: "user-123",
+				tag: "テストユーザー#1234",
 			},
 			guild: mockGuild,
 			channel: mockChannel,
@@ -119,10 +120,11 @@ describe("textToSpeech", () => {
 				author: {
 					bot: true,
 					id: "user-123",
+					tag: "bot#1234",
 				},
 			} as MockedObject<Message>;
 
-			await expect(handleMessage(botMessage)).rejects.toThrow();
+			await expect(handleMessage(botMessage)).resolves.toBeUndefined();
 			expect(generateVoice).not.toHaveBeenCalled();
 		});
 
@@ -133,14 +135,14 @@ describe("textToSpeech", () => {
 				guild: null,
 			} as MockedObject<Message>;
 
-			await expect(handleMessage(dmMessage)).rejects.toThrow();
+			await expect(handleMessage(dmMessage)).resolves.toBeUndefined();
 			expect(generateVoice).not.toHaveBeenCalled();
 		});
 
 		it("有効化されていないチャンネルは無視するのだ", async () => {
 			mockIsEnabled = false;
 
-			await expect(handleMessage(mockMessage)).rejects.toThrow();
+			await expect(handleMessage(mockMessage)).resolves.toBeUndefined();
 			expect(generateVoice).not.toHaveBeenCalled();
 		});
 
@@ -148,16 +150,17 @@ describe("textToSpeech", () => {
 			mockIsEnabled = true;
 			(getVoiceConnection as Mock).mockReturnValue(null);
 
-			await expect(handleMessage(mockMessage)).rejects.toThrow();
+			await expect(handleMessage(mockMessage)).resolves.toBeUndefined();
 			expect(generateVoice).not.toHaveBeenCalled();
 		});
 
-		it("エラーが発生した場合はエラーをスローするのだ", async () => {
+		it("エラーが発生した場合は処理されるのだ", async () => {
 			mockIsEnabled = true;
 			const testError = new Error("テストエラー");
 			(generateVoice as Mock).mockRejectedValue(testError);
 
-			await expect(handleMessage(mockMessage)).rejects.toThrow();
+			await expect(handleMessage(mockMessage)).resolves.toBeUndefined();
+			expect(mockChannel.send).toHaveBeenCalled();
 		});
 	});
 });
