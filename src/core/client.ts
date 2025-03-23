@@ -1,7 +1,15 @@
-import { getVoiceConnection, joinVoiceChannel } from "@discordjs/voice";
+import {
+    getVoiceConnection,
+    joinVoiceChannel,
+    VoiceConnectionStatus,
+} from "@discordjs/voice";
 import type { Guild } from "discord.js";
 import { Client, Events, GatewayIntentBits } from "discord.js";
-import { handleMessage } from "../features/textToSpeech";
+import {
+    enableTextToSpeech,
+    getActiveChannels,
+    handleMessage,
+} from "../features/textToSpeech";
 import { handleInteraction } from "../handlers/interactionHandler";
 import { handleVoiceStateUpdate } from "../handlers/voiceStateHandler";
 import { error, log } from "../utils/logger";
@@ -15,6 +23,7 @@ interface VoiceState {
     guildId: string;
     channelId: string;
     adapterCreator: Guild["voiceAdapterCreator"];
+    textChannelId: string;
 }
 let previousVoiceStates: VoiceState[] = [];
 
@@ -26,11 +35,15 @@ function saveVoiceStates() {
     for (const guild of client.guilds.cache.values()) {
         const connection = getVoiceConnection(guild.id);
         if (connection?.joinConfig.channelId) {
-            previousVoiceStates.push({
-                guildId: guild.id,
-                channelId: connection.joinConfig.channelId,
-                adapterCreator: guild.voiceAdapterCreator,
-            });
+            const textChannelId = getActiveChannels().get(guild.id);
+            if (textChannelId) {
+                previousVoiceStates.push({
+                    guildId: guild.id,
+                    channelId: connection.joinConfig.channelId,
+                    adapterCreator: guild.voiceAdapterCreator,
+                    textChannelId,
+                });
+            }
         }
     }
     log(`${previousVoiceStates.length}個のボイスチャンネル状態を保存したのだ！`);
@@ -43,16 +56,44 @@ async function reconnectToVoiceChannels() {
     log(`${previousVoiceStates.length}個のボイスチャンネルに再接続するのだ！`);
     for (const state of previousVoiceStates) {
         try {
-            joinVoiceChannel({
+            const connection = joinVoiceChannel({
                 channelId: state.channelId,
                 guildId: state.guildId,
                 adapterCreator: state.adapterCreator,
             });
+
+            // 接続が完了するまで待機
+            await new Promise<void>((resolve, reject) => {
+                const timeout = setTimeout(() => {
+                    reject(new Error("接続がタイムアウトしたのだ！"));
+                }, 10000);
+
+                connection.on(VoiceConnectionStatus.Ready, () => {
+                    clearTimeout(timeout);
+                    resolve();
+                });
+
+                connection.on(VoiceConnectionStatus.Disconnected, () => {
+                    clearTimeout(timeout);
+                    reject(new Error("接続が切断されたのだ！"));
+                });
+
+                connection.on(VoiceConnectionStatus.Destroyed, () => {
+                    clearTimeout(timeout);
+                    reject(new Error("接続が破棄されたのだ！"));
+                });
+            });
+
+            // テキストチャンネルの読み上げを有効化
+            enableTextToSpeech(state.guildId, state.textChannelId);
+
             log(`${state.guildId}のボイスチャンネルに再接続したのだ！`);
         } catch (err) {
             error(
                 `${state.guildId}のボイスチャンネルへの再接続に失敗したのだ:`,
-                err,
+                err instanceof Error
+                    ? err.message
+                    : "予期せぬエラーが発生したのだ...",
             );
         }
     }

@@ -22,6 +22,10 @@ export function disableTextToSpeech(guildId: string): void {
 	activeChannels.delete(guildId);
 }
 
+export function getActiveChannels(): Map<string, string> {
+	return activeChannels;
+}
+
 export async function handleMessage(message: Message): Promise<void> {
 	// ボットのメッセージは無視
 	if (message.author.bot) return;

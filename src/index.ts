@@ -16,24 +16,24 @@ if (import.meta.hot) {
         log("モジュールを破棄するのだ！");
     });
 
-    process.once("SIGINT", () => {
+    process.on("SIGINT", () => {
         log("SIGINTを受信したのだ...");
         void handleShutdown();
     });
 
-    process.once("SIGTERM", () => {
+    process.on("SIGTERM", () => {
         log("SIGTERMを受信したのだ...");
         void handleShutdown();
     });
 } else {
     void initializeClient();
 
-    process.once("SIGINT", () => {
+    process.on("SIGINT", () => {
         log("SIGINTを受信したのだ...");
         void handleShutdown();
     });
 
-    process.once("SIGTERM", () => {
+    process.on("SIGTERM", () => {
         log("SIGTERMを受信したのだ...");
         void handleShutdown();
     });
