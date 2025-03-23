@@ -70,6 +70,9 @@ async function initializeClient() {
             );
         }
 
+        // VOICEVOXのチェックは最初の起動時だけ行うのだ！
+        await checkVoicevoxServer();
+
         client = new Client({
             intents: [
                 GatewayIntentBits.Guilds,
@@ -83,9 +86,6 @@ async function initializeClient() {
             console.log(
                 `${colors.green}[${getTimeString()}] ずんだもんが起動したのだ！${colors.reset}`,
             );
-
-            // VOICEVOXのチェックは最初の起動時だけ行うのだ！
-            await checkVoicevoxServer();
         });
 
         // イベントハンドラーを設定するのだ！
@@ -187,7 +187,7 @@ async function handleShutdown() {
         }
     }
 
-    // クライアントを破棄してプロセスを終了
+    // クライアントを破棄
     try {
         await client.destroy();
         client = null;
@@ -195,15 +195,12 @@ async function handleShutdown() {
     } catch (error) {
         console.error("クライアントの破棄中にエラーが発生したのだ:", error);
     } finally {
-        process.exit(0);
+        isShuttingDown = false; // シャットダウン完了後にフラグをリセット
     }
 }
 
 // HMR機能を実装するのだ！
 if (import.meta.hot) {
-    // 初回のHMR起動時
-    initializeClient();
-
     // モジュールの更新を検知したときの処理なのだ！
     import.meta.hot.accept(() => {
         console.log(
@@ -217,7 +214,11 @@ if (import.meta.hot) {
         console.log(
             `${colors.blue}[${getTimeString()}] モジュールを破棄するのだ！${colors.reset}`,
         );
-        handleShutdown();
+        // HMRの場合はボイスコネクションを維持したまま、クライアントだけを破棄するのだ！
+        if (client) {
+            client.destroy();
+            client = null;
+        }
     });
 
     // プロセスの終了シグナルを受け取ったときの処理なのだ！
