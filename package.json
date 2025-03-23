@@ -2,7 +2,7 @@
 	"name": "self-zunda",
 	"version": "1.0.0",
 	"description": "ずんだもんのDiscord Bot なのだ！",
-	"main": "src/index.ts",
+	"main": "dist/index.js",
 	"type": "module",
 	"scripts": {
 		"dev": "vite-node --watch src/index.ts",
@@ -12,7 +12,7 @@
 		"check": "biome check --write .",
 		"format": "biome format --write .",
 		"lint": "biome lint .",
-		"build": "tsc",
+		"build": "vite build",
 		"start": "node dist/index.js",
 		"type-check": "tsc --noEmit",
 		"validate": "npm run type-check && npm run check && npm run test",
