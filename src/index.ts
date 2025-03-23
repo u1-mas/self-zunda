@@ -4,7 +4,7 @@ import { handleShutdown } from "./handlers/shutdownHandler";
 import { log } from "./utils/logger";
 
 config();
-initializeClient();
+await initializeClient();
 
 // HMR機能を実装するのだ！
 if (import.meta.hot) {

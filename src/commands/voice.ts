@@ -9,6 +9,29 @@ import {
 	disableTextToSpeech,
 	enableTextToSpeech,
 } from "../features/textToSpeech";
+import { error } from "../utils/logger";
+import { checkVoicevoxServerHealth } from "../utils/voicevox";
+
+// VoiceVoxの疎通確認フラグ
+let hasCheckedVoicevox = false;
+
+// VoiceVoxの疎通確認
+async function checkVoicevox() {
+	if (hasCheckedVoicevox) return;
+
+	try {
+		await checkVoicevoxServerHealth();
+		hasCheckedVoicevox = true;
+	} catch (err) {
+		error(
+			"VOICEVOXサーバーのチェックに失敗したのだ:",
+			err instanceof Error
+				? err.message
+				: "予期せぬエラーが発生したのだ...",
+		);
+		throw err;
+	}
+}
 
 export const join = {
 	data: new SlashCommandBuilder()
@@ -42,6 +65,9 @@ export const join = {
 		}
 
 		try {
+			// VoiceVoxの疎通確認
+			await checkVoicevox();
+
 			const connection = joinVoiceChannel({
 				channelId: voiceChannel.id,
 				guildId: interaction.guild.id,
@@ -60,10 +86,17 @@ export const join = {
 					`${voiceChannel.name}に参加して、このチャンネルの読み上げを開始したのだ！`,
 				ephemeral: true,
 			});
-		} catch (error) {
-			console.error(error);
+		} catch (err) {
+			error(
+				"ボイスチャンネルへの参加に失敗したのだ:",
+				err instanceof Error
+					? err.message
+					: "予期せぬエラーが発生したのだ...",
+			);
 			await interaction.reply({
-				content: "ボイスチャンネルへの参加に失敗したのだ...",
+				content: err instanceof Error
+					? `ボイスチャンネルへの参加に失敗したのだ: ${err.message}`
+					: "ボイスチャンネルへの参加に失敗したのだ...",
 				ephemeral: true,
 			});
 		}
