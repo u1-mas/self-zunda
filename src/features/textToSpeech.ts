@@ -46,7 +46,7 @@ export async function handleMessage(message: Message): Promise<void> {
 		if (!text) return;
 
 		// 音声を生成して再生
-		const audioBuffer = await generateVoice(text);
+		const audioBuffer = await generateVoice(text, message.guild.id, message.author.id);
 		await playAudio(connection, audioBuffer);
 	} catch (err) {
 		error(

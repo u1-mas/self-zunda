@@ -1,44 +1,14 @@
 import axios from "axios";
 import { getUserSettings } from "../models/userSettings";
+import type { components } from "../types/voicevox";
 import { debug, error, log } from "./logger";
 
 const VOICEVOX_API_URL = process.env.VOICEVOX_API_URL || "http://localhost:50021";
 log(`VOICEVOXのAPI URLが設定されました: ${VOICEVOX_API_URL}`);
 const DEFAULT_SPEAKER_ID = Number(process.env.DEFAULT_SPEAKER) || 1; // ずんだもん（あまあま）
 
-interface AccentPhrase {
-	moras: {
-		text: string;
-		consonant?: string;
-		consonant_length?: number;
-		vowel: string;
-		vowel_length: number;
-		pitch: number;
-	}[];
-	accent: number;
-	pause_mora?: {
-		text: string;
-		consonant?: string;
-		consonant_length?: number;
-		vowel: string;
-		vowel_length: number;
-		pitch: number;
-	};
-	is_interrogative?: boolean;
-}
-
-interface AudioQuery {
-	accent_phrases: AccentPhrase[];
-	speedScale: number;
-	pitchScale: number;
-	intonationScale: number;
-	volumeScale: number;
-	prePhonemeLength: number;
-	postPhonemeLength: number;
-	outputSamplingRate: number;
-	outputStereo: boolean;
-	kana: string;
-}
+// OpenAPI型定義から型をインポート
+type AudioQuery = components["schemas"]["AudioQuery"];
 
 export async function generateVoice(
 	text: string,

@@ -13,11 +13,12 @@
 | 04 | [読み上げフィルターの実装](./tasks/04-text-filters.md) | 📅 予定 | - | - | - |
 | 05 | [エラーハンドリングの強化](./tasks/05-error-handling.md) | 📅 予定 | - | - | - |
 | 06 | [テストの拡充](./tasks/06-test-expansion.md) | 📅 予定 | - | - | - |
+| 07 | [VOICEVOXのOpenAPI仕様からTypeScript型定義の生成](./tasks/07-voicevox-types.md) | 🔄 進行中 | cursor/voicevox-types | 2023-03-23 | - |
 
 ## 進捗状況
 
 - **完了済み**: 2タスク
-- **進行中**: 0タスク
+- **進行中**: 1タスク
 - **予定**: 4タスク
 
 ## 新規タスクの追加方法
