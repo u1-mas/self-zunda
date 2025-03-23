@@ -213,7 +213,11 @@ function registerSignalHandlers() {
 
 // シグナルハンドラーを登録して初期化を実行するのだ！
 registerSignalHandlers();
-initializeClient();
+
+// 初回起動時のみinitializeClientを呼び出すのだ！
+if (!import.meta.hot) {
+    initializeClient();
+}
 
 // HMR機能を実装するのだ！
 if (import.meta.hot) {
@@ -223,4 +227,7 @@ if (import.meta.hot) {
         );
         initializeClient();
     });
+
+    // 初回のHMR起動時
+    initializeClient();
 }
