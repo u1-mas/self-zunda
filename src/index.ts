@@ -122,7 +122,7 @@ async function handleShutdown() {
                     console.log(
                         `${guild.name} の ${me.voice.channel.name} から退出するのだ...`,
                     );
-                    await me.voice.setChannel(null);
+                    me.voice.disconnect();
                     console.log(
                         `${guild.name} の ${me.voice.channel.name} から退出完了したのだ！`,
                     );
