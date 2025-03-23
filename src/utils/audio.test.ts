@@ -1,3 +1,4 @@
+import { writeFile } from "node:fs/promises";
 import {
 	type AudioPlayer,
 	AudioPlayerStatus,
@@ -5,7 +6,6 @@ import {
 	createAudioPlayer,
 	createAudioResource,
 } from "@discordjs/voice";
-import { writeFile } from "node:fs/promises";
 import { type MockedObject, vi } from "vitest";
 import { getPlayer, playAudio, stopAudio } from "./audio";
 
