@@ -116,7 +116,13 @@ async function handleShutdown() {
         if (connection) {
             console.log(`${guild.name} のボイスチャンネルから切断するのだ...`);
             try {
-                // ボイスチャンネルから退出
+                // まずボイスコネクションを破棄
+                connection.destroy();
+                console.log(
+                    `${guild.name} のボイスコネクションを破棄したのだ！`,
+                );
+
+                // その後、ボイスチャンネルから退出
                 const me = guild.members.cache.get(client.user?.id || "");
                 if (me?.voice.channel) {
                     console.log(
@@ -127,11 +133,6 @@ async function handleShutdown() {
                         `${guild.name} の ${me.voice.channel.name} から退出完了したのだ！`,
                     );
                 }
-                // ボイスコネクションを破棄
-                connection.destroy();
-                console.log(
-                    `${guild.name} のボイスコネクションを破棄したのだ！`,
-                );
             } catch (error) {
                 console.error(
                     `${guild.name} のボイスチャンネルからの切断中にエラーが発生したのだ:`,
