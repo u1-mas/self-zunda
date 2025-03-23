@@ -14,13 +14,9 @@ const rest = new REST().setToken(DISCORD_TOKEN);
 
 (async () => {
 	try {
-		console.log("スラッシュコマンドの登録を開始するのだ...");
-
 		await rest.put(Routes.applicationCommands(CLIENT_ID), {
 			body: commandsData,
 		});
-
-		console.log("スラッシュコマンドの登録が完了したのだ！");
 	} catch (error) {
 		console.error("スラッシュコマンドの登録中にエラーが発生したのだ:", error);
 	}

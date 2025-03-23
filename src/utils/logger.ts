@@ -12,9 +12,7 @@ export function getTimeString() {
 		.padStart(2, "0")}:${now.getSeconds().toString().padStart(2, "0")}`;
 }
 
-export function log(message: string, color = colors.reset) {
-	console.log(`${color}[${getTimeString()}] ${message}${colors.reset}`);
-}
+export function log(_message: string, _color = colors.reset) {}
 
 export function error(message: string, error?: unknown) {
 	console.error(`[${getTimeString()}] ${message}`, error);

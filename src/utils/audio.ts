@@ -1,3 +1,8 @@
+import { randomUUID } from "node:crypto";
+import { createReadStream, unlinkSync } from "node:fs";
+import { writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import {
 	type AudioPlayer,
 	AudioPlayerStatus,
@@ -6,11 +11,6 @@ import {
 	createAudioPlayer,
 	createAudioResource,
 } from "@discordjs/voice";
-import { randomUUID } from "node:crypto";
-import { createReadStream, unlinkSync } from "node:fs";
-import { writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 
 // アクティブな音声プレイヤーを保持
 const players = new Map<string, AudioPlayer>();
@@ -58,7 +58,7 @@ export async function playAudio(connection: VoiceConnection, audioBuffer: Buffer
 					// 一時ファイルを削除する処理を追加する（エラーハンドリングは省略）
 					try {
 						unlinkSync(tempFile);
-					} catch (error) {
+					} catch (_error) {
 						// ファイル削除に失敗してもエラーを無視
 					}
 					resolve();

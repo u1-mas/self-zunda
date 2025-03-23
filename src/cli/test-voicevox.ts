@@ -9,14 +9,12 @@ async function main() {
 
 		// テキストを指定して音声生成のテスト
 		const text = process.argv[2] || "これはテストなのだ！速さはどうかな？";
-		console.log(`テキスト「${text}」で音声を生成するのだ...`);
 
 		const audioBuffer = await generateVoice(text);
 
 		// 生成した音声を保存
 		const outputPath = join(process.cwd(), "test-output.wav");
 		await writeFile(outputPath, audioBuffer);
-		console.log(`音声ファイルを保存したのだ: ${outputPath}`);
 	} catch (error) {
 		console.error(error instanceof Error ? error.message : "予期せぬエラーが発生したのだ...");
 		process.exit(1);
