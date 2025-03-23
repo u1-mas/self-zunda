@@ -7,9 +7,9 @@ config();
 
 // HMR機能を実装するのだ！
 if (import.meta.hot) {
-    import.meta.hot.accept(() => {
+    import.meta.hot.accept(async () => {
         log("モジュールの更新を検知したのだ！");
-        void initializeClient();
+        await initializeClient();
     });
 
     import.meta.hot.dispose(() => {

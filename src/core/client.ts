@@ -1,3 +1,5 @@
+import { getVoiceConnection, joinVoiceChannel } from "@discordjs/voice";
+import type { Guild } from "discord.js";
 import { Client, Events, GatewayIntentBits } from "discord.js";
 import { handleMessage } from "../features/textToSpeech";
 import { handleInteraction } from "../handlers/interactionHandler";
@@ -7,6 +9,54 @@ import { checkVoicevoxServerHealth } from "../utils/voicevox";
 
 let hasCheckedVoicevox = false;
 let client: Client | null = null;
+
+// 前回のボイスチャンネル状態を保持
+interface VoiceState {
+    guildId: string;
+    channelId: string;
+    adapterCreator: Guild["voiceAdapterCreator"];
+}
+let previousVoiceStates: VoiceState[] = [];
+
+// ボイスチャンネルの状態を保存
+function saveVoiceStates() {
+    if (!client) return;
+
+    previousVoiceStates = [];
+    for (const guild of client.guilds.cache.values()) {
+        const connection = getVoiceConnection(guild.id);
+        if (connection?.joinConfig.channelId) {
+            previousVoiceStates.push({
+                guildId: guild.id,
+                channelId: connection.joinConfig.channelId,
+                adapterCreator: guild.voiceAdapterCreator,
+            });
+        }
+    }
+    log(`${previousVoiceStates.length}個のボイスチャンネル状態を保存したのだ！`);
+}
+
+// 保存したボイスチャンネルに再接続
+async function reconnectToVoiceChannels() {
+    if (previousVoiceStates.length === 0) return;
+
+    log(`${previousVoiceStates.length}個のボイスチャンネルに再接続するのだ！`);
+    for (const state of previousVoiceStates) {
+        try {
+            joinVoiceChannel({
+                channelId: state.channelId,
+                guildId: state.guildId,
+                adapterCreator: state.adapterCreator,
+            });
+            log(`${state.guildId}のボイスチャンネルに再接続したのだ！`);
+        } catch (err) {
+            error(
+                `${state.guildId}のボイスチャンネルへの再接続に失敗したのだ:`,
+                err,
+            );
+        }
+    }
+}
 
 async function checkVoicevoxServer() {
     if (hasCheckedVoicevox) {
@@ -32,6 +82,8 @@ async function checkVoicevoxServer() {
 export async function initializeClient() {
     try {
         if (client) {
+            // クライアントを破棄する前にボイスチャンネルの状態を保存
+            saveVoiceStates();
             await client.destroy();
             client = null;
             log("ずんだもんが再起動したのだ！");
@@ -48,8 +100,10 @@ export async function initializeClient() {
             ],
         });
 
-        client.once(Events.ClientReady, () => {
+        client.once(Events.ClientReady, async () => {
             log("ずんだもんが起動したのだ！");
+            // クライアントの準備ができたら保存したボイスチャンネルに再接続
+            await reconnectToVoiceChannels();
         });
 
         client.on(Events.VoiceStateUpdate, handleVoiceStateUpdate);
@@ -63,6 +117,6 @@ export async function initializeClient() {
     }
 }
 
-export function getClient() {
+export function getClient(): Client | null {
     return client;
 }
