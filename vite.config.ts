@@ -5,8 +5,9 @@ export default defineConfig({
     optimizeDeps: {
         exclude: ["@discordjs/voice"],
     },
-    // ファイル変更時の自動再起動を有効化
-    watch: {
-        include: ["src/**"],
+    // vite-nodeの設定
+    define: {
+        // プロセス環境変数を有効化
+        "process.env": process.env,
     },
 });

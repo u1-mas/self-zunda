@@ -4,7 +4,7 @@
   "description": "ずんだもんのDiscord Bot なのだ！",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "vite-node src/index.ts",
+    "dev": "vite-node --watch src/index.ts",
     "test": "jest",
     "deploy-commands": "ts-node src/deploy-commands.ts",
     "check": "biome check --write .",
