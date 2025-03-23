@@ -1,8 +1,8 @@
 import axios from "axios";
 import { error, log } from "./logger";
 
-const VOICEVOX_API_URL = process.env.VOICEVOX_API_URL ||
-	"http://localhost:50021";
+const VOICEVOX_API_URL =
+	process.env.VOICEVOX_API_URL || "http://localhost:50021";
 const SPEAKER_ID = Number(process.env.DEFAULT_SPEAKER) || 1; // ずんだもん（あまあま）
 
 interface AccentPhrase {
@@ -92,9 +92,9 @@ function getVoicevoxErrorMessage(err: unknown): string {
 			return "VOICEVOXサーバーが起動していないのだ！";
 		}
 		if (err.response) {
-			return `VOICEVOXサーバーからエラーレスポンスが返ってきたのだ: ${err.response.status} ${err.response.statusText}\n詳細: ${
-				JSON.stringify(err.response.data)
-			}`;
+			return `VOICEVOXサーバーからエラーレスポンスが返ってきたのだ: ${err.response.status} ${err.response.statusText}\n詳細: ${JSON.stringify(
+				err.response.data,
+			)}`;
 		}
 		return `VOICEVOXサーバーへのリクエストに失敗したのだ: ${err.message}`;
 	}

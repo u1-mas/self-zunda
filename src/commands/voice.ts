@@ -1,8 +1,8 @@
 import {
+	VoiceConnectionStatus,
 	entersState,
 	getVoiceConnection,
 	joinVoiceChannel,
-	VoiceConnectionStatus,
 } from "@discordjs/voice";
 import { type CommandInteraction, SlashCommandBuilder } from "discord.js";
 import {
@@ -25,9 +25,7 @@ async function checkVoicevox() {
 	} catch (err) {
 		error(
 			"VOICEVOXサーバーのチェックに失敗したのだ:",
-			err instanceof Error
-				? err.message
-				: "予期せぬエラーが発生したのだ...",
+			err instanceof Error ? err.message : "予期せぬエラーが発生したのだ...",
 		);
 		throw err;
 	}
@@ -82,21 +80,19 @@ export const join = {
 			enableTextToSpeech(interaction.guild.id, interaction.channel.id);
 
 			await interaction.reply({
-				content:
-					`${voiceChannel.name}に参加して、このチャンネルの読み上げを開始したのだ！`,
+				content: `${voiceChannel.name}に参加して、このチャンネルの読み上げを開始したのだ！`,
 				ephemeral: true,
 			});
 		} catch (err) {
 			error(
 				"ボイスチャンネルへの参加に失敗したのだ:",
-				err instanceof Error
-					? err.message
-					: "予期せぬエラーが発生したのだ...",
+				err instanceof Error ? err.message : "予期せぬエラーが発生したのだ...",
 			);
 			await interaction.reply({
-				content: err instanceof Error
-					? `ボイスチャンネルへの参加に失敗したのだ: ${err.message}`
-					: "ボイスチャンネルへの参加に失敗したのだ...",
+				content:
+					err instanceof Error
+						? `ボイスチャンネルへの参加に失敗したのだ: ${err.message}`
+						: "ボイスチャンネルへの参加に失敗したのだ...",
 				ephemeral: true,
 			});
 		}

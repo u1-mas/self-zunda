@@ -54,9 +54,7 @@ export async function handleMessage(message: Message): Promise<void> {
 	} catch (err) {
 		error(
 			`メッセージの読み上げに失敗したのだ: ${
-				err instanceof Error
-					? err.message
-					: "予期せぬエラーが発生したのだ..."
+				err instanceof Error ? err.message : "予期せぬエラーが発生したのだ..."
 			}\n詳細: ${err}`,
 		);
 		if (message.channel instanceof TextChannel) {

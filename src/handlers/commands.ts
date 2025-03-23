@@ -13,5 +13,5 @@ commands.set(leave.data.name, leave);
 
 // コマンドのJSONデータを取得（スラッシュコマンドの登録に使用）
 export const commandsData = Array.from(commands.values()).map((command) =>
-	command.data.toJSON()
+	command.data.toJSON(),
 );
