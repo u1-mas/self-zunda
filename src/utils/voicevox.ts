@@ -96,7 +96,7 @@ function getVoicevoxErrorMessage(err: unknown): string {
 
 // VOICEVOXの接続テスト用関数
 export async function checkVoicevoxServerHealth(): Promise<boolean> {
-	log("VOICEVOXサーバーの接続テストを開始するのだ！");
+	log(`VOICEVOXサーバーの接続テストを開始するのだ！使用するURL: ${VOICEVOX_API_URL}`);
 	try {
 		// バージョン確認とテスト音声生成を実行
 		await axios.get(`${VOICEVOX_API_URL}/version`);
