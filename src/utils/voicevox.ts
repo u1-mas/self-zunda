@@ -104,7 +104,7 @@ function getVoicevoxErrorMessage(err: unknown): string {
 }
 
 // VOICEVOXの接続テスト用関数
-export async function checkVoicevoxServerHealth(): Promise<void> {
+export async function checkVoicevoxServerHealth(): Promise<boolean> {
 	log("VOICEVOXサーバーの接続テストを開始するのだ！");
 	try {
 		// バージョン確認とテスト音声生成を実行
@@ -112,6 +112,7 @@ export async function checkVoicevoxServerHealth(): Promise<void> {
 		await generateVoice("テストなのだ！");
 
 		log("VOICEVOXサーバーに正常に接続できて、音声生成もできるのだ！");
+		return true;
 	} catch (err) {
 		const message = getVoicevoxErrorMessage(err);
 		error(message);

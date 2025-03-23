@@ -13,4 +13,10 @@ export default defineConfig({
             VITE_HMR: "true",
         },
     },
+    // HMRの設定
+    server: {
+        hmr: {
+            overlay: true,
+        },
+    },
 });

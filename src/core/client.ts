@@ -102,9 +102,11 @@ export async function initializeClient() {
         if (client) {
             // クライアントを破棄する前にボイスチャンネルの状態を保存
             saveVoiceStates();
+            // イベントリスナーを全て削除
+            client.removeAllListeners();
             await client.destroy();
             client = null;
-            log("ずんだもんが再起動したのだ！");
+            log("古いクライアントを破棄したのだ！");
         }
 
         client = new Client({
@@ -116,12 +118,14 @@ export async function initializeClient() {
             ],
         });
 
-        client.once(Events.ClientReady, async () => {
+        // イベントリスナーを設定
+        const onReady = async () => {
             log("ずんだもんが起動したのだ！");
             // クライアントの準備ができたら保存したボイスチャンネルに再接続
             await reconnectToVoiceChannels();
-        });
+        };
 
+        client.once(Events.ClientReady, onReady);
         client.on(Events.VoiceStateUpdate, handleVoiceStateUpdate);
         client.on(Events.InteractionCreate, handleInteraction);
         client.on(Events.MessageCreate, handleMessage);
