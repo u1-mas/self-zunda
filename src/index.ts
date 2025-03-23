@@ -50,16 +50,19 @@ client.once(Events.ClientReady, async () => {
         `${colors.green}[${getTimeString()}] ずんだもんが起動したのだ！${colors.reset}`,
     );
 
-    try {
-        // VOICEVOXサーバーの状態をチェック
-        await checkVoicevoxServerHealth();
-    } catch (error) {
-        console.error(
-            error instanceof Error
-                ? error.message
-                : "予期せぬエラーが発生したのだ...",
-        );
-        process.exit(1);
+    // リロード時はVOICEVOXのチェックをスキップするのだ！
+    if (!isHotReload) {
+        try {
+            // VOICEVOXサーバーの状態をチェック
+            await checkVoicevoxServerHealth();
+        } catch (error) {
+            console.error(
+                error instanceof Error
+                    ? error.message
+                    : "予期せぬエラーが発生したのだ...",
+            );
+            process.exit(1);
+        }
     }
 });
 
