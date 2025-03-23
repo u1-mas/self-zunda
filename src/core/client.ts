@@ -4,7 +4,7 @@ import { Client, Events, GatewayIntentBits } from "discord.js";
 import { enableTextToSpeech, getActiveChannels, handleMessage } from "../features/textToSpeech";
 import { handleInteraction } from "../handlers/interactionHandler";
 import { handleVoiceStateUpdate } from "../handlers/voiceStateHandler";
-import { error, log } from "../utils/logger";
+import { debug, error, log } from "../utils/logger";
 
 let client: Client | null = null;
 
@@ -36,14 +36,14 @@ function saveVoiceStates() {
 			}
 		}
 	}
-	log(`${previousVoiceStates.length}個のボイスチャンネル状態を保存したのだ！`);
+	debug(`${previousVoiceStates.length}個のボイスチャンネル状態を保存したのだ！`);
 }
 
 // 保存したボイスチャンネルに再接続
 async function reconnectToVoiceChannels() {
 	if (previousVoiceStates.length === 0) return;
 
-	log(`${previousVoiceStates.length}個のボイスチャンネルに再接続するのだ！`);
+	debug(`${previousVoiceStates.length}個のボイスチャンネルに再接続するのだ！`);
 	for (const state of previousVoiceStates) {
 		try {
 			const connection = joinVoiceChannel({
@@ -77,7 +77,7 @@ async function reconnectToVoiceChannels() {
 			// テキストチャンネルの読み上げを有効化
 			enableTextToSpeech(state.guildId, state.textChannelId);
 
-			log(`${state.guildId}のボイスチャンネルに再接続したのだ！`);
+			debug(`${state.guildId}のボイスチャンネルに再接続したのだ！`);
 		} catch (err) {
 			error(
 				`${state.guildId}のボイスチャンネルへの再接続に失敗したのだ:`,
@@ -96,9 +96,10 @@ export async function initializeClient() {
 			client.removeAllListeners();
 			await client.destroy();
 			client = null;
-			log("古いクライアントを破棄したのだ！");
+			debug("古いクライアントを破棄したのだ！");
 		}
 
+		debug("新しいDiscordクライアントを作成するのだ！");
 		client = new Client({
 			intents: [
 				GatewayIntentBits.Guilds,
@@ -115,12 +116,15 @@ export async function initializeClient() {
 			await reconnectToVoiceChannels();
 		};
 
+		debug("Discordイベントリスナーを設定するのだ！");
 		client.once(Events.ClientReady, onReady);
 		client.on(Events.VoiceStateUpdate, handleVoiceStateUpdate);
 		client.on(Events.InteractionCreate, handleInteraction);
 		client.on(Events.MessageCreate, handleMessage);
 
+		debug("Discordにログインを試みるのだ！");
 		await client.login(process.env.DISCORD_TOKEN);
+		debug("Discordへのログインに成功したのだ！");
 	} catch (err) {
 		error(
 			"クライアントの初期化に失敗したのだ:",

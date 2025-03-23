@@ -1,5 +1,5 @@
 import axios from "axios";
-import { error, log } from "./logger";
+import { debug, error, log } from "./logger";
 
 const VOICEVOX_API_URL = process.env.VOICEVOX_API_URL || "http://localhost:50021";
 const SPEAKER_ID = Number(process.env.DEFAULT_SPEAKER) || 1; // ずんだもん（あまあま）
@@ -41,6 +41,7 @@ interface AudioQuery {
 export async function generateVoice(text: string): Promise<Buffer> {
 	try {
 		// 音声合成用のクエリを作成
+		debug(`「${text}」の音声合成クエリを作成するのだ`);
 		const query = await axios.post<AudioQuery>(`${VOICEVOX_API_URL}/audio_query`, null, {
 			params: {
 				text,
@@ -49,6 +50,7 @@ export async function generateVoice(text: string): Promise<Buffer> {
 		});
 
 		// 音声パラメータの設定
+		debug("音声パラメータを設定するのだ");
 		Object.assign(query.data, {
 			speedScale: 1, // 標準速度
 			intonationScale: 1.2, // イントネーションを少し強く
@@ -57,11 +59,13 @@ export async function generateVoice(text: string): Promise<Buffer> {
 		});
 
 		// 音声合成を実行
+		debug("音声合成を実行するのだ");
 		const synthesis = await axios.post(`${VOICEVOX_API_URL}/synthesis`, query.data, {
 			params: { speaker: SPEAKER_ID },
 			responseType: "arraybuffer",
 		});
 
+		debug("音声合成が成功したのだ");
 		return Buffer.from(synthesis.data);
 	} catch (err) {
 		// エラーメッセージを生成
@@ -99,7 +103,9 @@ export async function checkVoicevoxServerHealth(): Promise<boolean> {
 	log(`VOICEVOXサーバーの接続テストを開始するのだ！使用するURL: ${VOICEVOX_API_URL}`);
 	try {
 		// バージョン確認とテスト音声生成を実行
+		debug("VOICEVOXサーバーのバージョンを確認するのだ");
 		await axios.get(`${VOICEVOX_API_URL}/version`);
+		debug("テスト音声を生成するのだ");
 		await generateVoice("テストなのだ！");
 
 		log("VOICEVOXサーバーに正常に接続できて、音声生成もできるのだ！");
