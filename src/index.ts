@@ -109,6 +109,12 @@ function handleShutdown() {
         const connection = getVoiceConnection(guild.id);
         if (connection) {
             console.log(`${guild.name} のボイスチャンネルから切断するのだ...`);
+            // ボイスチャンネルから退出
+            const me = guild.members.cache.get(client.user?.id || "");
+            if (me?.voice.channel) {
+                me.voice.disconnect();
+            }
+            // ボイスコネクションを破棄
             connection.destroy();
         }
     }
