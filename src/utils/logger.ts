@@ -32,19 +32,19 @@ export function getTimeString() {
 
 export function log(message: string) {
     console.log(
-        `${colors.cyan}[${getTimeString()}]${colors.reset} ${colors.green}${message}${colors.reset}`,
+        `${colors.cyan}[${getTimeString()}]${colors.reset} ${message}`,
     );
 }
 
 export function error(message: string, error?: unknown) {
     if (error) {
         console.error(
-            `${colors.red}[${getTimeString()}] エラー: ${message}${colors.reset}`,
+            `${colors.red}[${getTimeString()}] エラー:${colors.reset} ${message}`,
             error,
         );
     } else {
         console.error(
-            `${colors.red}[${getTimeString()}] エラー: ${message}${colors.reset}`,
+            `${colors.red}[${getTimeString()}] エラー:${colors.reset} ${message}`,
         );
     }
 }
