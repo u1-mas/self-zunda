@@ -1,92 +1,146 @@
 import { getVoiceConnection } from "@discordjs/voice";
 import { type Message, TextChannel } from "discord.js";
+import { isTextToSpeechEnabled } from "../models/activeChannels";
 import { playAudio } from "../utils/audio";
-import { error } from "../utils/logger";
+import { error, warn } from "../utils/logger";
+import { formatMessage } from "../utils/messageFormatter";
 import { generateVoice } from "../utils/voicevox";
 
-// 読み上げを有効にしているチャンネルを保持
-const activeChannels = new Map<string, string>(); // guildId -> channelId
-
-export function isTextToSpeechEnabled(guildId: string, channelId: string): boolean {
-	return activeChannels.get(guildId) === channelId;
+/**
+ * メッセージ処理のエラー型定義
+ */
+export enum MessageProcessingErrorType {
+	/** ボイスコネクションがない */
+	NO_CONNECTION = "NO_CONNECTION",
+	/** ユーザーの読み上げが無効 */
+	USER_DISABLED = "USER_DISABLED",
+	/** 音声合成に失敗 */
+	SYNTHESIS_FAILED = "SYNTHESIS_FAILED",
+	/** 音声再生に失敗 */
+	PLAYBACK_FAILED = "PLAYBACK_FAILED",
 }
 
-export function enableTextToSpeech(guildId: string, channelId: string): void {
-	activeChannels.set(guildId, channelId);
-}
+/**
+ * メッセージ処理のエラークラス
+ */
+export class MessageProcessingError extends Error {
+	type: MessageProcessingErrorType;
 
-export function disableTextToSpeech(guildId: string): void {
-	activeChannels.delete(guildId);
-}
-
-export function getActiveChannels(): Map<string, string> {
-	return activeChannels;
-}
-
-export async function handleMessage(message: Message): Promise<void> {
-	// ボットのメッセージは無視
-	if (message.author.bot) return;
-
-	// DMは無視
-	if (!message.guild) return;
-
-	// チャンネルが有効化されているか確認
-	if (!isTextToSpeechEnabled(message.guild.id, message.channel.id)) return;
-
-	// ボイスコネクションを取得
-	const connection = getVoiceConnection(message.guild.id);
-	if (!connection) {
-		error("ボイスコネクションが見つからないのだ！");
-		return;
+	constructor(message: string, type: MessageProcessingErrorType) {
+		super(message);
+		this.name = "MessageProcessingError";
+		this.type = type;
 	}
+}
 
+/**
+ * メッセージの読み上げ処理
+ * @param message Discordのメッセージオブジェクト
+ * @returns Promise<void>
+ */
+export async function handleMessage(message: Message): Promise<void> {
 	try {
+		// 読み上げ処理の前提条件をチェック
+		await validateMessageForProcessing(message);
+
+		// この時点でmessage.guildは必ず存在する（validateMessageForProcessingで確認済み）
+		const guildId = message.guild?.id;
+		if (!guildId) {
+			return; // 型安全のために追加（実行されないはず）
+		}
+
 		// メッセージを整形
 		const text = formatMessage(message);
 		if (!text) return;
 
-		// 音声を生成して再生
-		const audioBuffer = await generateVoice(text, message.guild.id, message.author.id);
-		await playAudio(connection, audioBuffer);
-	} catch (err) {
-		error(
-			`メッセージの読み上げに失敗したのだ: ${
-				err instanceof Error ? err.message : "予期せぬエラーが発生したのだ..."
-			}\n詳細: ${err}`,
-		);
-		if (message.channel instanceof TextChannel) {
-			await message.channel.send(
-				err instanceof Error
-					? `メッセージの読み上げに失敗したのだ: ${err.message}`
-					: "メッセージの読み上げに失敗したのだ...",
+		// ボイスコネクションを取得
+		const connection = getVoiceConnection(guildId);
+		if (!connection) {
+			throw new MessageProcessingError(
+				"ボイスコネクションが見つからないのだ！",
+				MessageProcessingErrorType.NO_CONNECTION,
 			);
 		}
+
+		// 音声を生成して再生
+		try {
+			const audioBuffer = await generateVoice(text, guildId, message.author.id);
+			await playAudio(connection, audioBuffer);
+		} catch (err) {
+			// VOICEVOXのエラーメッセージからユーザー無効エラーを検出
+			if (err instanceof Error && err.message.includes("ユーザーの読み上げが無効")) {
+				throw new MessageProcessingError(err.message, MessageProcessingErrorType.USER_DISABLED);
+			}
+
+			throw new MessageProcessingError(
+				`音声合成に失敗したのだ: ${err instanceof Error ? err.message : "予期せぬエラーが発生したのだ"}`,
+				MessageProcessingErrorType.SYNTHESIS_FAILED,
+			);
+		}
+	} catch (err) {
+		// エラー処理
+		await handleMessageError(err, message);
 	}
 }
 
-function formatMessage(message: Message): string {
-	let text = message.content;
+/**
+ * メッセージが読み上げ可能か検証する
+ * @param message Discordのメッセージオブジェクト
+ * @throws MessageProcessingError 検証に失敗した場合
+ */
+async function validateMessageForProcessing(message: Message): Promise<void> {
+	// ボットのメッセージは無視
+	if (message.author.bot) {
+		return Promise.reject();
+	}
 
-	// URLを削除
-	text = text.replace(/https?:\/\/\S+/g, "URL");
+	// DMは無視
+	if (!message.guild) {
+		return Promise.reject();
+	}
 
-	// 絵文字を削除
-	text = text.replace(/<a?:\w+:\d+>/g, "");
+	// チャンネルが有効化されているか確認
+	if (!isTextToSpeechEnabled(message.guild.id, message.channel.id)) {
+		return Promise.reject();
+	}
+}
 
-	// メンションを置換
-	text = text.replace(/<@!?(\d+)>/g, (_match, id) => {
-		const member = message.guild?.members.cache.get(id);
-		return member ? `${member.displayName}さん` : "";
-	});
+/**
+ * メッセージ処理のエラーを処理する
+ * @param err エラーオブジェクト
+ * @param message Discordのメッセージオブジェクト
+ */
+async function handleMessageError(err: unknown, message: Message): Promise<void> {
+	// 拒否されただけなら何もしない（ボットメッセージや無効なチャンネルなど）
+	if (!(err instanceof MessageProcessingError)) {
+		return;
+	}
 
-	// チャンネルメンションを置換
-	text = text.replace(/<#(\d+)>/g, (_match, id) => {
-		const channel = message.guild?.channels.cache.get(id);
-		return channel ? `${channel.name}チャンネル` : "";
-	});
+	// エラータイプに応じたエラーログ
+	switch (err.type) {
+		case MessageProcessingErrorType.NO_CONNECTION:
+			error("ボイスコネクションが見つからないのだ！再接続するか確認するのだ");
+			break;
+		case MessageProcessingErrorType.USER_DISABLED:
+			// ユーザー無効は警告レベル
+			warn(`ユーザー ${message.author.tag} の読み上げが無効になっているのだ`);
+			return; // ユーザーへの通知はしない
+		case MessageProcessingErrorType.SYNTHESIS_FAILED:
+			error(`音声合成に失敗したのだ: ${err.message}`);
+			break;
+		case MessageProcessingErrorType.PLAYBACK_FAILED:
+			error(`音声再生に失敗したのだ: ${err.message}`);
+			break;
+		default:
+			error(`メッセージの読み上げに失敗したのだ: ${err.message}`);
+	}
 
-	// 空白文字を整理
-	text = text.trim().replace(/\s+/g, " ");
-
-	return text || "";
+	// ユーザーへの通知
+	if (message.channel instanceof TextChannel) {
+		try {
+			await message.channel.send(`メッセージの読み上げに失敗したのだ: ${err.message}`);
+		} catch (notificationErr) {
+			error(`エラー通知の送信にも失敗したのだ: ${notificationErr}`);
+		}
+	}
 }

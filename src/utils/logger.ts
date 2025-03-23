@@ -2,6 +2,7 @@ export const colors = {
 	green: "\x1b[32m",
 	blue: "\x1b[34m",
 	yellow: "\x1b[33m",
+	red: "\x1b[31m",
 	reset: "\x1b[0m",
 };
 
@@ -30,6 +31,13 @@ export function debug(message: string, color = colors.yellow) {
 	}
 }
 
+// 警告ログ出力
+export function warn(message: string) {
+	// biome-ignore lint/suspicious/noConsoleLog: <explanation>
+	console.log(`${colors.yellow}[WARN][${getTimeString()}] ${message}${colors.reset}`);
+}
+
+// エラーログ出力
 export function error(message: string, error?: unknown) {
-	console.error(`[${getTimeString()}] ${message}`, error);
+	console.error(`${colors.red}[${getTimeString()}] ${message}${colors.reset}`, error);
 }
