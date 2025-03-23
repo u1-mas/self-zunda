@@ -181,13 +181,12 @@ describe("textToSpeech", () => {
 
         it("エラーが発生した場合はエラーメッセージを送信するのだ", async () => {
             enableTextToSpeech("guild-123", "channel-123");
-            (generateVoice as jest.Mock).mockRejectedValue(
-                new Error("テストエラー"),
-            );
+            const testError = new Error("テストエラー");
+            (generateVoice as jest.Mock).mockRejectedValue(testError);
             await handleMessage(mockMessage);
 
             expect(mockChannel.send).toHaveBeenCalledWith(
-                "メッセージの読み上げに失敗したのだ...",
+                `メッセージの読み上げに失敗したのだ: ${testError.message}`,
             );
         });
     });
