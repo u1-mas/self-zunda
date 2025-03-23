@@ -31,6 +31,7 @@ client.once(Events.ClientReady, async () => {
         );
         process.exit(1);
     }
+    console.log("VOICEVOXサーバーの状態をチェックしたのだ！");
 });
 
 // ボイスチャンネルの状態変更を監視
