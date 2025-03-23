@@ -1,43 +1,38 @@
 import { config } from "dotenv";
 import { initializeClient } from "./core/client";
 import { handleShutdown } from "./handlers/shutdownHandler";
-import { log } from "./utils/logger";
+import * as logger from "./utils/logger";
+import { checkVoicevoxServerHealth } from "./utils/voicevox";
 
 config();
+await checkVoicevoxServerHealth();
 await initializeClient();
 
-// HMR機能を実装するのだ！
-if (import.meta.hot) {
-    import.meta.hot.accept(async () => {
-        log("モジュールの更新を検知したのだ！");
-        await initializeClient();
-    });
+process.on("SIGINT", () => {
+    logger.log("SIGINT 信号を受け取ったのだ！");
+    handleShutdown();
+});
 
-    import.meta.hot.dispose(() => {
-        log("モジュールを破棄するのだ！");
-    });
+process.on("SIGTERM", () => {
+    logger.log("SIGTERM 信号を受け取ったのだ！");
+    handleShutdown();
+});
 
-    process.once("SIGINT", () => {
-        log("SIGINTを受信したのだ...");
-        void handleShutdown();
-        process.exit(0);
-    });
+process.on("uncaughtException", (error) => {
+    logger.log("予期せぬエラーが発生したのだ！");
+    logger.error(
+        error instanceof Error
+            ? error.message
+            : "予期せぬエラーが発生したのだ！",
+    );
+});
 
-    process.once("SIGTERM", () => {
-        log("SIGTERMを受信したのだ...");
-        void handleShutdown();
-        process.exit(0);
-    });
-} else {
-    process.once("SIGINT", () => {
-        log("SIGINTを受信したのだ...");
-        void handleShutdown();
-        process.exit(0);
-    });
-
-    process.once("SIGTERM", () => {
-        log("SIGTERMを受信したのだ...");
-        void handleShutdown();
-        process.exit(0);
-    });
-}
+process.on("unhandledRejection", (reason, promise) => {
+    logger.log("未処理のPromiseが発生したのだ！");
+    logger.error(
+        reason instanceof Error
+            ? reason.message
+            : "予期せぬエラーが発生したのだ！",
+        promise,
+    );
+});
