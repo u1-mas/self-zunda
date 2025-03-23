@@ -21,12 +21,20 @@ const getTimeString = () => {
     }:${now.getSeconds().toString().padStart(2, "0")}`;
 };
 
-// リロード時のメッセージを表示するのだ！
-console.log(
-    `${colors.blue}[${getTimeString()}] ずんだもんが再起動したのだ！${colors.reset}`,
-);
+// HMRによる再起動かどうかを判定するのだ！
+const isHotReload = process.env.VITE_HMR === "true";
+
+// HMRによる再起動のときだけメッセージを表示するのだ！
+if (isHotReload) {
+    console.log(
+        `${colors.blue}[${getTimeString()}] ずんだもんが再起動したのだ！${colors.reset}`,
+    );
+}
 
 config();
+
+// シャットダウン中かどうかを管理するのだ！
+let isShuttingDown = false;
 
 const client = new Client({
     intents: [
@@ -121,15 +129,19 @@ client.on(Events.MessageCreate, handleMessage);
 
 // プロセス終了時の処理
 process.on("SIGINT", async () => {
+    if (isShuttingDown) return;
     console.log("SIGINTを受信したのだ...");
     await handleShutdown();
 });
 process.on("SIGTERM", async () => {
+    if (isShuttingDown) return;
     console.log("SIGTERMを受信したのだ...");
     await handleShutdown();
 });
 
 async function handleShutdown() {
+    if (isShuttingDown) return;
+    isShuttingDown = true;
     console.log("シャットダウン処理を開始するのだ...");
 
     // 全てのギルドのボイスチャンネルから切断
