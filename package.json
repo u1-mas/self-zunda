@@ -20,7 +20,9 @@
 		"generate-voicevox-types": "curl -s http://localhost:50021/openapi.json -o voicevox_openapi.json && npx openapi-typescript voicevox_openapi.json -o src/types/voicevox.ts",
 		"generate-voicevox-types:custom": "curl -s $VOICEVOX_URL/openapi.json -o voicevox_openapi.json && npx openapi-typescript voicevox_openapi.json -o src/types/voicevox.ts",
 		"generate-voicevox-client": "curl -s http://localhost:50021/openapi.json -o voicevox_openapi.json && npx openapi-typescript-codegen --input voicevox_openapi.json --output src/api/voicevox --client axios",
-		"generate-voicevox-client:custom": "curl -s $VOICEVOX_URL/openapi.json -o voicevox_openapi.json && npx openapi-typescript-codegen --input voicevox_openapi.json --output src/api/voicevox --client axios"
+		"generate-voicevox-client:custom": "curl -s $VOICEVOX_URL/openapi.json -o voicevox_openapi.json && npx openapi-typescript-codegen --input voicevox_openapi.json --output src/api/voicevox --client axios",
+		"generate-voicevox-all": "tsx src/cli/generate-voicevox-all.ts",
+		"generate-voicevox-all:custom": "cross-env VOICEVOX_URL=$VOICEVOX_URL tsx src/cli/generate-voicevox-all.ts"
 	},
 	"dependencies": {
 		"@discordjs/voice": "^0.18.0",
@@ -30,6 +32,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",
+		"@himenon/openapi-typescript-code-generator": "^1.0.11",
 		"@types/jest": "^29.5.14",
 		"@types/node": "^20.11.24",
 		"concurrently": "^8.2.2",
