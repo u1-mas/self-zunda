@@ -19,9 +19,10 @@ const apiClient: ApiClient<RequestInit> = {
       ...options,
     };
     
-    // パスの場合はVOICEVOXのベースURLと結合する
-    // createClient側から渡されるURLはパスだけなので、常にベースURLと結合する
-    const fullUrl = `${VOICEVOX_API_URL}${endpointUrl}`;
+    // 完全なURLかパスかを判定し、パスの場合のみベースURLと結合
+    const fullUrl = endpointUrl.startsWith('http') 
+      ? endpointUrl 
+      : `${VOICEVOX_API_URL}${endpointUrl}`;
     
     const response = await fetch(fullUrl, options2);
     
@@ -38,7 +39,7 @@ const apiClient: ApiClient<RequestInit> = {
   }
 };
 
-// createClientに空文字列を渡して、URL結合はrequest関数内で行う
+// クライアントの作成（ベースURLにはVOICEVOX_API_URLを渡さず、request関数内で解決）
 const client = createClient(apiClient, "");
 
 export { client as voicevoxClient }; 
