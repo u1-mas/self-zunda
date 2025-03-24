@@ -6,8 +6,10 @@ export const colors = {
 	reset: "\x1b[0m",
 };
 
-// DEBUGモードかどうかを環境変数から取得（デフォルトはfalse）
-const isDebugMode = process.env.DEBUG === "true";
+// DEBUGモードかどうかを環境変数から取得する関数（テスト時に環境変数を変更できるようにするため）
+export function isDebugMode() {
+	return process.env.DEBUG === "true";
+}
 
 export function getTimeString() {
 	const now = new Date();
@@ -31,7 +33,7 @@ export function info(message: string) {
 
 // デバッグログ出力（DEBUGモード時のみ表示）
 export function debug(message: string, color = colors.yellow) {
-	if (isDebugMode) {
+	if (isDebugMode()) {
 		// biome-ignore lint/suspicious/noConsoleLog: <explanation>
 		console.log(`${color}[DEBUG][${getTimeString()}] ${message}${colors.reset}`);
 	}
