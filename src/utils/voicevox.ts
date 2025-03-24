@@ -1,5 +1,6 @@
 import type { Blob } from "node:buffer";
-import { type AudioQuery, OpenAPI, Service } from "../api/voicevox";
+import type { Schemas } from "../types/voicevox";
+import { voicevoxClient } from "../api/voicevox-client-init";
 import { getUserSettings } from "../models/userSettings";
 import { debug, error, log } from "./logger";
 
@@ -7,9 +8,6 @@ import { debug, error, log } from "./logger";
 const VOICEVOX_API_URL = process.env.VOICEVOX_API_URL || "http://localhost:50021";
 log(`VOICEVOXのAPI URLが設定されました: ${VOICEVOX_API_URL}`);
 const DEFAULT_SPEAKER_ID = Number(process.env.DEFAULT_SPEAKER) || 1; // ずんだもん（あまあま）
-
-// OpenAPIの設定
-OpenAPI.BASE = VOICEVOX_API_URL;
 
 /**
  * ユーザー音声設定の型定義
@@ -70,7 +68,10 @@ export function getVoiceParameters(serverId?: string, userId?: string): VoicePar
  * @param params 音声パラメータ
  * @returns 更新されたAudioQueryオブジェクト
  */
-function applyVoiceParameters(query: AudioQuery, params: VoiceParameters): AudioQuery {
+function applyVoiceParameters(
+	query: Schemas.AudioQuery,
+	params: VoiceParameters,
+): Schemas.AudioQuery {
 	// クエリのコピーを作成して変更
 	const updatedQuery = { ...query };
 
@@ -105,7 +106,12 @@ export async function generateVoice(
 
 		// 音声合成用のクエリを作成
 		debug(`「${text}」の音声合成クエリを作成するのだ (話者ID: ${voiceParams.speakerId})`);
-		const query = await Service.audioQuery(text, voiceParams.speakerId);
+		const query = await voicevoxClient.audio_query({
+			parameter: {
+				text,
+				speaker: voiceParams.speakerId,
+			},
+		});
 
 		// 音声パラメータの設定
 		debug("音声パラメータを設定するのだ");
@@ -113,11 +119,18 @@ export async function generateVoice(
 
 		// 音声合成を実行
 		debug("音声合成を実行するのだ");
-		const audioBlob = await Service.synthesis(voiceParams.speakerId, updatedQuery);
+		const audioBlob = await voicevoxClient.synthesis({
+			parameter: {
+				speaker: voiceParams.speakerId,
+				enable_interrogative_upspeak: true,
+			},
+			requestBody: updatedQuery,
+		});
 
 		// Blobをバッファに変換
 		debug("合成結果をバッファに変換するのだ");
-		const audioBuffer = await convertBlobToBuffer(audioBlob);
+		const blob = audioBlob as unknown as Blob;
+		const audioBuffer = await convertBlobToBuffer(blob);
 
 		debug("音声合成が成功したのだ");
 		return audioBuffer;
@@ -161,7 +174,7 @@ async function convertBlobToBuffer(blob: Blob | ArrayBuffer): Promise<Buffer> {
  */
 export async function getVoicevoxVersion(): Promise<string> {
 	try {
-		return await Service.version();
+		return await voicevoxClient.version();
 	} catch (err) {
 		const message = getVoicevoxErrorMessage(err);
 		error(message);
