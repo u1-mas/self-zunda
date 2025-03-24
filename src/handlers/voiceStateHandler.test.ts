@@ -1,9 +1,9 @@
 import { getVoiceConnection } from "@discordjs/voice";
-import type { Guild, GuildMember, User, VoiceState } from "discord.js";
-import { error } from "../utils/logger";
-import { handleVoiceStateUpdate } from "./voiceStateHandler";
-import { generateVoice } from "../utils/voicevox";
+import type { Guild, GuildMember, User, VoiceBasedChannel, VoiceState } from "discord.js";
 import { playAudio } from "../utils/audio";
+import { error } from "../utils/logger";
+import { generateVoice } from "../utils/voicevox";
+import { handleVoiceStateUpdate } from "./voiceStateHandler";
 
 // モック
 vi.mock("@discordjs/voice", () => ({
@@ -63,7 +63,7 @@ describe("voiceStateHandler", () => {
 			guild: mockGuild,
 			member: mockMember,
 			channelId: "oldChannelId",
-			channel: { id: "oldChannelId" } as any,
+			channel: { id: "oldChannelId" } as VoiceBasedChannel,
 			valueOf: () => ({}),
 		} as unknown as VoiceState;
 
@@ -71,7 +71,7 @@ describe("voiceStateHandler", () => {
 			guild: mockGuild,
 			member: mockMember,
 			channelId: "newChannelId",
-			channel: { id: "newChannelId" } as any,
+			channel: { id: "newChannelId" } as VoiceBasedChannel,
 			valueOf: () => ({}),
 		} as unknown as VoiceState;
 
