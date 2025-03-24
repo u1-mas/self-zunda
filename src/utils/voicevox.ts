@@ -1,7 +1,7 @@
 import type { Blob } from "node:buffer";
-import type { Schemas } from "../types/voicevox";
 import { voicevoxClient } from "../api/voicevox-client-init";
 import { getUserSettings } from "../models/userSettings";
+import type { Schemas } from "../types/voicevox";
 import { debug, error, log } from "./logger";
 
 // VOICEVOXのAPIの設定

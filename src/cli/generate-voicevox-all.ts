@@ -1,20 +1,18 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import axios from "axios";
 import { CodeGenerator } from "@himenon/openapi-typescript-code-generator";
 import * as Templates from "@himenon/openapi-typescript-code-generator/dist/templates";
 import type * as Types from "@himenon/openapi-typescript-code-generator/dist/types";
+import axios from "axios";
 
 /**
  * VOICEVOXのOpenAPI定義を取得します
  */
 const fetchOpenApiSchema = async (url: string): Promise<void> => {
-	console.log(`OpenAPI定義を取得中: ${url}/openapi.json`);
 	try {
 		const response = await axios.get(`${url}/openapi.json`);
 		const jsonPath = path.resolve(process.cwd(), "voicevox_openapi.json");
 		fs.writeFileSync(jsonPath, JSON.stringify(response.data, null, 2), { encoding: "utf-8" });
-		console.log(`OpenAPI定義を保存しました: ${jsonPath}`);
 	} catch (error) {
 		console.error("OpenAPI定義の取得に失敗しました", error);
 		throw error;
@@ -25,8 +23,6 @@ const fetchOpenApiSchema = async (url: string): Promise<void> => {
  * 型定義とAPIクライアントを生成します
  */
 const generateCode = (): void => {
-	console.log("コード生成を開始します...");
-
 	const openApiJsonPath = path.resolve(process.cwd(), "voicevox_openapi.json");
 	const codeGenerator = new CodeGenerator(openApiJsonPath);
 
@@ -69,9 +65,6 @@ const generateCode = (): void => {
 
 	fs.writeFileSync(typesPath, typeDefCode, { encoding: "utf-8" });
 	fs.writeFileSync(apiClientPath, apiClientCode, { encoding: "utf-8" });
-
-	console.log(`型定義を生成しました: ${typesPath}`);
-	console.log(`APIクライアントを生成しました: ${apiClientPath}`);
 };
 
 /**
@@ -87,8 +80,6 @@ const main = async (): Promise<void> => {
 
 		// コード生成
 		generateCode();
-
-		console.log("すべての処理が正常に完了しました！");
 	} catch (error) {
 		console.error("エラーが発生しました:", error);
 		process.exit(1);
