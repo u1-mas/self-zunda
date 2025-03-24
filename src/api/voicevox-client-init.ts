@@ -9,7 +9,7 @@ type HeadersInit = Record<string, string>;
 // クライアントの初期化
 const apiClient: ApiClient<RequestInit> = {
   request: async <T = SuccessResponses>(requestArgs: RequestArgs, options?: RequestInit): Promise<T> => {
-    const { httpMethod, url, headers, requestBody } = requestArgs;
+    const { httpMethod, url: endpointUrl, headers, requestBody } = requestArgs;
     
     // Fetch APIを使用してリクエストを実行
     const options2: RequestInit = {
@@ -19,7 +19,11 @@ const apiClient: ApiClient<RequestInit> = {
       ...options,
     };
     
-    const response = await fetch(`${VOICEVOX_API_URL}${url}`, options2);
+    // パスの場合はVOICEVOXのベースURLと結合する
+    // createClient側から渡されるURLはパスだけなので、常にベースURLと結合する
+    const fullUrl = `${VOICEVOX_API_URL}${endpointUrl}`;
+    
+    const response = await fetch(fullUrl, options2);
     
     // レスポンスの種類によって適切な処理を行う
     const contentType = response.headers.get("content-type") || "";
@@ -34,6 +38,7 @@ const apiClient: ApiClient<RequestInit> = {
   }
 };
 
-const client = createClient(apiClient, VOICEVOX_API_URL);
+// createClientに空文字列を渡して、URL結合はrequest関数内で行う
+const client = createClient(apiClient, "");
 
 export { client as voicevoxClient }; 
