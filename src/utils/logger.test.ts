@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { colors, getTimeString, log, info, debug, warn, error } from "./logger";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { colors, debug, error, getTimeString, info, log, warn } from "./logger";
 
 describe("logger", () => {
 	beforeEach(() => {

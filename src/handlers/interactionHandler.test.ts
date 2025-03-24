@@ -1,7 +1,7 @@
 import type { ChatInputCommandInteraction, Interaction } from "discord.js";
-import { handleInteraction } from "./interactionHandler";
-import { commands } from "./commands";
 import { error } from "../utils/logger";
+import { commands } from "./commands";
+import { handleInteraction } from "./interactionHandler";
 
 // モック
 vi.mock("../utils/logger", () => ({

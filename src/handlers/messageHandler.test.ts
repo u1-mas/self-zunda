@@ -1,6 +1,6 @@
 import type { Message } from "discord.js";
-import { handleMessageCreate } from "./messageHandler";
 import { handleMessage } from "../features/textToSpeech";
+import { handleMessageCreate } from "./messageHandler";
 
 // モック
 vi.mock("../features/textToSpeech", () => ({

@@ -1,14 +1,14 @@
+import type { Message } from "discord.js";
 // vitestはglobalsがtrueなので、importする必要はない
 // import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
-	formatMessage,
-	formatUrls,
+	formatChannelMentions,
 	formatEmojis,
 	formatMentions,
-	formatChannelMentions,
+	formatMessage,
+	formatUrls,
 	formatWhitespace,
 } from "./messageFormatter";
-import type { Message } from "discord.js";
 
 describe("messageFormatter", () => {
 	// モック用オブジェクト
