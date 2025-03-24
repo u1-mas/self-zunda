@@ -13,10 +13,14 @@ import type {
 } from "discord.js";
 import { type MockedFunction, vi } from "vitest";
 import { enableTextToSpeech } from "../models/activeChannels";
+import { checkVoicevoxServerHealth } from "../utils/voicevox";
 import { join } from "./join";
 
 vi.mock("@discordjs/voice");
 vi.mock("../models/activeChannels");
+vi.mock("../utils/voicevox", () => ({
+	checkVoicevoxServerHealth: vi.fn().mockResolvedValue(true),
+}));
 
 // モックインタラクションビルダー
 const createMockInteraction = (overrides = {}) => {
