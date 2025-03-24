@@ -1,18 +1,7 @@
 import { resolve } from "node:path";
-/// <reference types="vitest/config" />
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-	// Node.jsのビルトインモジュールをバンドルから除外
-	optimizeDeps: {
-		exclude: ["@discordjs/voice"],
-	},
-	// HMRの設定
-	server: {
-		hmr: {
-			overlay: true,
-		},
-	},
 	// ビルド設定
 	build: {
 		// ライブラリモードで出力
@@ -42,10 +31,6 @@ export default defineConfig({
 				entryFileNames: "[name].js",
 			},
 		},
-		// minifyを無効化
-		minify: false,
-		// Top-level awaitをサポートするためのターゲット設定
-		target: "esnext",
 	},
 	test: {
 		globals: true,

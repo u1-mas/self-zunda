@@ -8,59 +8,69 @@ import { handleMessageCreate } from "./handlers/messageHandler";
 import { handleVoiceStateUpdate } from "./handlers/voiceStateHandler";
 import { error, info } from "./utils/logger";
 
-// 環境変数の読み込み
-config();
+// メイン関数
+const main = async () => {
+	// 環境変数の読み込み
+	config();
 
-// 起動時のログメッセージを表示
-info("Bot起動中なのだ...");
+	// 起動時のログメッセージを表示
+	info("Bot起動中なのだ...");
 
-// クライアントの作成
-const client = createClient();
+	// クライアントの作成
+	const client = createClient();
 
-// コマンドの読み込み
-const commandsPath = path.join(__dirname, "commands");
-const commandFiles = fs
-	.readdirSync(commandsPath)
-	.filter((file) => file.endsWith(".ts") || file.endsWith(".js"));
+	// コマンドの読み込み
+	const commandsPath = path.join(__dirname, "commands");
+	const commandFiles = fs
+		.readdirSync(commandsPath)
+		.filter((file) => file.endsWith(".ts") || file.endsWith(".js"));
 
-// コマンドコレクションの作成
-client.commands = new Collection<string, Command>();
+	// コマンドコレクションの作成
+	client.commands = new Collection<string, Command>();
 
-// コマンドの登録
-for (const file of commandFiles) {
-	if (file === "types.ts" || file === "voice.ts" || file.endsWith(".test.ts")) continue;
+	// コマンドの登録
+	for (const file of commandFiles) {
+		if (file === "types.ts" || file === "voice.ts" || file.endsWith(".test.ts")) continue;
 
-	const filePath = path.join(commandsPath, file);
-	const command = require(filePath);
+		const filePath = path.join(commandsPath, file);
+		const commandModule = await import(filePath);
+		const command = commandModule.default || commandModule;
 
-	// commandの各キーをチェック
-	const commandKeys = Object.keys(command);
-	for (const key of commandKeys) {
-		const cmd = command[key];
-		// データとexecuteメソッドを持つオブジェクトのみを登録
-		if (cmd.data && cmd.execute) {
-			const commandName = cmd.data.name;
-			client.commands.set(commandName, cmd);
-			info(`コマンド「${commandName}」を登録したのだ！`);
+		// commandの各キーをチェック
+		const commandKeys = Object.keys(command);
+		for (const key of commandKeys) {
+			const cmd = command[key];
+			// データとexecuteメソッドを持つオブジェクトのみを登録
+			if (cmd.data && cmd.execute) {
+				const commandName = cmd.data.name;
+				client.commands.set(commandName, cmd);
+				info(`コマンド「${commandName}」を登録したのだ！`);
+			}
 		}
 	}
-}
 
-// メッセージハンドラの登録
-client.on(Events.MessageCreate, handleMessageCreate);
+	// メッセージハンドラの登録
+	client.on(Events.MessageCreate, handleMessageCreate);
 
-// ボイスステータスハンドラの登録
-client.on(Events.VoiceStateUpdate, handleVoiceStateUpdate);
+	// ボイスステータスハンドラの登録
+	client.on(Events.VoiceStateUpdate, handleVoiceStateUpdate);
 
-// ログイン処理
-const token = process.env.DISCORD_TOKEN;
+	// ログイン処理
+	const token = process.env.DISCORD_TOKEN;
 
-if (!token) {
-	error("DISCORD_TOKENがセットされていないのだ！");
-	process.exit(1);
-}
+	if (!token) {
+		error("DISCORD_TOKENがセットされていないのだ！");
+		process.exit(1);
+	}
 
-client.login(token).catch((err: Error) => {
-	error("ログインに失敗したのだ：", err);
+	client.login(token).catch((err: Error) => {
+		error("ログインに失敗したのだ：", err);
+		process.exit(1);
+	});
+};
+
+// メイン関数の実行
+main().catch((err) => {
+	error("エラーが発生したのだ：", err);
 	process.exit(1);
 });
