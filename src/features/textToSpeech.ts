@@ -67,9 +67,8 @@ export async function handleMessage(message: Message): Promise<void> {
 
 		// 音声を生成して再生
 		try {
-			const audioFile = await generateVoice(text, guildId, message.author.id);
-
-			await playAudio(connection);
+			const audioBuffer = await generateVoice(text, guildId, message.author.id);
+			await playAudio(connection, audioBuffer);
 		} catch (err) {
 			// VOICEVOXのエラーメッセージからユーザー無効エラーを検出
 			if (err instanceof Error && err.message.includes("ユーザーの読み上げが無効")) {

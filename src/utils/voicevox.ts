@@ -139,8 +139,7 @@ export async function generateVoice(
 		// 音声合成を実行
 		debug("音声合成を実行するのだ");
 		debug(
-			"音声合成のパラメータ:",
-			JSON.stringify(
+			`音声合成のパラメータ: ${JSON.stringify(
 				{
 					speaker: voiceParams.speakerId,
 					requestBody: {
@@ -151,7 +150,7 @@ export async function generateVoice(
 				},
 				null,
 				2,
-			),
+			)}`,
 		);
 
 		return await voicevoxClient.synthesis(updatedQuery, voiceParams.speakerId);

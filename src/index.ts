@@ -7,6 +7,7 @@ import { initializeClient } from "./core/client";
 import { handleMessageCreate } from "./handlers/messageHandler";
 import { handleVoiceStateUpdate } from "./handlers/voiceStateHandler";
 import { error, info } from "./utils/logger";
+import { checkVoicevoxServerHealth } from "./utils/voicevox";
 
 // メイン関数
 const main = async () => {
@@ -15,6 +16,12 @@ const main = async () => {
 
 	// 起動時のログメッセージを表示
 	info("Bot起動中なのだ...");
+
+	// VOICEVOXへの接続テスト
+	const voicevoxConnected = await checkVoicevoxServerHealth();
+	if (!voicevoxConnected) {
+		throw new Error("VOICEVOXへの接続に失敗したのだ！");
+	}
 
 	// クライアントの作成と初期化
 	const client = await initializeClient();

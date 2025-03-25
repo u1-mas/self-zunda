@@ -142,12 +142,6 @@ export async function initializeClient(): Promise<Client> {
 		debug("古いクライアントを破棄したのだ！");
 	}
 
-	// VOICEVOXへの接続テスト
-	const voicevoxConnected = await testVoicevoxConnection();
-	if (!voicevoxConnected) {
-		throw new Error("VOICEVOXへの接続に失敗したのだ！");
-	}
-
 	debug("新しいDiscordクライアントを作成するのだ！");
 	client = new Client({
 		intents: [
