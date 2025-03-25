@@ -119,6 +119,24 @@ export async function generateVoice(
 
 		// 音声合成を実行
 		debug("音声合成を実行するのだ");
+		debug(
+			"音声合成のパラメータ:",
+			JSON.stringify(
+				{
+					parameter: {
+						speaker: voiceParams.speakerId,
+					},
+					requestBody: {
+						...updatedQuery,
+						outputSamplingRate: 24000,
+						outputStereo: false,
+					},
+				},
+				null,
+				2,
+			),
+		);
+
 		const audioBlob = await voicevoxClient.synthesis({
 			parameter: {
 				speaker: voiceParams.speakerId,
@@ -131,6 +149,8 @@ export async function generateVoice(
 		});
 
 		debug("音声合成が成功したのだ！");
+		debug("音声データの型:", typeof audioBlob);
+		debug("音声データの内容:", JSON.stringify(audioBlob, null, 2));
 		return Buffer.from(audioBlob);
 	} catch (err) {
 		// エラーメッセージを生成

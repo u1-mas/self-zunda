@@ -31,8 +31,8 @@ const apiClient: ApiClient<Record<string, unknown>> = {
     if (contentType.includes("application/json")) {
       return (await response.json()) as T;
     } else if (contentType.includes("audio/wav")) {
-      const blob = await response.blob();
-      return (await blob.arrayBuffer()) as T;
+      const arrayBuffer = await response.arrayBuffer();
+      return arrayBuffer as T;
     } else {
       return (await response.text()) as T;
     }
