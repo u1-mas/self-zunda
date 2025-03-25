@@ -28,7 +28,6 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",
-		"@himenon/openapi-typescript-code-generator": "^1.0.11",
 		"@types/jest": "^29.5.14",
 		"@types/node": "^20.11.24",
 		"concurrently": "^8.2.2",
