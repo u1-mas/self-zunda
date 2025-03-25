@@ -20,7 +20,7 @@ const main = async () => {
 	const client = createClient();
 
 	// コマンドの読み込み
-	const commandsPath = path.join(__dirname, "commands");
+	const commandsPath = path.join(path.dirname(new URL(import.meta.url).pathname), "commands");
 	const commandFiles = fs
 		.readdirSync(commandsPath)
 		.filter((file) => file.endsWith(".ts") || file.endsWith(".js"));
