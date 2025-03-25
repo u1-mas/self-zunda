@@ -7,8 +7,8 @@ const VOICEVOX_API_URL = process.env.VOICEVOX_API_URL || "http://localhost:50021
 type HeadersInit = Record<string, string>;
 
 // クライアントの初期化
-const apiClient: ApiClient<RequestInit> = {
-  request: async <T = SuccessResponses>(requestArgs: RequestArgs, options?: RequestInit): Promise<T> => {
+const apiClient: ApiClient<Record<string, unknown>> = {
+  request: async <T = SuccessResponses>(requestArgs: RequestArgs, options?: Record<string, unknown>): Promise<T> => {
     const { httpMethod, url: endpointUrl, headers, requestBody } = requestArgs;
     
     // Fetch APIを使用してリクエストを実行
@@ -16,7 +16,6 @@ const apiClient: ApiClient<RequestInit> = {
       method: httpMethod,
       headers: headers as HeadersInit,
       body: requestBody ? JSON.stringify(requestBody) : undefined,
-      ...options,
     };
     
     // 完全なURLかパスかを判定し、パスの場合のみベースURLと結合

@@ -6,6 +6,7 @@ import { handleInteraction } from "../handlers/interactionHandler";
 import { handleVoiceStateUpdate } from "../handlers/voiceStateHandler";
 import { enableTextToSpeech, getActiveChannels } from "../models/activeChannels";
 import { debug, error, log, info } from "../utils/logger";
+import { voicevoxClient } from "../api/voicevox-client-init";
 
 let client: Client | null = null;
 
@@ -17,6 +18,32 @@ interface VoiceState {
 	textChannelId: string;
 }
 let previousVoiceStates: VoiceState[] = [];
+
+// VOICEVOXへの接続テスト
+async function testVoicevoxConnection() {
+	try {
+		// バージョン情報を取得して接続テスト
+		const version = await voicevoxClient.version({ parameter: {} });
+		info(`VOICEVOXに接続できたのだ！バージョン: ${version}`);
+
+		// 利用可能な話者を取得
+		const speakers = await voicevoxClient.speakers({ parameter: {} });
+		info(`利用可能な話者数: ${speakers.length}人なのだ！`);
+
+		// デフォルトの話者を初期化
+		const defaultSpeaker = Number(process.env.DEFAULT_SPEAKER) || 1;
+		await voicevoxClient.initialize_speaker({ parameter: { speaker: defaultSpeaker } });
+		info(`デフォルトの話者（ID: ${defaultSpeaker}）を初期化したのだ！`);
+
+		return true;
+	} catch (err) {
+		error(
+			"VOICEVOXへの接続テストに失敗したのだ:",
+			err instanceof Error ? err.message : "予期せぬエラーが発生したのだ...",
+		);
+		return false;
+	}
+}
 
 // ボイスチャンネルの状態を保存
 function saveVoiceStates() {
@@ -97,6 +124,12 @@ export async function initializeClient(): Promise<Client> {
 		await client.destroy();
 		client = null;
 		debug("古いクライアントを破棄したのだ！");
+	}
+
+	// VOICEVOXへの接続テスト
+	const voicevoxConnected = await testVoicevoxConnection();
+	if (!voicevoxConnected) {
+		throw new Error("VOICEVOXへの接続に失敗したのだ！");
 	}
 
 	debug("新しいDiscordクライアントを作成するのだ！");
