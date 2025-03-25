@@ -817,3 +817,9 @@ export namespace Schemas {
 	 */
 	export type WordTypes = "PROPER_NOUN" | "COMMON_NOUN" | "VERB" | "ADJECTIVE" | "SUFFIX";
 }
+
+export namespace Responses {
+	export interface Synthesis {
+		"audio/wav": ArrayBuffer;
+	}
+}

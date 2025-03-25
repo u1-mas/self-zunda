@@ -93,7 +93,7 @@ export interface RequestBody$synthesis {
     "application/json": Schemas.AudioQuery;
 }
 export interface Response$synthesis$Status$200 {
-    "audio/wav": string;
+    "audio/wav": ArrayBuffer;
 }
 export interface Response$synthesis$Status$422 {
     "application/json": Schemas.HTTPValidationError;
