@@ -25,24 +25,30 @@ class MockDiscordAPIError extends Error {
 	}
 }
 
+// モックインタラクションビルダー
+const createMockInteraction = (overrides = {}) => {
+	return {
+		isChatInputCommand: () => true,
+		commandName: "testCommand",
+		replied: false,
+		deferred: false,
+		reply: vi.fn().mockResolvedValue(undefined),
+		followUp: vi.fn().mockResolvedValue(undefined),
+		...overrides,
+	} as unknown as ChatInputCommandInteraction;
+};
+
 describe("interactionHandler", () => {
 	// モックを準備
 	const mockExecute = vi.fn();
 	const mockCommandName = "testCommand";
-	let mockInteraction: Partial<ChatInputCommandInteraction>;
+	let mockInteraction: ChatInputCommandInteraction;
 
 	beforeEach(() => {
 		vi.resetAllMocks();
 
 		// モックインタラクションを作成
-		mockInteraction = {
-			isChatInputCommand: vi.fn().mockReturnValue(true),
-			commandName: mockCommandName,
-			replied: false,
-			deferred: false,
-			reply: vi.fn().mockResolvedValue(undefined),
-			followUp: vi.fn().mockResolvedValue(undefined),
-		};
+		mockInteraction = createMockInteraction();
 
 		// commandsのgetモックを設定
 		(commands.get as ReturnType<typeof vi.fn>).mockReturnValue({
@@ -51,9 +57,11 @@ describe("interactionHandler", () => {
 	});
 
 	it("チャットコマンドでない場合は何もしないこと", async () => {
-		(mockInteraction.isChatInputCommand as ReturnType<typeof vi.fn>).mockReturnValue(false);
+		const nonChatInputInteraction = createMockInteraction({
+			isChatInputCommand: () => false,
+		});
 
-		await handleInteraction(mockInteraction as Interaction);
+		await handleInteraction(nonChatInputInteraction as Interaction);
 
 		expect(commands.get).not.toHaveBeenCalled();
 		expect(mockExecute).not.toHaveBeenCalled();
@@ -94,31 +102,35 @@ describe("interactionHandler", () => {
 	it("既に応答済みの場合、followUpでエラーメッセージが送信されること", async () => {
 		const testError = new Error("コマンド実行エラー");
 		mockExecute.mockRejectedValue(testError);
-		mockInteraction.replied = true;
+		const repliedInteraction = createMockInteraction({
+			replied: true,
+		});
 
-		await handleInteraction(mockInteraction as Interaction);
+		await handleInteraction(repliedInteraction as Interaction);
 
 		expect(error).toHaveBeenCalled();
-		expect(mockInteraction.followUp).toHaveBeenCalledWith({
+		expect(repliedInteraction.followUp).toHaveBeenCalledWith({
 			content: "コマンドの実行中にエラーが発生したのだ...",
 			ephemeral: true,
 		});
-		expect(mockInteraction.reply).not.toHaveBeenCalled();
+		expect(repliedInteraction.reply).not.toHaveBeenCalled();
 	});
 
 	it("すでに応答処理中の場合、followUpでエラーメッセージが送信されること", async () => {
 		const testError = new Error("コマンド実行エラー");
 		mockExecute.mockRejectedValue(testError);
-		mockInteraction.deferred = true;
+		const deferredInteraction = createMockInteraction({
+			deferred: true,
+		});
 
-		await handleInteraction(mockInteraction as Interaction);
+		await handleInteraction(deferredInteraction as Interaction);
 
 		expect(error).toHaveBeenCalled();
-		expect(mockInteraction.followUp).toHaveBeenCalledWith({
+		expect(deferredInteraction.followUp).toHaveBeenCalledWith({
 			content: "コマンドの実行中にエラーが発生したのだ...",
 			ephemeral: true,
 		});
-		expect(mockInteraction.reply).not.toHaveBeenCalled();
+		expect(deferredInteraction.reply).not.toHaveBeenCalled();
 	});
 
 	it("DiscordAPIError 40060エラーの場合は無視されること", async () => {
