@@ -35,6 +35,19 @@ async function testVoicevoxConnection() {
 		await voicevoxClient.initialize_speaker({ parameter: { speaker: defaultSpeaker } });
 		info(`デフォルトの話者（ID: ${defaultSpeaker}）を初期化したのだ！`);
 
+		// 音声生成のテスト
+		const testText = "こんにちは、ずんだもんなのだ！";
+		const audioQuery = await voicevoxClient.audio_query({
+			parameter: { text: testText, speaker: defaultSpeaker },
+		});
+		info("音声クエリの生成に成功したのだ！");
+
+		const synthesis = await voicevoxClient.synthesis({
+			parameter: { speaker: defaultSpeaker },
+			requestBody: audioQuery,
+		});
+		info("音声の合成に成功したのだ！");
+
 		return true;
 	} catch (err) {
 		error(
