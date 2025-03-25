@@ -1,8 +1,8 @@
 import type { Blob } from "node:buffer";
+import type { AudioQuery } from "../api/generated";
+import { voicevoxClient } from "../api/voicevoxClient";
 import { getUserSettings } from "../models/userSettings";
 import { debug, error, log } from "./logger";
-import { AudioQuery } from "../api/generated";
-import { voicevoxClient } from "../api/voicevoxClient";
 
 // VOICEVOXのAPIの設定
 const VOICEVOX_API_URL = process.env.VOICEVOX_API_URL || "http://localhost:50021";
@@ -86,44 +86,13 @@ function applyVoiceParameters(query: AudioQuery, params: VoiceParameters): Audio
 }
 
 /**
- * BlobまたはArrayBufferをNodeのBufferに変換
- * @param blob 変換するBlobまたはFile
- * @returns Buffer
- */
-async function convertBlobToBuffer(blob: Blob | ArrayBuffer | File): Promise<Buffer> {
-	// Fileオブジェクトの場合
-	if (blob instanceof File || (typeof File !== "undefined" && blob instanceof File)) {
-		const arrayBuffer = await blob.arrayBuffer();
-		return Buffer.from(arrayBuffer);
-	}
-
-	// Blobオブジェクトの場合
-	if (
-		typeof blob === "object" &&
-		blob !== null &&
-		"arrayBuffer" in blob &&
-		typeof blob.arrayBuffer === "function"
-	) {
-		const arrayBuffer = await blob.arrayBuffer();
-		return Buffer.from(arrayBuffer);
-	}
-
-	// 既にArrayBufferの場合
-	return Buffer.from(blob as ArrayBuffer);
-}
-
-/**
  * 音声合成を実行する
  * @param text 音声合成するテキスト
  * @param serverId サーバーID（ユーザー設定のため）
  * @param userId ユーザーID（ユーザー設定のため）
  * @returns 音声データのバッファ
  */
-export async function generateVoice(
-	text: string,
-	serverId?: string,
-	userId?: string,
-) {
+export async function generateVoice(text: string, serverId?: string, userId?: string) {
 	try {
 		// ユーザー設定から音声パラメータを取得
 		const voiceParams = getVoiceParameters(serverId, userId);

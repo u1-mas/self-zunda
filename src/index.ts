@@ -57,10 +57,10 @@ const main = async () => {
 	}
 
 	// メッセージハンドラの登録
-	client.on(Events.MessageCreate, handleMessageCreate);
+	// client.on(Events.MessageCreate, handleMessageCreate);
 
 	// ボイスステータスハンドラの登録
-	client.on(Events.VoiceStateUpdate, handleVoiceStateUpdate);
+	// client.on(Events.VoiceStateUpdate, handleVoiceStateUpdate);
 
 	// ログイン処理
 	const token = process.env.DISCORD_TOKEN;

@@ -1,5 +1,5 @@
+import axios, { type AxiosError } from "axios";
 import type { AudioQuery } from "./generated";
-import axios, { AxiosError } from "axios";
 
 const BASE_URL = "http://localhost:50021";
 
@@ -16,11 +16,11 @@ const ERROR_MESSAGES = {
 const handleAxiosError = (error: unknown): never => {
 	if (axios.isAxiosError(error)) {
 		const axiosError = error as AxiosError;
-		
+
 		if (axiosError.code === "ECONNREFUSED") {
 			throw new Error(`${ERROR_MESSAGES.CONNECTION}: VOICEVOXが起動していない可能性があります`);
 		}
-		
+
 		if (axiosError.code === "ETIMEDOUT") {
 			throw new Error(ERROR_MESSAGES.TIMEOUT);
 		}
@@ -31,12 +31,10 @@ const handleAxiosError = (error: unknown): never => {
 			case 500:
 				throw new Error(ERROR_MESSAGES.SERVER_ERROR);
 			default:
-				throw new Error(
-					`${ERROR_MESSAGES.UNKNOWN}: ${axiosError.message}`
-				);
+				throw new Error(`${ERROR_MESSAGES.UNKNOWN}: ${axiosError.message}`);
 		}
 	}
-	
+
 	// Axiosエラーでない場合
 	throw new Error(`${ERROR_MESSAGES.UNKNOWN}: ${String(error)}`);
 };
@@ -56,7 +54,7 @@ export const voicevoxClient = {
 			return handleAxiosError(error);
 		}
 	},
-	
+
 	speakers: async () => {
 		try {
 			const response = await axiosInstance.get("/speakers");
@@ -65,19 +63,19 @@ export const voicevoxClient = {
 			return handleAxiosError(error);
 		}
 	},
-	
-	audio_query: async (text: string, speaker: number = 1) => {
+
+	audio_query: async (text: string, speaker = 1) => {
 		try {
 			const response = await axiosInstance.post("/audio_query", null, {
-				params: { text, speaker }
+				params: { text, speaker },
 			});
 			return response.data as AudioQuery;
 		} catch (error) {
 			return handleAxiosError(error);
 		}
 	},
-	
-	synthesis: async (audioQuery: AudioQuery, speaker: number = 1): Promise<Buffer> => {
+
+	synthesis: async (audioQuery: AudioQuery, speaker = 1): Promise<Buffer> => {
 		try {
 			const response = await axiosInstance.post("/synthesis", audioQuery, {
 				params: { speaker },
