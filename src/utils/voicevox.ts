@@ -1,7 +1,7 @@
 import type { Blob } from "node:buffer";
 import { voicevoxClient } from "../api/voicevox-client-init";
 import { getUserSettings } from "../models/userSettings";
-import type { Schemas } from "../types/voicevox";
+import type { AudioQuery } from "../api/generated/data-contracts";
 import { debug, error, log } from "./logger";
 
 // VOICEVOXのAPIの設定
@@ -68,10 +68,7 @@ export function getVoiceParameters(serverId?: string, userId?: string): VoicePar
  * @param params 音声パラメータ
  * @returns 更新されたAudioQueryオブジェクト
  */
-function applyVoiceParameters(
-	query: Schemas.AudioQuery,
-	params: VoiceParameters,
-): Schemas.AudioQuery {
+function applyVoiceParameters(query: AudioQuery, params: VoiceParameters): AudioQuery {
 	// クエリのコピーを作成して変更
 	const updatedQuery = { ...query };
 
@@ -86,6 +83,33 @@ function applyVoiceParameters(
 	});
 
 	return updatedQuery;
+}
+
+/**
+ * BlobまたはArrayBufferをNodeのBufferに変換
+ * @param blob 変換するBlobまたはFile
+ * @returns Buffer
+ */
+async function convertBlobToBuffer(blob: Blob | ArrayBuffer | File): Promise<Buffer> {
+	// Fileオブジェクトの場合
+	if (blob instanceof File || (typeof File !== "undefined" && blob instanceof File)) {
+		const arrayBuffer = await blob.arrayBuffer();
+		return Buffer.from(arrayBuffer);
+	}
+
+	// Blobオブジェクトの場合
+	if (
+		typeof blob === "object" &&
+		blob !== null &&
+		"arrayBuffer" in blob &&
+		typeof blob.arrayBuffer === "function"
+	) {
+		const arrayBuffer = await blob.arrayBuffer();
+		return Buffer.from(arrayBuffer);
+	}
+
+	// 既にArrayBufferの場合
+	return Buffer.from(blob as ArrayBuffer);
 }
 
 /**
@@ -107,10 +131,8 @@ export async function generateVoice(
 		// 音声合成用のクエリを作成
 		debug(`「${text}」の音声合成クエリを作成するのだ (話者ID: ${voiceParams.speakerId})`);
 		const query = await voicevoxClient.audio_query({
-			parameter: {
-				text,
-				speaker: voiceParams.speakerId,
-			},
+			text,
+			speaker: voiceParams.speakerId,
 		});
 
 		// 音声パラメータの設定
@@ -123,9 +145,7 @@ export async function generateVoice(
 			"音声合成のパラメータ:",
 			JSON.stringify(
 				{
-					parameter: {
-						speaker: voiceParams.speakerId,
-					},
+					speaker: voiceParams.speakerId,
 					requestBody: {
 						...updatedQuery,
 						outputSamplingRate: 24000,
@@ -138,9 +158,7 @@ export async function generateVoice(
 		);
 
 		const audioBlob = await voicevoxClient.synthesis({
-			parameter: {
-				speaker: voiceParams.speakerId,
-			},
+			speaker: voiceParams.speakerId,
 			requestBody: {
 				...updatedQuery,
 				outputSamplingRate: 24000,
@@ -149,9 +167,9 @@ export async function generateVoice(
 		});
 
 		debug("音声合成が成功したのだ！");
-		debug("音声データの型:", typeof audioBlob);
-		debug("音声データの内容:", JSON.stringify(audioBlob, null, 2));
-		return Buffer.from(audioBlob);
+		// Fileオブジェクトの場合は変換が必要
+		const buffer = await convertBlobToBuffer(audioBlob);
+		return buffer;
 	} catch (err) {
 		// エラーメッセージを生成
 		const message = getVoicevoxErrorMessage(err);
@@ -163,27 +181,6 @@ export async function generateVoice(
 		}
 		throw new Error(message);
 	}
-}
-
-/**
- * BlobまたはArrayBufferをNodeのBufferに変換
- * @param blob 変換するBlob
- * @returns Buffer
- */
-async function convertBlobToBuffer(blob: Blob | ArrayBuffer): Promise<Buffer> {
-	// テスト環境対応: 実際のBlobかどうかを確認
-	if (
-		typeof blob === "object" &&
-		blob !== null &&
-		"arrayBuffer" in blob &&
-		typeof blob.arrayBuffer === "function"
-	) {
-		const arrayBuffer = await blob.arrayBuffer();
-		return Buffer.from(arrayBuffer);
-	}
-
-	// テスト環境では既にBufferまたはarrayBufferが返される想定
-	return Buffer.from(blob as unknown as ArrayBuffer);
 }
 
 /**

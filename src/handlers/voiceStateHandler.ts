@@ -17,11 +17,11 @@ export async function handleVoiceStateUpdate(oldState: VoiceState, newState: Voi
 			if (newState.channelId) {
 				const text = `${memberName}が参加したのだ！`;
 				const audioBuffer = await generateVoice(text);
-				await playAudio(connection, audioBuffer);
+				await playAudio(connection, Buffer.from(audioBuffer));
 			} else if (oldState.channelId) {
 				const text = `${memberName}が抜けたのだ！`;
 				const audioBuffer = await generateVoice(text);
-				await playAudio(connection, audioBuffer);
+				await playAudio(connection, Buffer.from(audioBuffer));
 			}
 		} catch (err) {
 			error("ボイスチャンネルの状態変更の読み上げに失敗したのだ:", err);

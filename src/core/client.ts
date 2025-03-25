@@ -23,27 +23,31 @@ let previousVoiceStates: VoiceState[] = [];
 async function testVoicevoxConnection() {
 	try {
 		// バージョン情報を取得して接続テスト
-		const version = await voicevoxClient.version({ parameter: {} });
+		const version = await voicevoxClient.version();
 		info(`VOICEVOXに接続できたのだ！バージョン: ${version}`);
 
 		// 利用可能な話者を取得
-		const speakers = await voicevoxClient.speakers({ parameter: {} });
+		const speakers = await voicevoxClient.speakers();
 		info(`利用可能な話者数: ${speakers.length}人なのだ！`);
 
 		// デフォルトの話者を初期化
 		const defaultSpeaker = Number(process.env.DEFAULT_SPEAKER) || 1;
-		await voicevoxClient.initialize_speaker({ parameter: { speaker: defaultSpeaker } });
+		await voicevoxClient.initialize_speaker({
+			speaker: defaultSpeaker,
+		});
 		info(`デフォルトの話者（ID: ${defaultSpeaker}）を初期化したのだ！`);
 
 		// 音声生成のテスト
 		const testText = "こんにちは、ずんだもんなのだ！";
 		const audioQuery = await voicevoxClient.audio_query({
-			parameter: { text: testText, speaker: defaultSpeaker },
+			text: testText,
+			speaker: defaultSpeaker,
 		});
 		info("音声クエリの生成に成功したのだ！");
 
-		const synthesis = await voicevoxClient.synthesis({
-			parameter: { speaker: defaultSpeaker },
+		// 音声合成を実行し、成功したことを確認する（戻り値は使用しない）
+		await voicevoxClient.synthesis({
+			speaker: defaultSpeaker,
 			requestBody: audioQuery,
 		});
 		info("音声の合成に成功したのだ！");

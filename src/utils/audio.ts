@@ -33,6 +33,11 @@ async function createAndPlayAudio(
 	player.play(resource);
 }
 
+/**
+ * 音声を再生する
+ * @param connection ボイスコネクション
+ * @param audioBuffer 音声バッファ（Node.jsのBuffer型）
+ */
 export async function playAudio(connection: VoiceConnection, audioBuffer: Buffer): Promise<void> {
 	return new Promise((resolve, reject) => {
 		try {
