@@ -99,7 +99,7 @@ export async function generateVoice(
 	text: string,
 	serverId?: string,
 	userId?: string,
-): Promise<Buffer> {
+): Promise<ArrayBuffer> {
 	try {
 		// ユーザー設定から音声パラメータを取得
 		const voiceParams = getVoiceParameters(serverId, userId);
@@ -122,18 +122,16 @@ export async function generateVoice(
 		const audioBlob = await voicevoxClient.synthesis({
 			parameter: {
 				speaker: voiceParams.speakerId,
-				enable_interrogative_upspeak: true,
 			},
-			requestBody: updatedQuery,
+			requestBody: {
+				...updatedQuery,
+				outputSamplingRate: 24000,
+				outputStereo: false,
+			},
 		});
 
-		// Blobをバッファに変換
-		debug("合成結果をバッファに変換するのだ");
-		const blob = audioBlob as unknown as Blob;
-		const audioBuffer = await convertBlobToBuffer(blob);
-
-		debug("音声合成が成功したのだ");
-		return audioBuffer;
+		debug("音声合成が成功したのだ！");
+		return Buffer.from(audioBlob);
 	} catch (err) {
 		// エラーメッセージを生成
 		const message = getVoicevoxErrorMessage(err);
