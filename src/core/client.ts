@@ -90,7 +90,13 @@ async function reconnectToVoiceChannels() {
 
 export async function initializeClient(): Promise<Client> {
 	if (client) {
-		return client;
+		// クライアントを破棄する前にボイスチャンネルの状態を保存
+		saveVoiceStates();
+		// イベントリスナーを全て削除
+		client.removeAllListeners();
+		await client.destroy();
+		client = null;
+		debug("古いクライアントを破棄したのだ！");
 	}
 
 	debug("新しいDiscordクライアントを作成するのだ！");
@@ -109,28 +115,13 @@ export async function initializeClient(): Promise<Client> {
 	};
 
 	client.on(Events.ClientReady, onReady);
+	client.on(Events.VoiceStateUpdate, handleVoiceStateUpdate);
+	client.on(Events.InteractionCreate, handleInteraction);
+	client.on(Events.MessageCreate, handleMessage);
 
 	return client;
 }
 
 export function getClient(): Client | null {
-	return client;
-}
-
-export function createClient(): Client {
-	if (client) {
-		return client;
-	}
-
-	debug("新しいDiscordクライアントを作成するのだ！");
-	client = new Client({
-		intents: [
-			GatewayIntentBits.Guilds,
-			GatewayIntentBits.GuildMessages,
-			GatewayIntentBits.MessageContent,
-			GatewayIntentBits.GuildVoiceStates,
-		],
-	});
-
 	return client;
 }
