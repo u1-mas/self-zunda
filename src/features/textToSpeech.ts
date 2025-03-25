@@ -2,7 +2,7 @@ import { getVoiceConnection } from "@discordjs/voice";
 import { type Message, TextChannel } from "discord.js";
 import { isTextToSpeechEnabled } from "../models/activeChannels";
 import { playAudio } from "../utils/audio";
-import { error, warn } from "../utils/logger";
+import { debug, error, warn } from "../utils/logger";
 import { formatMessage } from "../utils/messageFormatter";
 import { generateVoice } from "../utils/voicevox";
 
@@ -40,6 +40,7 @@ export class MessageProcessingError extends Error {
  */
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: <explanation> TODO: なんとかする
 export async function handleMessage(message: Message): Promise<void> {
+	debug(`message: ${message}`);
 	try {
 		// 読み上げ処理の前提条件をチェック
 		// 条件が満たされない場合は早期リターン
@@ -66,8 +67,9 @@ export async function handleMessage(message: Message): Promise<void> {
 
 		// 音声を生成して再生
 		try {
-			const audioBuffer = await generateVoice(text, guildId, message.author.id);
-			await playAudio(connection, Buffer.from(audioBuffer));
+			const audioFile = await generateVoice(text, guildId, message.author.id);
+
+			await playAudio(connection);
 		} catch (err) {
 			// VOICEVOXのエラーメッセージからユーザー無効エラーを検出
 			if (err instanceof Error && err.message.includes("ユーザーの読み上げが無効")) {

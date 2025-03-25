@@ -14,7 +14,7 @@ async function main() {
 
 		// 生成した音声を保存
 		const outputPath = join(process.cwd(), "test-output.wav");
-		await writeFile(outputPath, Buffer.from(audioBuffer));
+		await writeFile(outputPath, audioBuffer);
 	} catch (error) {
 		console.error(error instanceof Error ? error.message : "予期せぬエラーが発生したのだ...");
 		process.exit(1);

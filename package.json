@@ -17,10 +17,10 @@
 		"format": "biome format --write .",
 		"lint": "biome lint .",
 		"validate": "npm run type-check && npm run check && npm run test",
-		"generate-voicevox-all": "tsx src/cli/generate-voicevox-all.ts",
-		"generate-voicevox-all:custom": "cross-env VOICEVOX_URL=$VOICEVOX_URL tsx src/cli/generate-voicevox-all.ts"
+		"generate-api": "npx openapi-typescript-codegen --input http://localhost:50021/openapi.json --output src/api/generated"
 	},
 	"dependencies": {
+		"@discordjs/opus": "^0.10.0",
 		"@discordjs/voice": "^0.18.0",
 		"axios": "^1.8.4",
 		"discord.js": "^14.14.1",

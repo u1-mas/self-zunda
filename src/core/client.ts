@@ -1,12 +1,12 @@
 import { VoiceConnectionStatus, getVoiceConnection, joinVoiceChannel } from "@discordjs/voice";
 import type { Guild } from "discord.js";
 import { Client, Events, GatewayIntentBits } from "discord.js";
-import { voicevoxClient } from "../api/voicevox-client-init";
 import { handleMessage } from "../features/textToSpeech";
 import { handleInteraction } from "../handlers/interactionHandler";
 import { handleVoiceStateUpdate } from "../handlers/voiceStateHandler";
 import { enableTextToSpeech, getActiveChannels } from "../models/activeChannels";
 import { debug, error, info, log } from "../utils/logger";
+import { voicevoxClient } from "../api/voicevoxClient";
 
 let client: Client | null = null;
 
@@ -32,24 +32,23 @@ async function testVoicevoxConnection() {
 
 		// デフォルトの話者を初期化
 		const defaultSpeaker = Number(process.env.DEFAULT_SPEAKER) || 1;
+        
+        // NOTE: initialize_speakerメソッドはクライアントに実装されていません。
+        // 実装が必要であれば別途追加する必要があります。
+        /*
 		await voicevoxClient.initialize_speaker({
 			speaker: defaultSpeaker,
 		});
+        */
 		info(`デフォルトの話者（ID: ${defaultSpeaker}）を初期化したのだ！`);
 
 		// 音声生成のテスト
 		const testText = "こんにちは、ずんだもんなのだ！";
-		const audioQuery = await voicevoxClient.audio_query({
-			text: testText,
-			speaker: defaultSpeaker,
-		});
+		const audioQuery = await voicevoxClient.audio_query(testText, defaultSpeaker);
 		info("音声クエリの生成に成功したのだ！");
 
 		// 音声合成を実行し、成功したことを確認する（戻り値は使用しない）
-		await voicevoxClient.synthesis({
-			speaker: defaultSpeaker,
-			requestBody: audioQuery,
-		});
+		await voicevoxClient.synthesis(audioQuery, defaultSpeaker);
 		info("音声の合成に成功したのだ！");
 
 		return true;

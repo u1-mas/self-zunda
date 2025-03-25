@@ -1,8 +1,8 @@
 import type { Blob } from "node:buffer";
-import type { AudioQuery } from "../api/generated/data-contracts";
-import { voicevoxClient } from "../api/voicevox-client-init";
 import { getUserSettings } from "../models/userSettings";
 import { debug, error, log } from "./logger";
+import { AudioQuery } from "../api/generated";
+import { voicevoxClient } from "../api/voicevoxClient";
 
 // VOICEVOXのAPIの設定
 const VOICEVOX_API_URL = process.env.VOICEVOX_API_URL || "http://localhost:50021";
@@ -123,17 +123,14 @@ export async function generateVoice(
 	text: string,
 	serverId?: string,
 	userId?: string,
-): Promise<ArrayBuffer> {
+) {
 	try {
 		// ユーザー設定から音声パラメータを取得
 		const voiceParams = getVoiceParameters(serverId, userId);
 
 		// 音声合成用のクエリを作成
 		debug(`「${text}」の音声合成クエリを作成するのだ (話者ID: ${voiceParams.speakerId})`);
-		const query = await voicevoxClient.audio_query({
-			text,
-			speaker: voiceParams.speakerId,
-		});
+		const query = await voicevoxClient.audio_query(text);
 
 		// 音声パラメータの設定
 		debug("音声パラメータを設定するのだ");
@@ -157,19 +154,7 @@ export async function generateVoice(
 			),
 		);
 
-		const audioBlob = await voicevoxClient.synthesis({
-			speaker: voiceParams.speakerId,
-			requestBody: {
-				...updatedQuery,
-				outputSamplingRate: 24000,
-				outputStereo: false,
-			},
-		});
-
-		debug("音声合成が成功したのだ！");
-		// Fileオブジェクトの場合は変換が必要
-		const buffer = await convertBlobToBuffer(audioBlob);
-		return buffer;
+		return await voicevoxClient.synthesis(updatedQuery, voiceParams.speakerId);
 	} catch (err) {
 		// エラーメッセージを生成
 		const message = getVoicevoxErrorMessage(err);
