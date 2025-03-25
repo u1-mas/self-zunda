@@ -17,7 +17,6 @@
 		"format": "biome format --write .",
 		"lint": "biome lint .",
 		"validate": "npm run type-check && npm run check && npm run test",
-		"generate-voicevox-api": "tsx src/cli/generate-voicevox-api.ts",
 		"generate-voicevox-all": "tsx src/cli/generate-voicevox-all.ts",
 		"generate-voicevox-all:custom": "cross-env VOICEVOX_URL=$VOICEVOX_URL tsx src/cli/generate-voicevox-all.ts"
 	},
