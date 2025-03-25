@@ -1,12 +1,12 @@
 import { VoiceConnectionStatus, getVoiceConnection, joinVoiceChannel } from "@discordjs/voice";
 import type { Guild } from "discord.js";
 import { Client, Events, GatewayIntentBits } from "discord.js";
+import { voicevoxClient } from "../api/voicevox-client-init";
 import { handleMessage } from "../features/textToSpeech";
 import { handleInteraction } from "../handlers/interactionHandler";
 import { handleVoiceStateUpdate } from "../handlers/voiceStateHandler";
 import { enableTextToSpeech, getActiveChannels } from "../models/activeChannels";
-import { debug, error, log, info } from "../utils/logger";
-import { voicevoxClient } from "../api/voicevox-client-init";
+import { debug, error, info, log } from "../utils/logger";
 
 let client: Client | null = null;
 

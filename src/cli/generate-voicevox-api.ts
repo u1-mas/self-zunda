@@ -8,11 +8,9 @@ import { generateApi } from "swagger-typescript-api";
  */
 const fetchOpenApiSchema = async (url: string): Promise<void> => {
 	try {
-		console.log(`OpenAPI定義を取得中: ${url}/openapi.json`);
 		const response = await axios.get(`${url}/openapi.json`);
 		const jsonPath = path.resolve(process.cwd(), "voicevox_openapi.json");
 		fs.writeFileSync(jsonPath, JSON.stringify(response.data, null, 2), { encoding: "utf-8" });
-		console.log(`OpenAPI定義を保存しました: ${jsonPath}`);
 	} catch (error) {
 		console.error("OpenAPI定義の取得に失敗しました", error);
 		throw error;
@@ -27,9 +25,7 @@ const generateApiClient = async (): Promise<void> => {
 		const outputPath = path.resolve(process.cwd(), "src/api/generated");
 		const schemaPath = path.resolve(process.cwd(), "voicevox_openapi.json");
 
-		console.log(`APIクライアントを生成中: ${schemaPath} -> ${outputPath}`);
-
-		const result = await generateApi({
+		const _result = await generateApi({
 			name: "VoicevoxApi.ts",
 			output: outputPath,
 			input: schemaPath,
@@ -45,15 +41,12 @@ const generateApiClient = async (): Promise<void> => {
 					// リクエストパラメータ作成時のカスタマイズ
 					return rawType;
 				},
-				onFormatTypeName: (typeName, rawTypeName) => {
+				onFormatTypeName: (typeName, _rawTypeName) => {
 					// 型名のフォーマット
 					return typeName;
 				},
 			},
 		});
-
-		console.log("APIクライアントの生成が完了しました");
-		console.log(`生成されたファイル: ${result.files.map((f) => f.name).join(", ")}`);
 	} catch (error) {
 		console.error("APIクライアントの生成に失敗しました", error);
 		throw error;
@@ -73,8 +66,6 @@ const main = async (): Promise<void> => {
 
 		// APIクライアント生成
 		await generateApiClient();
-
-		console.log("処理が正常に完了しました");
 	} catch (error) {
 		console.error("エラーが発生しました:", error);
 		process.exit(1);

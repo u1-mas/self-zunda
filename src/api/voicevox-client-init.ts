@@ -1,6 +1,12 @@
-import { AudioQueryApi, SynthesisApi, VersionApi, SpeakersApi, InitializeSpeakerApi } from "./generated";
-import { createVoicevoxApiError, type VoicevoxApiError } from "../templates/custom-request";
+import { type VoicevoxApiError, createVoicevoxApiError } from "../templates/custom-request";
 import { debug, error, log } from "../utils/logger";
+import {
+	AudioQueryApi,
+	InitializeSpeakerApi,
+	SpeakersApi,
+	SynthesisApi,
+	VersionApi,
+} from "./generated";
 import type { AudioQuery } from "./generated/data-contracts";
 
 // VOICEVOXのAPIの設定
@@ -36,26 +42,24 @@ export const voicevoxClient = {
 	// 音声合成用のクエリを作成
 	audio_query: async (params: { text: string; speaker: number; coreVersion?: string }) => {
 		try {
-			return await audioQueryClient.audioQuery(
-				{
-					text: params.text,
-					speaker: params.speaker,
-					core_version: params.coreVersion,
-				},
-			);
+			return await audioQueryClient.audioQuery({
+				text: params.text,
+				speaker: params.speaker,
+				core_version: params.coreVersion,
+			});
 		} catch (err) {
 			const apiError = createVoicevoxApiError(err);
 			error(`音声合成クエリ作成でエラーが発生しました: ${apiError.status} ${apiError.message}`);
 			throw apiError;
 		}
 	},
-	
+
 	// 音声合成を実行
-	synthesis: async (params: { 
-		speaker: number; 
-		requestBody: AudioQuery; 
-		enableInterrogativeUpspeak?: boolean; 
-		coreVersion?: string 
+	synthesis: async (params: {
+		speaker: number;
+		requestBody: AudioQuery;
+		enableInterrogativeUpspeak?: boolean;
+		coreVersion?: string;
 	}) => {
 		try {
 			return await synthesisClient.synthesis(
@@ -72,7 +76,7 @@ export const voicevoxClient = {
 			throw apiError;
 		}
 	},
-	
+
 	// バージョン情報を取得
 	version: async () => {
 		try {
@@ -83,7 +87,7 @@ export const voicevoxClient = {
 			throw apiError;
 		}
 	},
-	
+
 	// 話者一覧を取得
 	speakers: async () => {
 		try {
@@ -94,17 +98,19 @@ export const voicevoxClient = {
 			throw apiError;
 		}
 	},
-	
+
 	// 話者を初期化
-	initialize_speaker: async (params: { speaker: number; skipReinit?: boolean; coreVersion?: string }) => {
+	initialize_speaker: async (params: {
+		speaker: number;
+		skipReinit?: boolean;
+		coreVersion?: string;
+	}) => {
 		try {
-			return await initializeSpeakerClient.initializeSpeaker(
-				{
-					speaker: params.speaker,
-					skip_reinit: params.skipReinit,
-					core_version: params.coreVersion,
-				}
-			);
+			return await initializeSpeakerClient.initializeSpeaker({
+				speaker: params.speaker,
+				skip_reinit: params.skipReinit,
+				core_version: params.coreVersion,
+			});
 		} catch (err) {
 			const apiError = createVoicevoxApiError(err);
 			error(`話者初期化でエラーが発生しました: ${apiError.status} ${apiError.message}`);

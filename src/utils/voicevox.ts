@@ -1,7 +1,7 @@
 import type { Blob } from "node:buffer";
+import type { AudioQuery } from "../api/generated/data-contracts";
 import { voicevoxClient } from "../api/voicevox-client-init";
 import { getUserSettings } from "../models/userSettings";
-import type { AudioQuery } from "../api/generated/data-contracts";
 import { debug, error, log } from "./logger";
 
 // VOICEVOXのAPIの設定
