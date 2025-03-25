@@ -58,7 +58,7 @@ async function createResourceFromBuffer(
 		`音声バッファをデバッグ用ファイル ${debugFilePath} に保存するのだ (サイズ: ${audioBuffer.length} バイト)`,
 	);
 	await writeFile(debugFilePath, audioBuffer);
-	info(`デバッグ用音声ファイルを保存したのだ: ${debugFilePath}`);
+	debug(`デバッグ用音声ファイルを保存したのだ: ${debugFilePath}`);
 
 	// ファイルからストリームを作成
 	debug(`ファイルからストリームを作成するのだ: ${debugFilePath}`);
