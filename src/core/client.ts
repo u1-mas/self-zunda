@@ -5,7 +5,7 @@ import { handleMessage } from "../features/textToSpeech";
 import { handleInteraction } from "../handlers/interactionHandler";
 import { handleVoiceStateUpdate } from "../handlers/voiceStateHandler";
 import { enableTextToSpeech, getActiveChannels } from "../models/activeChannels";
-import { debug, error, log } from "../utils/logger";
+import { debug, error, log, info } from "../utils/logger";
 
 let client: Client | null = null;
 
@@ -88,51 +88,29 @@ async function reconnectToVoiceChannels() {
 	}
 }
 
-export async function initializeClient() {
-	try {
-		if (client) {
-			// クライアントを破棄する前にボイスチャンネルの状態を保存
-			saveVoiceStates();
-			// イベントリスナーを全て削除
-			client.removeAllListeners();
-			await client.destroy();
-			client = null;
-			debug("古いクライアントを破棄したのだ！");
-		}
-
-		debug("新しいDiscordクライアントを作成するのだ！");
-		client = new Client({
-			intents: [
-				GatewayIntentBits.Guilds,
-				GatewayIntentBits.GuildMessages,
-				GatewayIntentBits.MessageContent,
-				GatewayIntentBits.GuildVoiceStates,
-			],
-		});
-
-		// イベントリスナーを設定
-		const onReady = async () => {
-			log("ずんだもんが起動したのだ！");
-			// クライアントの準備ができたら保存したボイスチャンネルに再接続
-			await reconnectToVoiceChannels();
-		};
-
-		debug("Discordイベントリスナーを設定するのだ！");
-		client.once(Events.ClientReady, onReady);
-		client.on(Events.VoiceStateUpdate, handleVoiceStateUpdate);
-		client.on(Events.InteractionCreate, handleInteraction);
-		client.on(Events.MessageCreate, handleMessage);
-
-		debug("Discordにログインを試みるのだ！");
-		await client.login(process.env.DISCORD_TOKEN);
-		debug("Discordへのログインに成功したのだ！");
-	} catch (err) {
-		error(
-			"クライアントの初期化に失敗したのだ:",
-			err instanceof Error ? err.message : "予期せぬエラーが発生したのだ...",
-		);
-		process.exit(1);
+export async function initializeClient(): Promise<Client> {
+	if (client) {
+		return client;
 	}
+
+	debug("新しいDiscordクライアントを作成するのだ！");
+	client = new Client({
+		intents: [
+			GatewayIntentBits.Guilds,
+			GatewayIntentBits.GuildMessages,
+			GatewayIntentBits.MessageContent,
+			GatewayIntentBits.GuildVoiceStates,
+		],
+	});
+
+	const onReady = async () => {
+		info("Botが準備できたのだ！");
+		await reconnectToVoiceChannels();
+	};
+
+	client.on(Events.ClientReady, onReady);
+
+	return client;
 }
 
 export function getClient(): Client | null {

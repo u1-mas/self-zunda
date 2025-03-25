@@ -3,7 +3,7 @@ import * as path from "node:path";
 import { Client, Collection, Events, GatewayIntentBits } from "discord.js";
 import { config } from "dotenv";
 import type { Command } from "./commands/types";
-import { createClient } from "./core/client";
+import { initializeClient } from "./core/client";
 import { handleMessageCreate } from "./handlers/messageHandler";
 import { handleVoiceStateUpdate } from "./handlers/voiceStateHandler";
 import { error, info } from "./utils/logger";
@@ -16,8 +16,8 @@ const main = async () => {
 	// 起動時のログメッセージを表示
 	info("Bot起動中なのだ...");
 
-	// クライアントの作成
-	const client = createClient();
+	// クライアントの作成と初期化
+	const client = await initializeClient();
 
 	// コマンドの読み込み
 	const commandsPath = path.join(path.dirname(new URL(import.meta.url).pathname), "commands");
