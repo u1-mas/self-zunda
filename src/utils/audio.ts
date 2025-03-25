@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { createReadStream, unlinkSync } from "node:fs";
+import { createReadStream, existsSync, mkdirSync, unlinkSync } from "node:fs";
 import { writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -13,41 +13,103 @@ import {
 	createAudioPlayer,
 	createAudioResource,
 } from "@discordjs/voice";
-import { debug, error, warn } from "./logger";
+import { debug, error, info, warn } from "./logger";
 
 // アクティブな音声プレイヤーを保持
 const players = new Map<string, AudioPlayer>();
 
-async function createAndPlayAudio(
-	player: AudioPlayer,
-	tempFile: string,
-	audioBuffer: Buffer,
-): Promise<void> {
-	debug(
-		`音声バッファを一時ファイル ${tempFile} に保存するのだ (サイズ: ${audioBuffer.length} バイト)`,
-	);
-	// バッファを一時ファイルに保存
-	await writeFile(tempFile, audioBuffer);
+// デバッグ用の音声ファイル保存ディレクトリ
+const DEBUG_AUDIO_DIR = join(process.cwd(), "debug-audio");
 
-	debug(`一時ファイルからストリームを作成するのだ: ${tempFile}`);
-	// ファイルからストリームを作成
-	const stream = createReadStream(tempFile);
+// デバッグディレクトリの初期化
+function initDebugDir(): void {
+	if (!existsSync(DEBUG_AUDIO_DIR)) {
+		try {
+			mkdirSync(DEBUG_AUDIO_DIR, { recursive: true });
+			info(`デバッグ用音声ディレクトリを作成したのだ: ${DEBUG_AUDIO_DIR}`);
+		} catch (err) {
+			error(
+				`デバッグディレクトリの作成に失敗したのだ: ${err instanceof Error ? err.message : String(err)}`,
+			);
+		}
+	}
+}
 
-	debug("音声リソースを作成するのだ");
-	// 音声リソースのオプションを改善
-	const resource = createAudioResource(stream, {
+// 初期化
+initDebugDir();
+
+/**
+ * バッファから直接AudioResourceを作成する
+ * @param audioBuffer 音声バッファ
+ * @returns 作成されたAudioResource
+ */
+function createResourceFromBuffer(audioBuffer: Buffer) {
+	debug(`メモリ内でAudioResourceを作成するのだ (サイズ: ${audioBuffer.length} バイト)`);
+
+	// バッファから直接リソースを作成
+	const resource = createAudioResource(audioBuffer, {
 		inputType: StreamType.Arbitrary,
-		inlineVolume: true, // ボリューム調整を有効化
-		silencePaddingFrames: 5, // 無音フレームを追加して安定性を向上
+		inlineVolume: true,
 	});
 
-	// リソースのボリュームを確実に設定
+	// ボリューム設定
 	if (resource.volume) {
 		resource.volume.setVolume(1.0);
 	}
 
-	debug("音声の再生を開始するのだ");
-	player.play(resource);
+	return resource;
+}
+
+async function createAndPlayAudio(
+	player: AudioPlayer,
+	audioBuffer: Buffer,
+	shouldSaveFile = true,
+): Promise<void> {
+	let debugFilePath: string | null = null;
+
+	if (shouldSaveFile) {
+		// デバッグ用にファイルを保存
+		const fileName = `voice-${randomUUID()}.bin`;
+		debugFilePath = join(DEBUG_AUDIO_DIR, fileName);
+
+		debug(
+			`音声バッファをデバッグ用ファイル ${debugFilePath} に保存するのだ (サイズ: ${audioBuffer.length} バイト)`,
+		);
+		await writeFile(debugFilePath, audioBuffer);
+		info(`デバッグ用音声ファイルを保存したのだ: ${debugFilePath}`);
+
+		// ファイルからリソースを作成（従来の方法）
+		debug(`ファイルからストリームを作成するのだ: ${debugFilePath}`);
+		const stream = createReadStream(debugFilePath);
+
+		debug("音声リソースを作成するのだ (ファイルから)");
+		const resource = createAudioResource(stream, {
+			inputType: StreamType.Arbitrary,
+			inlineVolume: true,
+		});
+
+		// ボリューム設定
+		if (resource.volume) {
+			resource.volume.setVolume(1.0);
+		}
+
+		debug("音声の再生を開始するのだ (ファイルから)");
+		player.play(resource);
+	} else {
+		// バッファから直接リソースを作成して再生（新しい方法）
+		try {
+			debug("バッファから直接AudioResourceを作成して再生するのだ");
+			const resource = createResourceFromBuffer(audioBuffer);
+			player.play(resource);
+		} catch (err) {
+			error(
+				`バッファからのリソース作成に失敗したのだ: ${err instanceof Error ? err.message : String(err)}`,
+			);
+			throw err;
+		}
+	}
+
+	return debugFilePath ? Promise.resolve() : Promise.resolve();
 }
 
 /**
@@ -137,15 +199,22 @@ export async function playAudio(connection: VoiceConnection, audioBuffer: Buffer
 				error(`プレイヤーでエラーが発生したのだ: ${err.message}`);
 			});
 
-			// 一時ファイルのパスを生成
-			const tempFile = join(tmpdir(), `${randomUUID()}.wav`);
-			debug(`一時ファイルを作成するのだ: ${tempFile}`);
+			// デバッグ用ファイルを保存するかどうか（true = ファイル保存、false = メモリ内処理）
+			const shouldSaveFile = true;
+			let debugFilePath: string | null = null;
 
-			createAndPlayAudio(player, tempFile, audioBuffer).catch((error) => {
-				console.error("音声リソースの作成中にエラーが発生したのだ:", error);
-				debug(`音声リソース作成エラー: ${error instanceof Error ? error.message : "不明なエラー"}`);
-				reject(error);
-			});
+			// 音声を再生
+			createAndPlayAudio(player, audioBuffer, shouldSaveFile)
+				.then((filePath) => {
+					debugFilePath = filePath || null;
+				})
+				.catch((error) => {
+					console.error("音声リソースの作成中にエラーが発生したのだ:", error);
+					debug(
+						`音声リソース作成エラー: ${error instanceof Error ? error.message : "不明なエラー"}`,
+					);
+					reject(error);
+				});
 
 			debug("stateChangeイベントリスナーを設定するのだ (完了検出用)");
 			// 一度だけ実行されるリスナーで完了を検出
@@ -168,13 +237,14 @@ export async function playAudio(connection: VoiceConnection, audioBuffer: Buffer
 						} else if (n.status === AudioPlayerStatus.Idle) {
 							debug("バッファリングからアイドル状態に戻ったのだ（再生されなかった）");
 							// 何らかの理由で再生されなかった場合はここでクリーンアップ
-							try {
-								unlinkSync(tempFile);
-							} catch (err) {
-								debug(
-									`一時ファイルの削除に失敗したのだ: ${err instanceof Error ? err.message : "不明なエラー"}`,
-								);
-							}
+							// デバッグのためにファイルを残す（通常は削除するべき）
+							// if (debugFilePath && shouldSaveFile) {
+							//   try {
+							//     unlinkSync(debugFilePath);
+							//   } catch (err) {
+							//     debug(`デバッグファイルの削除に失敗したのだ: ${err instanceof Error ? err.message : "不明なエラー"}`);
+							//   }
+							// }
 							player.off("stateChange", checkPlaying);
 							resolve(); // 完了として扱う
 						}
@@ -187,16 +257,15 @@ export async function playAudio(connection: VoiceConnection, audioBuffer: Buffer
 					newState.status === AudioPlayerStatus.Idle &&
 					oldState.status === AudioPlayerStatus.Playing
 				) {
-					// 一時ファイルを削除する処理を追加する（エラーハンドリングは省略）
-					debug(`再生完了したので一時ファイルを削除するのだ: ${tempFile}`);
-					try {
-						unlinkSync(tempFile);
-					} catch (error) {
-						debug(
-							`一時ファイルの削除に失敗したのだ: ${error instanceof Error ? error.message : "不明なエラー"}`,
-						);
-						// ファイル削除に失敗してもエラーを無視
-					}
+					// デバッグのためにファイルを残す（通常は削除するべき）
+					// if (debugFilePath && shouldSaveFile) {
+					//   debug(`再生完了したのでデバッグファイルを削除するのだ: ${debugFilePath}`);
+					//   try {
+					//     unlinkSync(debugFilePath);
+					//   } catch (error) {
+					//     debug(`デバッグファイルの削除に失敗したのだ: ${error instanceof Error ? error.message : "不明なエラー"}`);
+					//   }
+					// }
 					debug("音声再生が完了したのだ");
 					resolve();
 				}
@@ -206,17 +275,29 @@ export async function playAudio(connection: VoiceConnection, audioBuffer: Buffer
 			player.once("error", (error) => {
 				console.error("音声の再生中にエラーが発生したのだ:", error);
 				debug(`音声再生エラー: ${error.message || "不明なエラー"}`);
-				// エラー時も一時ファイルを削除
-				try {
-					unlinkSync(tempFile);
-				} catch (deleteError) {
-					console.error("一時ファイルの削除に失敗したのだ:", deleteError);
-					debug(
-						`エラー時の一時ファイル削除に失敗したのだ: ${deleteError instanceof Error ? deleteError.message : "不明なエラー"}`,
-					);
-				}
 				reject(error);
 			});
+		} catch (error) {
+			console.error("音声リソースの作成中にエラーが発生したのだ:", error);
+			debug(
+				`playAudio全体でエラーが発生したのだ: ${error instanceof Error ? error.message : "不明なエラー"}`,
+			);
+			reject(error);
+		}
+	});
+}
+
+export function stopAudio(guildId: string): void {
+	const player = players.get(guildId);
+	if (player) {
+		debug(`ギルドID: ${guildId} の音声再生を停止するのだ`);
+		player.stop();
+	}
+}
+
+export function getPlayer(guildId: string): AudioPlayer | undefined {
+	return players.get(guildId);
+}
 		} catch (error) {
 			console.error("音声リソースの作成中にエラーが発生したのだ:", error);
 			debug(
