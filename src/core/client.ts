@@ -120,6 +120,9 @@ export async function initializeClient(): Promise<Client> {
 	client.on(Events.InteractionCreate, handleInteraction);
 	client.on(Events.MessageCreate, handleMessageCreate);
 
+	// ログイン処理
+	await client.login(process.env.DISCORD_TOKEN);
+
 	return client;
 }
 
