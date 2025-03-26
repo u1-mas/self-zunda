@@ -167,34 +167,8 @@ export const VOICES = [
 	{ id: 96, name: "中部つるぎ", style: "ヒソヒソ" },
 	{ id: 97, name: "中部つるぎ", style: "おどおど" },
 	{ id: 98, name: "中部つるぎ", style: "絶望と敗北" },
-];
+] as const;
 
 // 話者一覧（名前だけの一意なリスト）
 // Discord制限（25選択肢）に合わせて、一部の主要キャラクターのみを表示
-export const SPEAKERS = [
-	{ name: "ずんだもん" },
-	{ name: "四国めたん" },
-	{ name: "春日部つむぎ" },
-	{ name: "雨晴はう" },
-	{ name: "波音リツ" },
-	{ name: "玄野武宏" },
-	{ name: "白上虎太郎" },
-	{ name: "青山龍星" },
-	{ name: "冥鳴ひまり" },
-	{ name: "九州そら" },
-	{ name: "もち子さん" },
-	{ name: "剣崎雌雄" },
-	{ name: "WhiteCUL" },
-	{ name: "後鬼" },
-	{ name: "No.7" },
-	{ name: "ちび式じい" },
-	{ name: "櫻歌ミコ" },
-	{ name: "小夜/SAYO" },
-	{ name: "ナースロボ＿タイプＴ" },
-	{ name: "†聖騎士 紅桜†" },
-	{ name: "雀松朱司" },
-	{ name: "麒ヶ島宗麟" },
-	{ name: "春歌ナナ" },
-	{ name: "猫使アル" },
-	{ name: "猫使ビィ" },
-];
+export const SPEAKERS = VOICES.map((voice) => voice.name);

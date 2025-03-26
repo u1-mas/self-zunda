@@ -1,5 +1,5 @@
 import { DiscordAPIError, type Interaction } from "discord.js";
-import { VOICES } from "../commands/settings.ts";
+import { VOICES } from "../commands/settings/constants/index.ts";
 import { updateUserSettings } from "../models/userSettings.ts";
 import { logger } from "../utils/logger.ts";
 import { commands } from "./commands.ts";
@@ -98,7 +98,7 @@ async function handleStyleMenuInteraction(interaction: Interaction) {
 		}
 
 		// ユーザー設定を更新
-		await updateUserSettings(serverId, userId, {
+		updateUserSettings(serverId, userId, {
 			speakerId: selectedVoice.id,
 		});
 

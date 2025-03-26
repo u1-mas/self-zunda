@@ -1,5 +1,5 @@
 import type { ChatInputCommandInteraction } from "discord.js";
-import { VOICES } from "../constants/index.js";
+import { SPEAKERS, VOICES } from "../constants/index.js";
 import { updateUserSettings } from "../../../models/userSettings.js";
 
 /**
@@ -13,23 +13,17 @@ export async function handleVoiceSettings(
 	serverId: string,
 	userId: string,
 ): Promise<void> {
-	const voiceType = interaction.options.getInteger("speaker", true);
+	const speakerName = interaction.options.getString("speaker", true);
 
 	// 存在する声のタイプか確認
-	const voiceInfo = VOICES.find((v) => v.id === voiceType);
-	if (!voiceInfo) {
-		await interaction.reply({
-			content: "その声は使えないのだ...",
-			ephemeral: true,
-		});
-		return;
-	}
+	const speakerInfo = SPEAKERS.find((s) => s === speakerName);
+	const speakerId = VOICES.find((v) => v.name === speakerName)?.id;
 
 	// 設定を更新
-	updateUserSettings(serverId, userId, { speakerId: voiceType });
+	updateUserSettings(serverId, userId, { speakerId });
 
 	await interaction.reply({
-		content: `声を ${voiceInfo.name}（${voiceInfo.style}）に変更したのだ！`,
+		content: `声を ${speakerInfo} に変更したのだ！`,
 		ephemeral: true,
 	});
 }

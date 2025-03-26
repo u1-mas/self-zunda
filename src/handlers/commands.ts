@@ -2,7 +2,7 @@ import { Collection } from "discord.js";
 import { join } from "../commands/join.ts";
 import { leave } from "../commands/leave.ts";
 import { ping } from "../commands/ping.ts";
-import { settings } from "../commands/settings.ts";
+import { settings } from "../commands/settings/index.ts";
 import { status } from "../commands/status.ts";
 import type { Command } from "../commands/types.ts";
 
