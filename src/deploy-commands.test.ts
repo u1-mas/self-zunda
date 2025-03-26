@@ -1,5 +1,3 @@
-import { vi } from "vitest";
-
 // RESTクラスのモック
 const mockPut = vi.fn().mockResolvedValue({});
 const mockRest = {

@@ -1,5 +1,5 @@
 import { getVoiceConnections } from "@discordjs/voice";
-import { info } from "../utils/logger.ts";
+import { logger } from "../utils/logger.ts";
 import { handleShutdown } from "./shutdownHandler.ts";
 
 // モック
@@ -8,10 +8,14 @@ vi.mock("@discordjs/voice", () => ({
 	getVoiceConnection: vi.fn(),
 }));
 
-vi.mock("../utils/logger", () => ({
-	info: vi.fn(),
-	warn: vi.fn(),
-	error: vi.fn(),
+vi.mock("../utils/logger.ts", () => ({
+	logger: {
+		info: vi.fn(),
+		warn: vi.fn(),
+		error: vi.fn(),
+		log: vi.fn(),
+		debug: vi.fn(),
+	},
 }));
 
 // プロセスのexit関数をモック化してテスト終了時に実際に終了しないようにする
@@ -55,8 +59,8 @@ describe("shutdownHandler", () => {
 		}
 
 		// ログが出力されたことを確認
-		expect(info).toHaveBeenCalledWith(expect.stringContaining("シャットダウンを開始"));
-		expect(info).toHaveBeenCalledWith(expect.stringContaining("ボイスコネクションを切断"));
+		expect(logger.info).toHaveBeenCalledWith(expect.stringContaining("シャットダウンを開始"));
+		expect(logger.info).toHaveBeenCalledWith(expect.stringContaining("ボイスコネクションを切断"));
 
 		// プロセスが終了したことを確認
 		expect(mockExit).toHaveBeenCalledWith(0);
@@ -75,8 +79,8 @@ describe("shutdownHandler", () => {
 		}
 
 		// ログが出力されたことを確認
-		expect(info).toHaveBeenCalledWith(expect.stringContaining("シャットダウンを開始"));
-		expect(info).toHaveBeenCalledWith(expect.stringContaining("ボイスコネクションを切断"));
+		expect(logger.info).toHaveBeenCalledWith(expect.stringContaining("シャットダウンを開始"));
+		expect(logger.info).toHaveBeenCalledWith(expect.stringContaining("ボイスコネクションを切断"));
 
 		// プロセスが終了したことを確認
 		expect(mockExit).toHaveBeenCalledWith(0);
@@ -93,9 +97,9 @@ describe("shutdownHandler", () => {
 		process.emit("SIGINT");
 
 		// ログが出力されたことを確認
-		expect(info).toHaveBeenCalledWith(expect.stringContaining("シャットダウンを開始"));
-		expect(info).toHaveBeenCalledWith(expect.stringContaining("ボイスコネクションを切断"));
-		expect(info).toHaveBeenCalledWith(
+		expect(logger.info).toHaveBeenCalledWith(expect.stringContaining("シャットダウンを開始"));
+		expect(logger.info).toHaveBeenCalledWith(expect.stringContaining("ボイスコネクションを切断"));
+		expect(logger.info).toHaveBeenCalledWith(
 			expect.stringContaining("アクティブなボイスコネクションはありません"),
 		);
 

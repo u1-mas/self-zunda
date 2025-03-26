@@ -6,7 +6,7 @@ import {
 	type VoiceChannel,
 } from "discord.js";
 import { enableTextToSpeech } from "../models/activeChannels.ts";
-import { error, log } from "../utils/logger.ts";
+import { logger } from "../utils/logger.ts";
 import { checkVoicevoxServerHealth } from "../utils/voicevox.ts";
 
 // VoiceVoxの疎通確認フラグ
@@ -22,7 +22,7 @@ async function checkVoicevox() {
 		await checkVoicevoxServerHealth();
 		hasCheckedVoicevox = true;
 	} catch (err) {
-		error(
+		logger.error(
 			"VOICEVOXサーバーのチェックに失敗したのだ:",
 			err instanceof Error ? err.message : "予期せぬエラーが発生したのだ...",
 		);
@@ -96,7 +96,7 @@ export const join = {
 				enableTextToSpeech(interaction.guild.id, interaction.channel.id);
 			}
 
-			log(
+			logger.log(
 				`サーバー「${interaction.guild.name}」のボイスチャンネル「${voiceChannel.name}」に参加したのだ！`,
 			);
 			await interaction.reply({
@@ -104,7 +104,7 @@ export const join = {
 				ephemeral: true,
 			});
 		} catch (err) {
-			error(`ボイスチャンネル参加エラー: ${err}`);
+			logger.error(`ボイスチャンネル参加エラー: ${err}`);
 			await interaction.reply({
 				content: "ボイスチャンネルへの参加に失敗したのだ…",
 				ephemeral: true,

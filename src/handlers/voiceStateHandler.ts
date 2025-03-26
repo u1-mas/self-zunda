@@ -1,7 +1,7 @@
 import { getVoiceConnection } from "@discordjs/voice";
 import type { VoiceState } from "discord.js";
 import { playAudio } from "../utils/audio.ts";
-import { error } from "../utils/logger.ts";
+import { logger } from "../utils/logger.ts";
 import { generateVoice } from "../utils/voicevox.ts";
 
 export async function handleVoiceStateUpdate(oldState: VoiceState, newState: VoiceState) {
@@ -28,7 +28,7 @@ export async function handleVoiceStateUpdate(oldState: VoiceState, newState: Voi
 				await playAudio(connection, Buffer.from(audioBuffer));
 			}
 		} catch (err) {
-			error("ボイスチャンネルの状態変更の読み上げに失敗したのだ:", err);
+			logger.error("ボイスチャンネルの状態変更の読み上げに失敗したのだ:", err);
 		}
 	}
 }

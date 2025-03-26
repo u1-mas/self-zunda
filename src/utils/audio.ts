@@ -13,7 +13,7 @@ import {
 	createAudioPlayer,
 	createAudioResource,
 } from "@discordjs/voice";
-import { debug, error, info, warn } from "./logger.ts";
+import { logger } from "./logger.ts";
 
 // アクティブな音声プレイヤーを保持
 const players = new Map<string, AudioPlayer>();
@@ -26,9 +26,9 @@ function initDebugDir(): void {
 	if (!existsSync(DEBUG_AUDIO_DIR)) {
 		try {
 			mkdirSync(DEBUG_AUDIO_DIR, { recursive: true });
-			info(`デバッグ用音声ディレクトリを作成したのだ: ${DEBUG_AUDIO_DIR}`);
+			logger.info(`デバッグ用音声ディレクトリを作成したのだ: ${DEBUG_AUDIO_DIR}`);
 		} catch (err) {
-			error(
+			logger.error(
 				`デバッグディレクトリの作成に失敗したのだ: ${err instanceof Error ? err.message : String(err)}`,
 			);
 		}
@@ -53,18 +53,18 @@ async function createResourceFromBuffer(
 	const debugFilePath = join(DEBUG_AUDIO_DIR, debugFileName);
 
 	// バッファをファイルに保存
-	debug(
+	logger.debug(
 		`音声バッファをデバッグ用ファイル ${debugFilePath} に保存するのだ (サイズ: ${audioBuffer.length} バイト)`,
 	);
 	await writeFile(debugFilePath, audioBuffer);
-	debug(`デバッグ用音声ファイルを保存したのだ: ${debugFilePath}`);
+	logger.debug(`デバッグ用音声ファイルを保存したのだ: ${debugFilePath}`);
 
 	// ファイルからストリームを作成
-	debug(`ファイルからストリームを作成するのだ: ${debugFilePath}`);
+	logger.debug(`ファイルからストリームを作成するのだ: ${debugFilePath}`);
 	const stream = createReadStream(debugFilePath);
 
 	// 音声リソースを作成
-	debug("音声リソースを作成するのだ (ファイルから)");
+	logger.debug("音声リソースを作成するのだ (ファイルから)");
 	const resource = createAudioResource(stream, {
 		inputType: StreamType.Arbitrary,
 		inlineVolume: true,
@@ -87,12 +87,12 @@ async function createAndPlayAudio(player: AudioPlayer, audioBuffer: Buffer): Pro
 		const { resource, filePath } = await createResourceFromBuffer(audioBuffer);
 
 		// リソースを再生
-		debug("音声の再生を開始するのだ");
+		logger.debug("音声の再生を開始するのだ");
 		player.play(resource);
 
 		return filePath;
 	} catch (err) {
-		error(
+		logger.error(
 			`音声リソースの作成中にエラーが発生したのだ: ${err instanceof Error ? err.message : String(err)}`,
 		);
 		throw err;
@@ -108,16 +108,16 @@ function ensureConnectionReady(
 	connection: VoiceConnection,
 	reject: (reason?: Error) => void,
 ): boolean {
-	debug(`ボイスコネクションの現在の状態: ${connection.state.status}`);
+	logger.debug(`ボイスコネクションの現在の状態: ${connection.state.status}`);
 	if (connection.state.status === VoiceConnectionStatus.Ready) {
 		return true;
 	}
 
-	warn(`ボイスコネクションの状態が Ready ではないのだ: ${connection.state.status}`);
+	logger.warn(`ボイスコネクションの状態が Ready ではないのだ: ${connection.state.status}`);
 
 	// 接続中の場合は待機する
 	if (connection.state.status === VoiceConnectionStatus.Connecting) {
-		debug("ボイスコネクションが接続中なので、Ready状態になるのを待つのだ");
+		logger.debug("ボイスコネクションが接続中なので、Ready状態になるのを待つのだ");
 		return false;
 	}
 
@@ -126,13 +126,13 @@ function ensureConnectionReady(
 		connection.state.status === VoiceConnectionStatus.Disconnected ||
 		connection.state.status === VoiceConnectionStatus.Destroyed
 	) {
-		warn("ボイスコネクションが切断されているのだ、再接続を試みるのだ");
+		logger.warn("ボイスコネクションが切断されているのだ、再接続を試みるのだ");
 		try {
 			connection.rejoin();
-			debug("ボイスコネクションの再接続を試みたのだ");
+			logger.debug("ボイスコネクションの再接続を試みたのだ");
 			return false;
 		} catch (err) {
-			error("ボイスコネクションの再接続に失敗したのだ:", err);
+			logger.error("ボイスコネクションの再接続に失敗したのだ:", err);
 			reject(new Error("ボイスコネクションの再接続に失敗したのだ"));
 			return false;
 		}
@@ -151,17 +151,19 @@ function preparePlayer(guildId: string, connection: VoiceConnection): AudioPlaye
 	let player = players.get(guildId);
 
 	if (player) {
-		debug(`ギルドID: ${guildId} の既存プレイヤーを使用するのだ (状態: ${player.state.status})`);
+		logger.debug(
+			`ギルドID: ${guildId} の既存プレイヤーを使用するのだ (状態: ${player.state.status})`,
+		);
 
 		// プレイヤーが別の音声を再生中の場合は一度停止する
 		if (player.state.status !== AudioPlayerStatus.Idle) {
-			debug(
+			logger.debug(
 				`プレイヤーが他の音声を再生中なので一旦停止するのだ (現在の状態: ${player.state.status})`,
 			);
 			player.stop();
 		}
 	} else {
-		debug(`ギルドID: ${guildId} の新しいプレイヤーを作成するのだ`);
+		logger.debug(`ギルドID: ${guildId} の新しいプレイヤーを作成するのだ`);
 		// NoSubscriberBehaviorを指定して安定性を向上
 		player = createAudioPlayer({
 			behaviors: {
@@ -169,7 +171,9 @@ function preparePlayer(guildId: string, connection: VoiceConnection): AudioPlaye
 			},
 		});
 		players.set(guildId, player);
-		debug(`ボイスコネクションをプレイヤーに購読させるのだ (接続状態: ${connection.state.status})`);
+		logger.debug(
+			`ボイスコネクションをプレイヤーに購読させるのだ (接続状態: ${connection.state.status})`,
+		);
 		connection.subscribe(player);
 	}
 
@@ -193,37 +197,37 @@ function setupPlayerListeners(
 } {
 	// すべての状態変化をデバッグする
 	const debugListener = (oldState: AudioPlayerState, newState: AudioPlayerState) => {
-		debug(`プレイヤー状態変化 [拡張]: ${oldState.status} → ${newState.status}`);
+		logger.debug(`プレイヤー状態変化 [拡張]: ${oldState.status} → ${newState.status}`);
 		if (newState.status === AudioPlayerStatus.Playing) {
-			debug("音声の再生が開始されたのだ！");
+			logger.debug("音声の再生が開始されたのだ！");
 		} else if (newState.status === AudioPlayerStatus.Buffering) {
-			debug("音声データをバッファリング中なのだ...");
+			logger.debug("音声データをバッファリング中なのだ...");
 		}
 	};
 	player.on("stateChange", debugListener);
 
 	// エラー監視を強化
 	const errorListener = (err: Error) => {
-		error(`プレイヤーでエラーが発生したのだ: ${err.message}`);
+		logger.error(`プレイヤーでエラーが発生したのだ: ${err.message}`);
 	};
 	player.on("error", errorListener);
 
 	// 再生完了またはエラー時の処理
 	const completionListener = (oldState: AudioPlayerState, newState: AudioPlayerState) => {
-		debug(`プレイヤーの状態が変化したのだ: ${oldState.status} → ${newState.status}`);
+		logger.debug(`プレイヤーの状態が変化したのだ: ${oldState.status} → ${newState.status}`);
 
 		// Buffering状態に移行したら、再生またはアイドル状態への移行を監視
 		if (newState.status === AudioPlayerStatus.Buffering) {
-			debug("音声がバッファリング中なのだ、再生開始を待つのだ...");
+			logger.debug("音声がバッファリング中なのだ、再生開始を待つのだ...");
 
 			// Buffering -> Playing への遷移を監視
 			const checkPlaying = (oldS: AudioPlayerState, newS: AudioPlayerState) => {
-				debug(`ステート確認: ${oldS.status} → ${newS.status}`);
+				logger.debug(`ステート確認: ${oldS.status} → ${newS.status}`);
 				if (newS.status === AudioPlayerStatus.Playing) {
-					debug("バッファリングから再生状態へ移行したのだ！");
+					logger.debug("バッファリングから再生状態へ移行したのだ！");
 					player.off("stateChange", checkPlaying);
 				} else if (newS.status === AudioPlayerStatus.Idle) {
-					debug("バッファリングからアイドル状態に戻ったのだ（再生されなかった）");
+					logger.debug("バッファリングからアイドル状態に戻ったのだ（再生されなかった）");
 					// 何らかの理由で再生されなかった場合でも、デバッグのためにファイルは残す
 					player.off("stateChange", checkPlaying);
 					resolve(); // 完了として扱う
@@ -238,7 +242,7 @@ function setupPlayerListeners(
 			oldState.status === AudioPlayerStatus.Playing
 		) {
 			// 再生完了
-			debug("音声再生が完了したのだ");
+			logger.debug("音声再生が完了したのだ");
 
 			// クリーンアップ
 			player.off("stateChange", debugListener);
@@ -251,8 +255,8 @@ function setupPlayerListeners(
 
 	// エラー時の処理
 	player.once("error", (err) => {
-		error(`音声の再生中にエラーが発生したのだ: ${err.message}`);
-		debug(`音声再生エラー: ${err.message || "不明なエラー"}`);
+		logger.error(`音声の再生中にエラーが発生したのだ: ${err.message}`);
+		logger.debug(`音声再生エラー: ${err.message || "不明なエラー"}`);
 
 		// クリーンアップ
 		player.off("stateChange", debugListener);
@@ -273,7 +277,7 @@ export async function playAudio(connection: VoiceConnection, audioBuffer: Buffer
 	return new Promise((resolve, reject) => {
 		try {
 			const guildId = connection.joinConfig.guildId;
-			debug(
+			logger.debug(
 				`ギルドID: ${guildId} の音声を再生するのだ (バッファサイズ: ${audioBuffer.length} バイト)`,
 			);
 
@@ -282,7 +286,7 @@ export async function playAudio(connection: VoiceConnection, audioBuffer: Buffer
 				// 接続が準備中の場合は、準備完了後に再試行
 				if (connection.state.status === VoiceConnectionStatus.Connecting) {
 					connection.once(VoiceConnectionStatus.Ready, () => {
-						debug("ボイスコネクションが Ready になったのだ！再試行するのだ");
+						logger.debug("ボイスコネクションが Ready になったのだ！再試行するのだ");
 						playAudio(connection, audioBuffer).then(resolve).catch(reject);
 					});
 				}
@@ -298,16 +302,16 @@ export async function playAudio(connection: VoiceConnection, audioBuffer: Buffer
 			// 音声を再生
 			createAndPlayAudio(player, audioBuffer)
 				.then((filePath) => {
-					debug(`再生用ファイルを作成したのだ: ${filePath}`);
+					logger.debug(`再生用ファイルを作成したのだ: ${filePath}`);
 				})
 				.catch((err) => {
-					error(
+					logger.error(
 						`音声再生の準備中にエラーが発生したのだ: ${err instanceof Error ? err.message : String(err)}`,
 					);
 					reject(err);
 				});
 		} catch (err) {
-			error(
+			logger.error(
 				`音声再生の準備中にエラーが発生したのだ: ${err instanceof Error ? err.message : String(err)}`,
 			);
 			reject(err instanceof Error ? err : new Error(String(err)));
@@ -321,7 +325,7 @@ export async function playAudio(connection: VoiceConnection, audioBuffer: Buffer
 export function stopAudio(guildId: string): void {
 	const player = players.get(guildId);
 	if (player) {
-		debug(`ギルドID: ${guildId} の音声再生を停止するのだ`);
+		logger.debug(`ギルドID: ${guildId} の音声再生を停止するのだ`);
 		player.stop();
 	}
 }

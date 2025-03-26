@@ -1,7 +1,7 @@
 import { getVoiceConnection } from "@discordjs/voice";
 import { type ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { disableTextToSpeech } from "../models/activeChannels.ts";
-import { log } from "../utils/logger.ts";
+import { logger } from "../utils/logger.ts";
 
 export const leave = {
 	data: new SlashCommandBuilder()
@@ -23,7 +23,7 @@ export const leave = {
 		if (connection) {
 			connection.destroy();
 			disableTextToSpeech(interaction.guild.id);
-			log(`サーバー「${interaction.guild.name}」のボイスチャンネルから退出したのだ！`);
+			logger.log(`サーバー「${interaction.guild.name}」のボイスチャンネルから退出したのだ！`);
 			await interaction.reply({
 				content: "ボイスチャンネルから退出したのだ！",
 				ephemeral: true,

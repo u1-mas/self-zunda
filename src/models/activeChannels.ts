@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { debug, error, log } from "../utils/logger.ts";
+import { logger } from "../utils/logger.ts";
 
 // アクティブチャンネルのデータ型
 interface ActiveChannelsData {
@@ -20,11 +20,11 @@ const activeChannels = new Map<string, string>();
 function initConfigDir(): void {
 	try {
 		if (!fs.existsSync(CONFIG_DIR)) {
-			log(`設定ディレクトリ ${CONFIG_DIR} を作成するのだ`);
+			logger.log(`設定ディレクトリ ${CONFIG_DIR} を作成するのだ`);
 			fs.mkdirSync(CONFIG_DIR, { recursive: true });
 		}
 	} catch (err) {
-		error(`設定ディレクトリの作成に失敗したのだ: ${err}`);
+		logger.error(`設定ディレクトリの作成に失敗したのだ: ${err}`);
 		throw err;
 	}
 }
@@ -37,7 +37,7 @@ export function loadActiveChannels(): void {
 		initConfigDir();
 
 		if (fs.existsSync(CONFIG_FILE)) {
-			debug(`アクティブチャンネル設定ファイル ${CONFIG_FILE} を読み込むのだ`);
+			logger.debug(`アクティブチャンネル設定ファイル ${CONFIG_FILE} を読み込むのだ`);
 			const data = fs.readFileSync(CONFIG_FILE, "utf8");
 			const channelsData: ActiveChannelsData = JSON.parse(data);
 
@@ -47,13 +47,13 @@ export function loadActiveChannels(): void {
 				activeChannels.set(guildId, channelId);
 			}
 
-			debug("アクティブチャンネル設定の読み込みが完了したのだ");
+			logger.debug("アクティブチャンネル設定の読み込みが完了したのだ");
 		} else {
-			debug("アクティブチャンネル設定ファイルがないので、空の状態で開始するのだ");
+			logger.debug("アクティブチャンネル設定ファイルがないので、空の状態で開始するのだ");
 			saveActiveChannels(); // 空の設定を保存
 		}
 	} catch (err) {
-		error(`アクティブチャンネル設定の読み込みに失敗したのだ: ${err}`);
+		logger.error(`アクティブチャンネル設定の読み込みに失敗したのだ: ${err}`);
 		// エラー時は空のMapを使用
 		activeChannels.clear();
 	}
@@ -71,11 +71,11 @@ export function saveActiveChannels(): void {
 			channels: Object.fromEntries(activeChannels),
 		};
 
-		debug(`アクティブチャンネル設定ファイル ${CONFIG_FILE} に保存するのだ`);
+		logger.debug(`アクティブチャンネル設定ファイル ${CONFIG_FILE} に保存するのだ`);
 		fs.writeFileSync(CONFIG_FILE, JSON.stringify(channelsData, null, 2), "utf8");
-		debug("アクティブチャンネル設定の保存が完了したのだ");
+		logger.debug("アクティブチャンネル設定の保存が完了したのだ");
 	} catch (err) {
-		error(`アクティブチャンネル設定の保存に失敗したのだ: ${err}`);
+		logger.error(`アクティブチャンネル設定の保存に失敗したのだ: ${err}`);
 		throw err;
 	}
 }

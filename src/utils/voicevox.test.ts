@@ -1,4 +1,3 @@
-import { vi } from "vitest";
 import { checkVoicevoxServerHealth, generateVoice } from "./voicevox.ts";
 
 // モックの設定

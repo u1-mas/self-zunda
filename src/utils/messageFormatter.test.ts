@@ -1,6 +1,4 @@
 import type { Message } from "discord.js";
-// vitestはglobalsがtrueなので、importする必要はない
-// import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
 	formatChannelMentions,
 	formatEmojis,

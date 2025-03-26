@@ -2,7 +2,7 @@ import { getVoiceConnection } from "@discordjs/voice";
 import { type Message, TextChannel } from "discord.js";
 import { isTextToSpeechEnabled } from "../models/activeChannels.ts";
 import { playAudio } from "../utils/audio.ts";
-import { debug, error, warn } from "../utils/logger.ts";
+import { logger } from "../utils/logger.ts";
 import { formatMessage } from "../utils/messageFormatter.ts";
 import { generateVoice } from "../utils/voicevox.ts";
 
@@ -40,7 +40,7 @@ export class MessageProcessingError extends Error {
  */
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: <explanation> TODO: なんとかする
 export async function handleMessage(message: Message): Promise<void> {
-	debug(`message: ${message}`);
+	logger.debug(`message: ${message}`);
 	try {
 		// 読み上げ処理の前提条件をチェック
 		// 条件が満たされない場合は早期リターン
@@ -63,7 +63,7 @@ export async function handleMessage(message: Message): Promise<void> {
 		// ボイスコネクションを取得
 		const connection = getVoiceConnection(guildId);
 		if (!connection) {
-			warn("ボイスコネクションが見つからないのだ！");
+			logger.warn("ボイスコネクションが見つからないのだ！");
 			return;
 		}
 
@@ -74,12 +74,12 @@ export async function handleMessage(message: Message): Promise<void> {
 		} catch (err) {
 			// VOICEVOXのエラーメッセージからユーザー無効エラーを検出
 			if (err instanceof Error && err.message.includes("ユーザーの読み上げが無効")) {
-				warn(`ユーザー ${message.author.tag} の読み上げが無効になっているのだ`);
+				logger.warn(`ユーザー ${message.author.tag} の読み上げが無効になっているのだ`);
 				return;
 			}
 
 			// エラーメッセージ送信
-			error(
+			logger.error(
 				`音声合成に失敗したのだ: ${err instanceof Error ? err.message : "予期せぬエラーが発生したのだ"}`,
 			);
 
@@ -90,13 +90,13 @@ export async function handleMessage(message: Message): Promise<void> {
 						`メッセージの読み上げに失敗したのだ: ${err instanceof Error ? err.message : "予期せぬエラーが発生したのだ"}`,
 					);
 				} catch (notificationErr) {
-					error(`エラー通知の送信にも失敗したのだ: ${notificationErr}`);
+					logger.error(`エラー通知の送信にも失敗したのだ: ${notificationErr}`);
 				}
 			}
 		}
 	} catch (err) {
 		// 予期せぬエラーのハンドリング
-		error(`メッセージ処理で予期せぬエラーが発生したのだ: ${err}`);
+		logger.error(`メッセージ処理で予期せぬエラーが発生したのだ: ${err}`);
 	}
 }
 

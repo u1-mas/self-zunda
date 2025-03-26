@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { error, log } from "../utils/logger.ts";
+import { logger } from "../utils/logger.ts";
 
 // ユーザー設定の型定義
 export interface UserSettings {
@@ -48,11 +48,11 @@ let settingsData: AllSettings = {
 function initConfigDir(): void {
 	try {
 		if (!fs.existsSync(CONFIG_DIR)) {
-			log(`設定ディレクトリ ${CONFIG_DIR} を作成するのだ`);
+			logger.log(`設定ディレクトリ ${CONFIG_DIR} を作成するのだ`);
 			fs.mkdirSync(CONFIG_DIR, { recursive: true });
 		}
 	} catch (err) {
-		error(`設定ディレクトリの作成に失敗したのだ: ${err}`);
+		logger.error(`設定ディレクトリの作成に失敗したのだ: ${err}`);
 		throw err;
 	}
 }
@@ -63,16 +63,16 @@ export function loadSettings(): void {
 		initConfigDir();
 
 		if (fs.existsSync(CONFIG_FILE)) {
-			log(`設定ファイル ${CONFIG_FILE} を読み込むのだ`);
+			logger.log(`設定ファイル ${CONFIG_FILE} を読み込むのだ`);
 			const data = fs.readFileSync(CONFIG_FILE, "utf8");
 			settingsData = JSON.parse(data);
-			log("設定の読み込みが完了したのだ");
+			logger.log("設定の読み込みが完了したのだ");
 		} else {
-			log("設定ファイルがないので、デフォルト設定を使用するのだ");
+			logger.log("設定ファイルがないので、デフォルト設定を使用するのだ");
 			saveSettings(); // デフォルト設定を保存
 		}
 	} catch (err) {
-		error(`設定の読み込みに失敗したのだ: ${err}`);
+		logger.error(`設定の読み込みに失敗したのだ: ${err}`);
 		// エラー時はデフォルト設定を使用
 		settingsData = { servers: {} };
 	}
@@ -82,11 +82,11 @@ export function loadSettings(): void {
 export function saveSettings(): void {
 	try {
 		initConfigDir();
-		log(`設定ファイル ${CONFIG_FILE} に保存するのだ`);
+		logger.log(`設定ファイル ${CONFIG_FILE} に保存するのだ`);
 		fs.writeFileSync(CONFIG_FILE, JSON.stringify(settingsData, null, 2), "utf8");
-		log("設定の保存が完了したのだ");
+		logger.log("設定の保存が完了したのだ");
 	} catch (err) {
-		error(`設定の保存に失敗したのだ: ${err}`);
+		logger.error(`設定の保存に失敗したのだ: ${err}`);
 		throw err;
 	}
 }

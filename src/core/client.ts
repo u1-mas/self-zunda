@@ -5,7 +5,7 @@ import { handleInteraction } from "../handlers/interactionHandler.ts";
 import { handleMessageCreate } from "../handlers/messageHandler.ts";
 import { handleVoiceStateUpdate } from "../handlers/voiceStateHandler.ts";
 import { enableTextToSpeech, getActiveChannels } from "../models/activeChannels.ts";
-import { debug, error, info } from "../utils/logger.ts";
+import { logger } from "../utils/logger.ts";
 
 let client: Client | null = null;
 
@@ -39,7 +39,7 @@ function saveVoiceStates() {
 			}
 		}
 	}
-	debug(`${previousVoiceStates.length}個のボイスチャンネル状態を保存したのだ！`);
+	logger.debug(`${previousVoiceStates.length}個のボイスチャンネル状態を保存したのだ！`);
 }
 
 // 保存したボイスチャンネルに再接続
@@ -48,7 +48,7 @@ async function reconnectToVoiceChannels() {
 		return;
 	}
 
-	debug(`${previousVoiceStates.length}個のボイスチャンネルに再接続するのだ！`);
+	logger.debug(`${previousVoiceStates.length}個のボイスチャンネルに再接続するのだ！`);
 	for (const state of previousVoiceStates) {
 		try {
 			const connection = joinVoiceChannel({
@@ -82,9 +82,9 @@ async function reconnectToVoiceChannels() {
 			// テキストチャンネルの読み上げを有効化
 			enableTextToSpeech(state.guildId, state.textChannelId);
 
-			debug(`${state.guildId}のボイスチャンネルに再接続したのだ！`);
+			logger.debug(`${state.guildId}のボイスチャンネルに再接続したのだ！`);
 		} catch (err) {
-			error(
+			logger.error(
 				`${state.guildId}のボイスチャンネルへの再接続に失敗したのだ:`,
 				err instanceof Error ? err.message : "予期せぬエラーが発生したのだ...",
 			);
@@ -100,10 +100,10 @@ export async function initializeClient(): Promise<Client> {
 		client.removeAllListeners();
 		await client.destroy();
 		client = null;
-		debug("古いクライアントを破棄したのだ！");
+		logger.debug("古いクライアントを破棄したのだ！");
 	}
 
-	debug("新しいDiscordクライアントを作成するのだ！");
+	logger.debug("新しいDiscordクライアントを作成するのだ！");
 	client = new Client({
 		intents: [
 			GatewayIntentBits.Guilds,
@@ -114,7 +114,7 @@ export async function initializeClient(): Promise<Client> {
 	});
 
 	const onReady = async () => {
-		info("Botが準備できたのだ！");
+		logger.info("Botが準備できたのだ！");
 		await reconnectToVoiceChannels();
 	};
 

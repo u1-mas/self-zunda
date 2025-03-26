@@ -1,6 +1,6 @@
 import { getVoiceConnection } from "@discordjs/voice";
 import { getClient } from "../core/client.ts";
-import { error, log } from "../utils/logger.ts";
+import { logger } from "../utils/logger.ts";
 
 let isShuttingDown = false;
 
@@ -10,19 +10,19 @@ export async function handleShutdown() {
 		return;
 	}
 	isShuttingDown = true;
-	log("シャットダウン処理を開始するのだ...");
+	logger.log("シャットダウン処理を開始するのだ...");
 
 	// 全てのギルドのボイスチャンネルから切断
 	for (const guild of client.guilds.cache.values()) {
 		const connection = getVoiceConnection(guild.id);
 		if (connection) {
-			log(`${guild.name} のボイスチャンネルから切断するのだ...`);
+			logger.log(`${guild.name} のボイスチャンネルから切断するのだ...`);
 			try {
 				// まずボイスコネクションを破棄
 				connection.destroy();
-				log(`${guild.name} のボイスコネクションを破棄したのだ！`);
+				logger.log(`${guild.name} のボイスコネクションを破棄したのだ！`);
 			} catch (err) {
-				error(`${guild.name} のボイスコネクションの破棄中にエラーが発生したのだ:`, err);
+				logger.error(`${guild.name} のボイスコネクションの破棄中にエラーが発生したのだ:`, err);
 			}
 		}
 	}
@@ -30,9 +30,9 @@ export async function handleShutdown() {
 	// クライアントを破棄
 	try {
 		await client.destroy();
-		log("クライアントを破棄して、シャットダウンを完了するのだ！");
+		logger.log("クライアントを破棄して、シャットダウンを完了するのだ！");
 	} catch (err) {
-		error("クライアントの破棄中にエラーが発生したのだ:", err);
+		logger.error("クライアントの破棄中にエラーが発生したのだ:", err);
 	} finally {
 		isShuttingDown = false; // シャットダウン完了後にフラグをリセット
 	}

@@ -1,11 +1,12 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { colors, debug, error, getTimeString, info, log, warn } from "./logger.ts";
+import { logger } from "./logger.ts";
 
 describe("logger", () => {
 	beforeEach(() => {
 		// コンソール出力をモックする
-		vi.spyOn(console, "log");
-		vi.spyOn(console, "error");
+		// biome-ignore lint/suspicious/noEmptyBlockStatements: <explanation>
+		vi.spyOn(console, "log").mockImplementation(() => {});
+		// biome-ignore lint/suspicious/noEmptyBlockStatements: <explanation>
+		vi.spyOn(console, "error").mockImplementation(() => {});
 
 		// 日付をモックして固定値を返すようにする
 		vi.useFakeTimers();
@@ -17,55 +18,34 @@ describe("logger", () => {
 		vi.useRealTimers();
 	});
 
-	describe("getTimeString", () => {
-		it("現在時刻を適切な形式で返すこと", () => {
-			expect(getTimeString()).toBe("12:34:56");
-		});
-	});
-
 	describe("log", () => {
-		it("指定された色とメッセージでログを出力すること", () => {
+		it("適切な形式でログを出力すること", () => {
 			const message = "テストメッセージ";
-			log(message, colors.green);
+			logger.log(message);
 
-			expect(console.log).toHaveBeenCalledWith(
-				`${colors.green}[12:34:56] ${message}${colors.reset}`,
-			);
-		});
-
-		it("色が指定されていない場合はデフォルト色を使用すること", () => {
-			const message = "テストメッセージ";
-			log(message);
-
-			expect(console.log).toHaveBeenCalledWith(
-				`${colors.reset}[12:34:56] ${message}${colors.reset}`,
-			);
+			expect(console.log).toHaveBeenCalledWith(expect.stringContaining(`[LOG] ${message}`));
 		});
 	});
 
 	describe("info", () => {
-		it("青色でINFO接頭辞付きのログを出力すること", () => {
+		it("INFO接頭辞付きのログを出力すること", () => {
 			const message = "情報メッセージ";
-			info(message);
+			logger.info(message);
 
-			expect(console.log).toHaveBeenCalledWith(
-				`${colors.blue}[INFO][12:34:56] ${message}${colors.reset}`,
-			);
+			expect(console.log).toHaveBeenCalledWith(expect.stringContaining(`[INFO] ${message}`));
 		});
 	});
 
 	describe("debug", () => {
-		it("DEBUGモードがtrueの場合、黄色でDEBUG接頭辞付きのログを出力すること", () => {
+		it("DEBUGモードがtrueの場合、DEBUG接頭辞付きのログを出力すること", () => {
 			// DEBUGモードをtrueに設定
 			const originalEnv = process.env.DEBUG;
 			process.env.DEBUG = "true";
 
 			const message = "デバッグメッセージ";
-			debug(message);
+			logger.debug(message);
 
-			expect(console.log).toHaveBeenCalledWith(
-				`${colors.yellow}[DEBUG][12:34:56] ${message}${colors.reset}`,
-			);
+			expect(console.log).toHaveBeenCalledWith(expect.stringContaining(`[DEBUG] ${message}`));
 
 			// 環境変数を元に戻す
 			process.env.DEBUG = originalEnv;
@@ -77,25 +57,9 @@ describe("logger", () => {
 			process.env.DEBUG = "false";
 
 			const message = "デバッグメッセージ";
-			debug(message);
+			logger.debug(message);
 
 			expect(console.log).not.toHaveBeenCalled();
-
-			// 環境変数を元に戻す
-			process.env.DEBUG = originalEnv;
-		});
-
-		it("色を指定できること", () => {
-			// DEBUGモードをtrueに設定
-			const originalEnv = process.env.DEBUG;
-			process.env.DEBUG = "true";
-
-			const message = "デバッグメッセージ";
-			debug(message, colors.green);
-
-			expect(console.log).toHaveBeenCalledWith(
-				`${colors.green}[DEBUG][12:34:56] ${message}${colors.reset}`,
-			);
 
 			// 環境変数を元に戻す
 			process.env.DEBUG = originalEnv;
@@ -103,36 +67,29 @@ describe("logger", () => {
 	});
 
 	describe("warn", () => {
-		it("黄色でWARN接頭辞付きのログを出力すること", () => {
+		it("WARN接頭辞付きのログを出力すること", () => {
 			const message = "警告メッセージ";
-			warn(message);
+			logger.warn(message);
 
-			expect(console.log).toHaveBeenCalledWith(
-				`${colors.yellow}[WARN][12:34:56] ${message}${colors.reset}`,
-			);
+			expect(console.log).toHaveBeenCalledWith(expect.stringContaining(`[WARN] ${message}`));
 		});
 	});
 
 	describe("error", () => {
-		it("赤色でエラーメッセージを出力すること", () => {
+		it("エラーメッセージを出力すること", () => {
 			const message = "エラーメッセージ";
-			error(message);
+			logger.error(message);
 
-			expect(console.error).toHaveBeenCalledWith(
-				`${colors.red}[12:34:56] ${message}${colors.reset}`,
-				undefined,
-			);
+			expect(console.log).toHaveBeenCalledWith(expect.stringContaining(`[ERROR] ${message}`));
 		});
 
 		it("エラーオブジェクトがある場合、追加情報として出力すること", () => {
 			const message = "エラーメッセージ";
 			const errorObj = new Error("テストエラー");
-			error(message, errorObj);
+			logger.error(message, errorObj);
 
-			expect(console.error).toHaveBeenCalledWith(
-				`${colors.red}[12:34:56] ${message}${colors.reset}`,
-				errorObj,
-			);
+			expect(console.log).toHaveBeenCalledWith(expect.stringContaining(`[ERROR] ${message}`));
+			expect(console.error).toHaveBeenCalledWith(errorObj);
 		});
 	});
 });

@@ -1,7 +1,7 @@
 import { REST, Routes } from "discord.js";
 import { config } from "dotenv";
 import { commandsData } from "./handlers/commands.ts";
-import { error, log } from "./utils/logger.ts";
+import { logger } from "./utils/logger.ts";
 
 // 環境変数を読み込む
 config();
@@ -16,7 +16,7 @@ const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
 // コマンドを登録する関数
 export async function deployCommands() {
 	try {
-		log("スラッシュコマンドを登録しています...");
+		logger.log("スラッシュコマンドを登録しています...");
 
 		const clientId = process.env.CLIENT_ID;
 		if (!clientId) {
@@ -27,10 +27,10 @@ export async function deployCommands() {
 			body: commandsData,
 		});
 
-		log("スラッシュコマンドの登録に成功しました！");
+		logger.log("スラッシュコマンドの登録に成功しました！");
 		return true;
 	} catch (err) {
-		error(`スラッシュコマンドの登録中にエラーが発生しました: ${err}`);
+		logger.error(`スラッシュコマンドの登録中にエラーが発生しました: ${err}`);
 		return false;
 	}
 }

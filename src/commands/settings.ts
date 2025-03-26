@@ -11,7 +11,7 @@ import {
 	setServerDefaultSpeaker,
 	updateUserSettings,
 } from "../models/userSettings.ts";
-import { error } from "../utils/logger.ts";
+import { logger } from "../utils/logger.ts";
 import type { Command } from "./types.ts";
 
 // 「声」のオプション一覧
@@ -183,7 +183,7 @@ export const settings: Command = {
 					});
 			}
 		} catch (err) {
-			error(`設定コマンドの実行中にエラーが発生したのだ: ${err}`);
+			logger.error(`設定コマンドの実行中にエラーが発生したのだ: ${err}`);
 			await interaction.reply({
 				content: "設定の変更中にエラーが発生したのだ...",
 				ephemeral: true,

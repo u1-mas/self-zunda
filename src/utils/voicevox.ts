@@ -1,11 +1,11 @@
 import type { AudioQuery } from "../api/generated.ts";
 import { voicevoxClient } from "../api/voicevoxClient.ts";
 import { getUserSettings } from "../models/userSettings.ts";
-import { debug, error, log } from "./logger.ts";
+import { logger } from "./logger.ts";
 
 // VOICEVOXのAPIの設定
 const VOICEVOX_API_URL = process.env.VOICEVOX_API_URL || "http://localhost:50021";
-log(`VOICEVOXのAPI URLが設定されました: ${VOICEVOX_API_URL}`);
+logger.log(`VOICEVOXのAPI URLが設定されました: ${VOICEVOX_API_URL}`);
 const DEFAULT_SPEAKER_ID = Number(process.env.DEFAULT_SPEAKER) || 1; // ずんだもん（あまあま）
 
 /**
@@ -97,16 +97,16 @@ export async function generateVoice(text: string, serverId?: string, userId?: st
 		const voiceParams = getVoiceParameters(serverId, userId);
 
 		// 音声合成用のクエリを作成
-		debug(`「${text}」の音声合成クエリを作成するのだ (話者ID: ${voiceParams.speakerId})`);
+		logger.debug(`「${text}」の音声合成クエリを作成するのだ (話者ID: ${voiceParams.speakerId})`);
 		const query = await voicevoxClient.audio_query(text);
 
 		// 音声パラメータの設定
-		debug("音声パラメータを設定するのだ");
+		logger.debug("音声パラメータを設定するのだ");
 		const updatedQuery = applyVoiceParameters(query, voiceParams);
 
 		// 音声合成を実行
-		debug("音声合成を実行するのだ");
-		debug(
+		logger.debug("音声合成を実行するのだ");
+		logger.debug(
 			`音声合成のパラメータ: ${JSON.stringify(
 				{
 					speaker: voiceParams.speakerId,
@@ -125,7 +125,7 @@ export async function generateVoice(text: string, serverId?: string, userId?: st
 	} catch (err) {
 		// エラーメッセージを生成
 		const message = getVoicevoxErrorMessage(err);
-		error(message);
+		logger.error(message);
 
 		// エラーを再スロー
 		if (err instanceof Error) {
@@ -144,7 +144,7 @@ export async function getVoicevoxVersion(): Promise<string> {
 		return await voicevoxClient.version();
 	} catch (err) {
 		const message = getVoicevoxErrorMessage(err);
-		error(message);
+		logger.error(message);
 		throw err instanceof Error ? err : new Error(message);
 	}
 }
@@ -178,21 +178,21 @@ function getVoicevoxErrorMessage(err: unknown): string {
  * @throws 接続テストが失敗した場合はエラーをスロー
  */
 export async function checkVoicevoxServerHealth(): Promise<boolean> {
-	log(`VOICEVOXサーバーの接続テストを開始するのだ！使用するURL: ${VOICEVOX_API_URL}`);
+	logger.log(`VOICEVOXサーバーの接続テストを開始するのだ！使用するURL: ${VOICEVOX_API_URL}`);
 	try {
 		// バージョン確認とテスト音声生成を実行
-		debug("VOICEVOXサーバーのバージョンを確認するのだ");
+		logger.debug("VOICEVOXサーバーのバージョンを確認するのだ");
 		const version = await getVoicevoxVersion();
-		debug(`VOICEVOXバージョン: ${version}`);
+		logger.debug(`VOICEVOXバージョン: ${version}`);
 
-		debug("テスト音声を生成するのだ");
+		logger.debug("テスト音声を生成するのだ");
 		await generateVoice("テストなのだ！");
 
-		log("VOICEVOXサーバーに正常に接続できて、音声生成もできるのだ！");
+		logger.log("VOICEVOXサーバーに正常に接続できて、音声生成もできるのだ！");
 		return true;
 	} catch (err) {
 		const message = getVoicevoxErrorMessage(err);
-		error(message);
+		logger.error(message);
 
 		if (err instanceof Error) {
 			throw err;

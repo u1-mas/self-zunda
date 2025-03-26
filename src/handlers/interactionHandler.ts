@@ -1,7 +1,7 @@
 import { DiscordAPIError, type Interaction } from "discord.js";
 import { VOICES } from "../commands/settings.ts";
 import { updateUserSettings } from "../models/userSettings.ts";
-import { error, info, warn } from "../utils/logger.ts";
+import { logger } from "../utils/logger.ts";
 import { commands } from "./commands.ts";
 
 /**
@@ -22,10 +22,10 @@ async function sendErrorResponse(interaction: Interaction, message: string) {
 	} catch (replyErr) {
 		// すでに応答済みのエラー（40060）は無視
 		if (replyErr instanceof DiscordAPIError && replyErr.code === 40060) {
-			warn("インタラクションが既に返信済みまたは期限切れです");
+			logger.warn("インタラクションが既に返信済みまたは期限切れです");
 			return;
 		}
-		error("エラー通知の返信に失敗しました", replyErr);
+		logger.error("エラー通知の返信に失敗しました", replyErr);
 	}
 }
 
@@ -40,7 +40,7 @@ async function handleCommandInteraction(interaction: Interaction) {
 	const command = commands.get(interaction.commandName);
 
 	if (!command) {
-		warn(`存在しないコマンド ${interaction.commandName} が呼び出されました`);
+		logger.warn(`存在しないコマンド ${interaction.commandName} が呼び出されました`);
 		return;
 	}
 
@@ -49,11 +49,11 @@ async function handleCommandInteraction(interaction: Interaction) {
 	} catch (err) {
 		// 40060エラーは無視（すでに返信済み）
 		if (err instanceof DiscordAPIError && err.code === 40060) {
-			warn("インタラクションが既に返信済みまたは期限切れです");
+			logger.warn("インタラクションが既に返信済みまたは期限切れです");
 			return;
 		}
 
-		error("コマンド実行中にエラーが発生しました", err);
+		logger.error("コマンド実行中にエラーが発生しました", err);
 		await sendErrorResponse(interaction, "コマンドの実行中にエラーが発生しました");
 	}
 }
@@ -71,7 +71,7 @@ async function handleStyleMenuInteraction(interaction: Interaction) {
 	const parts = customId.split("-");
 
 	if (parts.length !== 3 || parts[0] !== "styleMenu") {
-		warn(`不正なカスタムID: ${customId}`);
+		logger.warn(`不正なカスタムID: ${customId}`);
 		return;
 	}
 
@@ -80,7 +80,7 @@ async function handleStyleMenuInteraction(interaction: Interaction) {
 	const selectedVoiceId = interaction.values[0];
 
 	if (!(serverId && userId && selectedVoiceId)) {
-		warn("選択メニューから必要な情報が取得できませんでした");
+		logger.warn("選択メニューから必要な情報が取得できませんでした");
 		return;
 	}
 
@@ -92,7 +92,7 @@ async function handleStyleMenuInteraction(interaction: Interaction) {
 		);
 
 		if (!selectedVoice) {
-			warn(`選択された声IDが見つかりません: ${selectedVoiceId}`);
+			logger.warn(`選択された声IDが見つかりません: ${selectedVoiceId}`);
 			await sendErrorResponse(interaction, "選択された声が見つかりませんでした。");
 			return;
 		}
@@ -102,14 +102,16 @@ async function handleStyleMenuInteraction(interaction: Interaction) {
 			speakerId: selectedVoice.id,
 		});
 
-		info(`ユーザー ${userId} の声を ${selectedVoice.name}（${selectedVoice.style}）に変更しました`);
+		logger.info(
+			`ユーザー ${userId} の声を ${selectedVoice.name}（${selectedVoice.style}）に変更しました`,
+		);
 
 		await sendErrorResponse(
 			interaction,
 			`声を「${selectedVoice.name}（${selectedVoice.style}）」に変更しました。`,
 		);
 	} catch (err) {
-		error("スタイルメニュー処理中にエラーが発生しました", err);
+		logger.error("スタイルメニュー処理中にエラーが発生しました", err);
 		await sendErrorResponse(interaction, "設定の更新中にエラーが発生しました。");
 	}
 }
@@ -133,7 +135,7 @@ export async function handleInteraction(interaction: Interaction) {
 			return;
 		}
 
-		error("インタラクション処理中に予期せぬエラーが発生しました", err);
+		logger.error("インタラクション処理中に予期せぬエラーが発生しました", err);
 		await sendErrorResponse(interaction, "予期せぬエラーが発生しました。");
 	}
 }

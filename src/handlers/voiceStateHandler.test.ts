@@ -1,7 +1,7 @@
 import { getVoiceConnection } from "@discordjs/voice";
 import type { Guild, GuildMember, User, VoiceBasedChannel, VoiceState } from "discord.js";
 import { playAudio } from "../utils/audio.ts";
-import { error } from "../utils/logger.ts";
+import { logger } from "../utils/logger.ts";
 import { generateVoice } from "../utils/voicevox.ts";
 import { handleVoiceStateUpdate } from "./voiceStateHandler.ts";
 
@@ -10,12 +10,14 @@ vi.mock("@discordjs/voice", () => ({
 	getVoiceConnection: vi.fn(),
 }));
 
-vi.mock("../utils/logger", () => ({
-	warn: vi.fn(),
-	error: vi.fn(),
-	log: vi.fn(),
-	info: vi.fn(),
-	debug: vi.fn(),
+vi.mock("../utils/logger.ts", () => ({
+	logger: {
+		warn: vi.fn(),
+		error: vi.fn(),
+		log: vi.fn(),
+		info: vi.fn(),
+		debug: vi.fn(),
+	},
 }));
 
 vi.mock("../utils/voicevox", () => ({
@@ -144,7 +146,7 @@ describe("voiceStateHandler", () => {
 
 		await handleVoiceStateUpdate(mockOldState, mockNewState);
 
-		expect(error).toHaveBeenCalledWith(
+		expect(logger.error).toHaveBeenCalledWith(
 			expect.stringContaining("ボイスチャンネルの状態変更の読み上げに失敗"),
 			testError,
 		);
