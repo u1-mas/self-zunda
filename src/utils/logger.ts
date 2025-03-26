@@ -20,38 +20,34 @@ export function getTimeString() {
 }
 
 // 通常のログ出力（常に表示）
-export function log(_message: string, _color = colors.reset) {
-	// biome-ignore lint/suspicious/noConsoleLog: <explanation>
-	// biome-ignore lint/suspicious/noConsole: <explanation>
-	console.log(`${getTimeString()} ${_color}[LOG]${colors.reset} ${_message}`);
+export function log(_message: string) {
+	logWithColor(_message, "LOG", colors.reset);
 }
 
 // 情報ログ出力
 export function info(_message: string) {
-	// biome-ignore lint/suspicious/noConsoleLog: <explanation>
-	// biome-ignore lint/suspicious/noConsole: <explanation>
-	console.log(`${getTimeString()} ${colors.blue}[INFO]${colors.reset} ${_message}`);
+	logWithColor(_message, "INFO", colors.blue);
 }
 
 // デバッグログ出力（DEBUGモード時のみ表示）
-export function debug(_message: string, _color = colors.yellow) {
+export function debug(_message: string) {
 	if (isDebugMode()) {
-		// biome-ignore lint/suspicious/noConsoleLog: <explanation>
-		// biome-ignore lint/suspicious/noConsole: <explanation>
-		console.log(`${getTimeString()} ${_color}[DEBUG]${colors.reset} ${_message}`);
+		logWithColor(_message, "DEBUG", colors.yellow);
 	}
 }
 
 // 警告ログ出力
 export function warn(_message: string) {
-	// biome-ignore lint/suspicious/noConsoleLog: <explanation>
-	// biome-ignore lint/suspicious/noConsole: <explanation>
-	console.log(`${getTimeString()} ${colors.yellow}[WARN]${colors.reset} ${_message}`);
+	logWithColor(_message, "WARN", colors.yellow);
 }
 
 // エラーログ出力
 export function error(_message: string, _error?: unknown) {
+	logWithColor(_message, "ERROR", colors.red);
+}
+
+function logWithColor(message: string, prefix: string, color = colors.reset) {
 	// biome-ignore lint/suspicious/noConsoleLog: <explanation>
 	// biome-ignore lint/suspicious/noConsole: <explanation>
-	console.log(`${getTimeString()} ${colors.red}[ERROR]${colors.reset} ${_message}`);
+	console.log(`${getTimeString()} ${color}[${prefix}] ${message}`);
 }
