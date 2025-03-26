@@ -2,6 +2,17 @@ FROM node:20-slim AS builder
 
 WORKDIR /app
 
+# ビルド依存関係をインストール
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    build-essential \
+    libtool \
+    autoconf \
+    automake \
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
 # 依存関係のインストール
 COPY package*.json ./
 RUN npm install
@@ -16,6 +27,12 @@ RUN npm run build
 FROM node:20-slim
 
 WORKDIR /app
+
+# 実行時の依存関係をインストール
+RUN apt-get update && apt-get install -y \
+    python3 \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
 # 依存関係のインストール（開発依存関係は除外）
 COPY package*.json ./
