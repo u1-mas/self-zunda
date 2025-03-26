@@ -1,11 +1,11 @@
 import { VoiceConnectionStatus, getVoiceConnection, joinVoiceChannel } from "@discordjs/voice";
 import type { Guild } from "discord.js";
 import { Client, Events, GatewayIntentBits } from "discord.js";
-import { handleInteraction } from "../handlers/interactionHandler";
-import { handleMessageCreate } from "../handlers/messageHandler";
-import { handleVoiceStateUpdate } from "../handlers/voiceStateHandler";
-import { enableTextToSpeech, getActiveChannels } from "../models/activeChannels";
-import { debug, error, info } from "../utils/logger";
+import { handleInteraction } from "../handlers/interactionHandler.ts";
+import { handleMessageCreate } from "../handlers/messageHandler.ts";
+import { handleVoiceStateUpdate } from "../handlers/voiceStateHandler.ts";
+import { enableTextToSpeech, getActiveChannels } from "../models/activeChannels.ts";
+import { debug, error, info } from "../utils/logger.ts";
 
 let client: Client | null = null;
 
@@ -20,7 +20,9 @@ let previousVoiceStates: VoiceState[] = [];
 
 // ボイスチャンネルの状態を保存
 function saveVoiceStates() {
-	if (!client) return;
+	if (!client) {
+		return;
+	}
 
 	previousVoiceStates = [];
 	for (const guild of client.guilds.cache.values()) {
@@ -42,7 +44,9 @@ function saveVoiceStates() {
 
 // 保存したボイスチャンネルに再接続
 async function reconnectToVoiceChannels() {
-	if (previousVoiceStates.length === 0) return;
+	if (previousVoiceStates.length === 0) {
+		return;
+	}
 
 	debug(`${previousVoiceStates.length}個のボイスチャンネルに再接続するのだ！`);
 	for (const state of previousVoiceStates) {

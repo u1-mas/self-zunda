@@ -1,7 +1,7 @@
 import { getVoiceConnection } from "@discordjs/voice";
 import { type ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { disableTextToSpeech } from "../models/activeChannels";
-import { log } from "../utils/logger";
+import { disableTextToSpeech } from "../models/activeChannels.ts";
+import { log } from "../utils/logger.ts";
 
 export const leave = {
 	data: new SlashCommandBuilder()

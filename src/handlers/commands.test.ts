@@ -1,10 +1,10 @@
 import { Collection } from "discord.js";
-import { join } from "../commands/join";
-import { leave } from "../commands/leave";
-import { ping } from "../commands/ping";
-import { settings } from "../commands/settings";
-import { status } from "../commands/status";
-import { commands, commandsData } from "./commands";
+import { join } from "../commands/join.ts";
+import { leave } from "../commands/leave.ts";
+import { ping } from "../commands/ping.ts";
+import { settings } from "../commands/settings.ts";
+import { status } from "../commands/status.ts";
+import { commands, commandsData } from "./commands.ts";
 
 describe("commands", () => {
 	describe("commands collection", () => {

@@ -10,9 +10,9 @@ import {
 	getUserSettings,
 	setServerDefaultSpeaker,
 	updateUserSettings,
-} from "../models/userSettings";
-import { error } from "../utils/logger";
-import type { Command } from "./types";
+} from "../models/userSettings.ts";
+import { error } from "../utils/logger.ts";
+import type { Command } from "./types.ts";
 
 // 「声」のオプション一覧
 // ID: VOICEVOXでのスピーカーID

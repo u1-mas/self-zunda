@@ -1,6 +1,6 @@
 import { getVoiceConnection } from "@discordjs/voice";
 import { type ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { getActiveChannels } from "../models/activeChannels";
+import { getActiveChannels } from "../models/activeChannels.ts";
 
 export const status = {
 	data: new SlashCommandBuilder()
@@ -20,7 +20,7 @@ export const status = {
 		const guildConnection = getVoiceConnection(interaction.guild.id);
 		const activeTextChannel = activeChannels.get(interaction.guild.id);
 
-		if (!guildConnection || !activeTextChannel) {
+		if (!(guildConnection && activeTextChannel)) {
 			await interaction.reply({
 				content: "現在、ボイスチャンネルに接続していないのだ！",
 				ephemeral: true,

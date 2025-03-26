@@ -1,5 +1,5 @@
 import { vi } from "vitest";
-import { checkVoicevoxServerHealth, generateVoice } from "./voicevox";
+import { checkVoicevoxServerHealth, generateVoice } from "./voicevox.ts";
 
 // モックの設定
 vi.mock("axios");

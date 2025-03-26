@@ -8,7 +8,7 @@ import {
 	formatMessage,
 	formatUrls,
 	formatWhitespace,
-} from "./messageFormatter";
+} from "./messageFormatter.ts";
 
 describe("messageFormatter", () => {
 	// モック用オブジェクト

@@ -1,7 +1,7 @@
 import { config } from "dotenv";
-import { initializeClient } from "./core/client";
-import { error, info, log } from "./utils/logger";
-import { checkVoicevoxServerHealth } from "./utils/voicevox";
+import { initializeClient } from "./core/client.ts";
+import { error, info, log } from "./utils/logger.ts";
+import { checkVoicevoxServerHealth } from "./utils/voicevox.ts";
 
 config();
 

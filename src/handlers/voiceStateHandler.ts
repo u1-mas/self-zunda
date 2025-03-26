@@ -1,15 +1,19 @@
 import { getVoiceConnection } from "@discordjs/voice";
 import type { VoiceState } from "discord.js";
-import { playAudio } from "../utils/audio";
-import { error } from "../utils/logger";
-import { generateVoice } from "../utils/voicevox";
+import { playAudio } from "../utils/audio.ts";
+import { error } from "../utils/logger.ts";
+import { generateVoice } from "../utils/voicevox.ts";
 
 export async function handleVoiceStateUpdate(oldState: VoiceState, newState: VoiceState) {
-	if (newState.member?.user.bot) return;
+	if (newState.member?.user.bot) {
+		return;
+	}
 
 	if (oldState.channelId !== newState.channelId) {
 		const connection = getVoiceConnection(newState.guild.id);
-		if (!connection) return;
+		if (!connection) {
+			return;
+		}
 
 		try {
 			const memberName = newState.member?.displayName || "不明なユーザー";

@@ -1,13 +1,13 @@
 import { REST, Routes } from "discord.js";
 import { config } from "dotenv";
-import { commandsData } from "./handlers/commands";
-import { error, log } from "./utils/logger";
+import { commandsData } from "./handlers/commands.ts";
+import { error, log } from "./utils/logger.ts";
 
 // 環境変数を読み込む
 config();
 
 // 環境変数の確認
-if (!process.env.DISCORD_TOKEN || !process.env.CLIENT_ID) {
+if (!(process.env.DISCORD_TOKEN && process.env.CLIENT_ID)) {
 	throw new Error("必要な環境変数が設定されていないのだ！");
 }
 
@@ -37,8 +37,7 @@ export async function deployCommands() {
 
 // スクリプトが直接実行された場合にコマンドを登録
 if (import.meta.url === `file://${process.argv[1]}`) {
-	deployCommands().catch((err) => {
-		console.error("コマンド登録プロセスでエラーが発生しました:", err);
+	deployCommands().catch((_err) => {
 		process.exit(1);
 	});
 }

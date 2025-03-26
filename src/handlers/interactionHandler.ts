@@ -1,8 +1,8 @@
 import { DiscordAPIError, type Interaction } from "discord.js";
-import { VOICES } from "../commands/settings";
-import { updateUserSettings } from "../models/userSettings";
-import { error, info, warn } from "../utils/logger";
-import { commands } from "./commands";
+import { VOICES } from "../commands/settings.ts";
+import { updateUserSettings } from "../models/userSettings.ts";
+import { error, info, warn } from "../utils/logger.ts";
+import { commands } from "./commands.ts";
 
 /**
  * エラー応答を送信するのだ
@@ -33,7 +33,9 @@ async function sendErrorResponse(interaction: Interaction, message: string) {
  * コマンドインタラクションを処理するのだ
  */
 async function handleCommandInteraction(interaction: Interaction) {
-	if (!interaction.isChatInputCommand()) return;
+	if (!interaction.isChatInputCommand()) {
+		return;
+	}
 
 	const command = commands.get(interaction.commandName);
 
@@ -60,7 +62,9 @@ async function handleCommandInteraction(interaction: Interaction) {
  * スタイルメニューのインタラクションを処理するのだ
  */
 async function handleStyleMenuInteraction(interaction: Interaction) {
-	if (!interaction.isStringSelectMenu()) return;
+	if (!interaction.isStringSelectMenu()) {
+		return;
+	}
 
 	const customId = interaction.customId;
 	// カスタムIDは "styleMenu-{serverId}-{userId}" の形式
@@ -75,7 +79,7 @@ async function handleStyleMenuInteraction(interaction: Interaction) {
 	const userId = parts[2];
 	const selectedVoiceId = interaction.values[0];
 
-	if (!serverId || !userId || !selectedVoiceId) {
+	if (!(serverId && userId && selectedVoiceId)) {
 		warn("選択メニューから必要な情報が取得できませんでした");
 		return;
 	}

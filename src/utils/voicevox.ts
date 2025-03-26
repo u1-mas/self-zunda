@@ -1,7 +1,7 @@
-import type { AudioQuery } from "../api/generated";
-import { voicevoxClient } from "../api/voicevoxClient";
-import { getUserSettings } from "../models/userSettings";
-import { debug, error, log } from "./logger";
+import type { AudioQuery } from "../api/generated.ts";
+import { voicevoxClient } from "../api/voicevoxClient.ts";
+import { getUserSettings } from "../models/userSettings.ts";
+import { debug, error, log } from "./logger.ts";
 
 // VOICEVOXのAPIの設定
 const VOICEVOX_API_URL = process.env.VOICEVOX_API_URL || "http://localhost:50021";
@@ -39,7 +39,7 @@ export const DEFAULT_VOICE_PARAMETERS: VoiceParameters = {
  */
 export function getVoiceParameters(serverId?: string, userId?: string): VoiceParameters {
 	// サーバーIDとユーザーIDが指定されていなければデフォルト設定を返す
-	if (!serverId || !userId) {
+	if (!(serverId && userId)) {
 		return { ...DEFAULT_VOICE_PARAMETERS };
 	}
 

@@ -1,5 +1,5 @@
 import axios, { type AxiosError } from "axios";
-import type { AudioQuery } from "./generated";
+import type { AudioQuery } from "./generated.ts";
 
 const BASE_URL = process.env.VOICEVOX_API_URL ?? "http://localhost:50021";
 

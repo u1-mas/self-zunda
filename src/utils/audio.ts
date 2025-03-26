@@ -13,7 +13,7 @@ import {
 	createAudioPlayer,
 	createAudioResource,
 } from "@discordjs/voice";
-import { debug, error, info, warn } from "./logger";
+import { debug, error, info, warn } from "./logger.ts";
 
 // アクティブな音声プレイヤーを保持
 const players = new Map<string, AudioPlayer>();

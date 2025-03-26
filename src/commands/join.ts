@@ -5,16 +5,18 @@ import {
 	SlashCommandBuilder,
 	type VoiceChannel,
 } from "discord.js";
-import { enableTextToSpeech } from "../models/activeChannels";
-import { error, log } from "../utils/logger";
-import { checkVoicevoxServerHealth } from "../utils/voicevox";
+import { enableTextToSpeech } from "../models/activeChannels.ts";
+import { error, log } from "../utils/logger.ts";
+import { checkVoicevoxServerHealth } from "../utils/voicevox.ts";
 
 // VoiceVoxの疎通確認フラグ
 let hasCheckedVoicevox = false;
 
 // VoiceVoxの疎通確認
 async function checkVoicevox() {
-	if (hasCheckedVoicevox) return;
+	if (hasCheckedVoicevox) {
+		return;
+	}
 
 	try {
 		await checkVoicevoxServerHealth();

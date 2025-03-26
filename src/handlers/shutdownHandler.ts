@@ -1,12 +1,14 @@
 import { getVoiceConnection } from "@discordjs/voice";
-import { getClient } from "../core/client";
-import { error, log } from "../utils/logger";
+import { getClient } from "../core/client.ts";
+import { error, log } from "../utils/logger.ts";
 
 let isShuttingDown = false;
 
 export async function handleShutdown() {
 	const client = getClient();
-	if (isShuttingDown || !client) return;
+	if (isShuttingDown || !client) {
+		return;
+	}
 	isShuttingDown = true;
 	log("シャットダウン処理を開始するのだ...");
 

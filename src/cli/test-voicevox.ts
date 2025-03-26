@@ -1,6 +1,6 @@
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { checkVoicevoxServerHealth, generateVoice } from "../utils/voicevox";
+import { checkVoicevoxServerHealth, generateVoice } from "../utils/voicevox.ts";
 
 async function main() {
 	try {
@@ -15,13 +15,11 @@ async function main() {
 		// 生成した音声を保存
 		const outputPath = join(process.cwd(), "test-output.wav");
 		await writeFile(outputPath, audioBuffer);
-	} catch (error) {
-		console.error(error instanceof Error ? error.message : "予期せぬエラーが発生したのだ...");
+	} catch (_error) {
 		process.exit(1);
 	}
 }
 
-main().catch((error) => {
-	console.error("エラーが発生したのだ:", error);
+main().catch((_error) => {
 	process.exit(1);
 });

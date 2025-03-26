@@ -9,7 +9,7 @@ import {
 	loadSettings,
 	setServerDefaultSpeaker,
 	updateUserSettings,
-} from "./userSettings";
+} from "./userSettings.ts";
 
 // モックの設定
 vi.mock("node:fs");
@@ -35,8 +35,12 @@ describe("ユーザー設定モジュール", () => {
 		// fsのモック
 		vi.mocked(fs.existsSync).mockImplementation((filePath: PathLike) => {
 			const path = filePath.toString();
-			if (path === mockConfigDir) return true;
-			if (path === mockConfigFile) return false;
+			if (path === mockConfigDir) {
+				return true;
+			}
+			if (path === mockConfigFile) {
+				return false;
+			}
 			return false;
 		});
 

@@ -36,8 +36,7 @@ async function main(): Promise<void> {
 		// 1. APIクライアント生成スクリプトを実行
 		const scriptPath = path.resolve(process.cwd(), "src/cli/generate-voicevox-api.ts");
 		await execCommand("tsx", [scriptPath]);
-	} catch (error) {
-		console.error("エラーが発生しました:", error);
+	} catch (_error) {
 		process.exit(1);
 	}
 }

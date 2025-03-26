@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { debug, error, log } from "../utils/logger";
+import { debug, error, log } from "../utils/logger.ts";
 
 // アクティブチャンネルのデータ型
 interface ActiveChannelsData {

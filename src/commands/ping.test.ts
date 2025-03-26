@@ -8,7 +8,7 @@ import {
 	SlashCommandBuilder,
 } from "discord.js";
 import { vi } from "vitest";
-import { ping } from "./ping";
+import { ping } from "./ping.ts";
 
 describe("ping command", () => {
 	describe("data", () => {

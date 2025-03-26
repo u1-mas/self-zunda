@@ -1,10 +1,10 @@
 import { getVoiceConnection } from "@discordjs/voice";
 import { type Message, TextChannel } from "discord.js";
-import { isTextToSpeechEnabled } from "../models/activeChannels";
-import { playAudio } from "../utils/audio";
-import { debug, error, warn } from "../utils/logger";
-import { formatMessage } from "../utils/messageFormatter";
-import { generateVoice } from "../utils/voicevox";
+import { isTextToSpeechEnabled } from "../models/activeChannels.ts";
+import { playAudio } from "../utils/audio.ts";
+import { debug, error, warn } from "../utils/logger.ts";
+import { formatMessage } from "../utils/messageFormatter.ts";
+import { generateVoice } from "../utils/voicevox.ts";
 
 /**
  * メッセージ処理のエラー型定義
@@ -56,7 +56,9 @@ export async function handleMessage(message: Message): Promise<void> {
 
 		// メッセージを整形
 		const text = formatMessage(message);
-		if (!text) return;
+		if (!text) {
+			return;
+		}
 
 		// ボイスコネクションを取得
 		const connection = getVoiceConnection(guildId);
