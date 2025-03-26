@@ -1,8 +1,7 @@
 import { randomUUID } from "node:crypto";
-import { createReadStream, existsSync, mkdirSync, unlinkSync } from "node:fs";
+import { createReadStream, existsSync, mkdirSync } from "node:fs";
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { Readable } from "node:stream";
 import {
 	type AudioPlayer,
 	type AudioPlayerState,

@@ -7,7 +7,6 @@ import {
 	getServerDefaultSpeaker,
 	getUserSettings,
 	loadSettings,
-	saveSettings,
 	setServerDefaultSpeaker,
 	updateUserSettings,
 } from "./userSettings";

@@ -1,4 +1,3 @@
-import type { Blob } from "node:buffer";
 import type { AudioQuery } from "../api/generated";
 import { voicevoxClient } from "../api/voicevoxClient";
 import { getUserSettings } from "../models/userSettings";

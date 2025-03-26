@@ -1,5 +1,5 @@
 import { getVoiceConnections } from "@discordjs/voice";
-import { error, info } from "../utils/logger";
+import { info } from "../utils/logger";
 import { handleShutdown } from "./shutdownHandler";
 
 // モック

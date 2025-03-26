@@ -1,7 +1,6 @@
 import { VoiceConnectionStatus, getVoiceConnection, joinVoiceChannel } from "@discordjs/voice";
 import type { Guild } from "discord.js";
 import { Client, Events, GatewayIntentBits } from "discord.js";
-import { voicevoxClient } from "../api/voicevoxClient";
 import { handleInteraction } from "../handlers/interactionHandler";
 import { handleMessageCreate } from "../handlers/messageHandler";
 import { handleVoiceStateUpdate } from "../handlers/voiceStateHandler";

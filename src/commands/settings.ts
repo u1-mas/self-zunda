@@ -1,11 +1,7 @@
 import {
 	ActionRowBuilder,
-	ButtonBuilder,
-	ButtonStyle,
 	type ChatInputCommandInteraction,
-	type CommandInteraction,
 	EmbedBuilder,
-	SelectMenuBuilder,
 	SlashCommandBuilder,
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
@@ -15,7 +11,7 @@ import {
 	setServerDefaultSpeaker,
 	updateUserSettings,
 } from "../models/userSettings";
-import { error, log } from "../utils/logger";
+import { error } from "../utils/logger";
 import type { Command } from "./types";
 
 // 「声」のオプション一覧

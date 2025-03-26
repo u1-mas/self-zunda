@@ -1,19 +1,7 @@
-import {
-	type AudioPlayer,
-	type VoiceConnection,
-	VoiceConnectionStatus,
-	entersState,
-	getVoiceConnection,
-	joinVoiceChannel,
-} from "@discordjs/voice";
-import type {
-	BaseMessageOptions,
-	ChatInputCommandInteraction,
-	VoiceBasedChannel,
-} from "discord.js";
+import { type VoiceConnection, VoiceConnectionStatus, joinVoiceChannel } from "@discordjs/voice";
+import type { ChatInputCommandInteraction, VoiceBasedChannel } from "discord.js";
 import { type MockedFunction, vi } from "vitest";
 import { enableTextToSpeech } from "../models/activeChannels";
-import { checkVoicevoxServerHealth } from "../utils/voicevox";
 import { join } from "./join";
 
 vi.mock("@discordjs/voice");

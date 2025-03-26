@@ -1,7 +1,7 @@
-import { DiscordAPIError, type Interaction, InteractionType } from "discord.js";
+import { DiscordAPIError, type Interaction } from "discord.js";
 import { VOICES } from "../commands/settings";
-import { getUserSettings, updateUserSettings } from "../models/userSettings";
-import { error, info, log, warn } from "../utils/logger";
+import { updateUserSettings } from "../models/userSettings";
+import { error, info, warn } from "../utils/logger";
 import { commands } from "./commands";
 
 /**

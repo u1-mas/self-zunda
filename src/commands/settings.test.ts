@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, type SlashCommandSubcommandBuilder } from "discord.js";
+import type { SlashCommandSubcommandBuilder } from "discord.js";
 import type { ChatInputCommandInteraction } from "discord.js";
 import { describe, expect, it, vi } from "vitest";
 import { settings } from "./settings";

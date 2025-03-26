@@ -2,11 +2,7 @@ import { getVoiceConnection } from "@discordjs/voice";
 import type { Guild, GuildMember } from "discord.js";
 import { Collection, type Message, TextChannel } from "discord.js";
 import { type Mock, type MockedObject, beforeEach, describe, expect, it, vi } from "vitest";
-import {
-	disableTextToSpeech,
-	enableTextToSpeech,
-	isTextToSpeechEnabled,
-} from "../models/activeChannels";
+import { isTextToSpeechEnabled } from "../models/activeChannels";
 import { playAudio } from "../utils/audio";
 import { generateVoice } from "../utils/voicevox";
 import { handleMessage } from "./textToSpeech";

@@ -1,9 +1,4 @@
-import {
-	VoiceConnectionStatus,
-	entersState,
-	getVoiceConnection,
-	joinVoiceChannel,
-} from "@discordjs/voice";
+import { getVoiceConnection, joinVoiceChannel } from "@discordjs/voice";
 import {
 	type ChatInputCommandInteraction,
 	type GuildMember,

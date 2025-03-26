@@ -1,16 +1,15 @@
 import { vi } from "vitest";
-import { commandsData } from "./handlers/commands";
 
 // RESTクラスのモック
 const mockPut = vi.fn().mockResolvedValue({});
-const mockREST = {
+const mockRest = {
 	setToken: vi.fn().mockReturnThis(),
 	put: mockPut,
 };
 
 // RESTクラスをモック化
 vi.mock("discord.js", () => ({
-	REST: vi.fn().mockImplementation(() => mockREST),
+	REST: vi.fn().mockImplementation(() => mockRest),
 	Routes: {
 		applicationCommands: (clientId: string) => `/applications/${clientId}/commands`,
 	},
@@ -93,7 +92,7 @@ describe("deploy-commands", () => {
 		vi.resetModules();
 		process.env = { ...originalEnv };
 		mockPut.mockClear();
-		mockREST.setToken.mockClear();
+		mockRest.setToken.mockClear();
 	});
 
 	afterEach(() => {
@@ -117,7 +116,7 @@ describe("deploy-commands", () => {
 		const { deployCommands } = await import("./deploy-commands");
 		await deployCommands();
 
-		expect(mockREST.setToken).toHaveBeenCalledWith("test-token");
+		expect(mockRest.setToken).toHaveBeenCalledWith("test-token");
 
 		// mockPutが呼ばれたことを確認
 		expect(mockPut).toHaveBeenCalled();
