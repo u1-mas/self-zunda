@@ -36,7 +36,27 @@
 		"vitest": "^3.0.9"
 	},
 	"knip": {
-		"entry": ["src/index.ts"],
-		"ignore": ["src/api/generated/**", "src/cli/**", "**/*.test.ts"]
+		"entry": [
+			"src/index.ts",
+			"src/**/*.test.ts"
+		],
+		"ignore": [
+			"src/api/generated/**",
+			"src/cli/**"
+		],
+		"ignoreDependencies": [
+			"@types/*"
+		],
+		"ignoreExportsUsedInFile": true,
+		"rules": {
+			"files": "error",
+			"dependencies": "error",
+			"devDependencies": "error",
+			"unresolved": "error",
+			"exports": "error",
+			"nsExports": "error",
+			"types": "error",
+			"nsTypes": "error"
+		}
 	}
 }
