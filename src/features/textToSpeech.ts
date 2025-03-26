@@ -7,33 +7,6 @@ import { formatMessage } from "../utils/messageFormatter";
 import { generateVoice } from "../utils/voicevox";
 
 /**
- * メッセージ処理のエラー型定義
- */
-export enum MessageProcessingErrorType {
-	/** ボイスコネクションがない */
-	NO_CONNECTION = "NO_CONNECTION",
-	/** ユーザーの読み上げが無効 */
-	USER_DISABLED = "USER_DISABLED",
-	/** 音声合成に失敗 */
-	SYNTHESIS_FAILED = "SYNTHESIS_FAILED",
-	/** 音声再生に失敗 */
-	PLAYBACK_FAILED = "PLAYBACK_FAILED",
-}
-
-/**
- * メッセージ処理のエラークラス
- */
-export class MessageProcessingError extends Error {
-	type: MessageProcessingErrorType;
-
-	constructor(message: string, type: MessageProcessingErrorType) {
-		super(message);
-		this.name = "MessageProcessingError";
-		this.type = type;
-	}
-}
-
-/**
  * メッセージの読み上げ処理
  * @param message Discordのメッセージオブジェクト
  * @returns Promise<void>

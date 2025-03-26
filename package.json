@@ -13,15 +13,11 @@
 		"build": "vite build",
 		"test": "vitest run",
 		"test:watch": "vitest",
-		"type-check": "tsc --noEmit",
-		"check": "biome check --write .",
-		"format": "biome format --write .",
+		"check": "tsc --noEmit && biome check --write . && knip --fix",
 		"lint": "biome lint .",
-		"validate": "npm run type-check && npm run check && npm run test",
 		"generate-api": "npx openapi-typescript-codegen --input http://localhost:50021/openapi.json --output src/api/generated"
 	},
 	"dependencies": {
-		"@discordjs/opus": "^0.10.0",
 		"@discordjs/voice": "^0.18.0",
 		"axios": "^1.8.4",
 		"discord.js": "^14.14.1",
@@ -32,13 +28,35 @@
 		"@types/jest": "^29.5.14",
 		"@types/node": "^20.11.24",
 		"concurrently": "^8.2.2",
-		"cross-env": "^7.0.3",
-		"openapi-typescript-codegen": "^0.25.0",
-		"rimraf": "^5.0.5",
+		"knip": "^5.46.2",
 		"tsx": "^4.19.3",
 		"typescript": "^5.3.3",
 		"vite": "^6.2.2",
 		"vite-node": "^3.0.9",
 		"vitest": "^3.0.9"
+	},
+	"knip": {
+		"entry": [
+			"src/index.ts",
+			"src/**/*.test.ts"
+		],
+		"ignore": [
+			"src/api/generated/**",
+			"src/cli/**"
+		],
+		"ignoreDependencies": [
+			"@types/*"
+		],
+		"ignoreExportsUsedInFile": true,
+		"rules": {
+			"files": "error",
+			"dependencies": "error",
+			"devDependencies": "error",
+			"unresolved": "error",
+			"exports": "error",
+			"nsExports": "error",
+			"types": "error",
+			"nsTypes": "error"
+		}
 	}
 }

@@ -1,6 +1,6 @@
 import { getVoiceConnections } from "@discordjs/voice";
-import { handleShutdown } from "./shutdownHandler";
 import { logger } from "../utils/logger";
+import { handleShutdown } from "./shutdownHandler";
 
 // モック
 vi.mock("@discordjs/voice", () => ({

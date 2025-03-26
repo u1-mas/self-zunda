@@ -32,7 +32,7 @@ function initConfigDir(): void {
 /**
  * アクティブチャンネル設定の読み込み
  */
-export function loadActiveChannels(): void {
+function loadActiveChannels(): void {
 	try {
 		initConfigDir();
 
@@ -62,7 +62,7 @@ export function loadActiveChannels(): void {
 /**
  * アクティブチャンネル設定の保存
  */
-export function saveActiveChannels(): void {
+function saveActiveChannels(): void {
 	try {
 		initConfigDir();
 
