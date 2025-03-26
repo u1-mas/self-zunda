@@ -3,7 +3,7 @@ import path from "node:path";
 import { logger } from "../utils/logger";
 
 // ユーザー設定の型定義
-export interface UserSettings {
+interface UserSettings {
 	userId: string;
 	speakerId: number; // 話者ID
 	speedScale: number; // 読み上げ速度
@@ -14,14 +14,14 @@ export interface UserSettings {
 }
 
 // サーバー設定の型定義
-export interface ServerSettings {
+interface ServerSettings {
 	serverId: string;
 	users: Record<string, UserSettings>; // ユーザーIDをキーとしたユーザー設定のマップ
 	defaultSpeakerId: number; // デフォルトの話者ID
 }
 
 // 全サーバーの設定を含むデータ型
-export interface AllSettings {
+interface AllSettings {
 	servers: Record<string, ServerSettings>; // サーバーIDをキーとしたサーバー設定のマップ
 }
 
@@ -79,7 +79,7 @@ export function loadSettings(): void {
 }
 
 // 設定の保存
-export function saveSettings(): void {
+function saveSettings(): void {
 	try {
 		initConfigDir();
 		logger.log(`設定ファイル ${CONFIG_FILE} に保存するのだ`);

@@ -1,8 +1,8 @@
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { SPEAKERS } from "../commands/settings/constants";
 import { logger } from "../utils/logger";
 import { checkVoicevoxServerHealth, generateVoice } from "../utils/voicevox";
-import { SPEAKERS } from "../commands/settings/constants";
 
 async function main() {
 	logger.log(JSON.stringify(SPEAKERS, null, 2));

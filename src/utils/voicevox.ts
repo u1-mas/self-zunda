@@ -11,7 +11,7 @@ const DEFAULT_SPEAKER_ID = Number(process.env.DEFAULT_SPEAKER) || 1; // ずん�
 /**
  * ユーザー音声設定の型定義
  */
-export interface VoiceParameters {
+interface VoiceParameters {
 	speakerId: number;
 	speedScale: number;
 	pitchScale: number;
@@ -22,7 +22,7 @@ export interface VoiceParameters {
 /**
  * デフォルトの音声パラメータ
  */
-export const DEFAULT_VOICE_PARAMETERS: VoiceParameters = {
+const DEFAULT_VOICE_PARAMETERS: VoiceParameters = {
 	speakerId: DEFAULT_SPEAKER_ID,
 	speedScale: 1.0,
 	pitchScale: 0.0,
@@ -37,7 +37,7 @@ export const DEFAULT_VOICE_PARAMETERS: VoiceParameters = {
  * @returns 音声パラメータのオブジェクト
  * @throws ユーザーの読み上げが無効の場合はエラーをスロー
  */
-export function getVoiceParameters(serverId?: string, userId?: string): VoiceParameters {
+function getVoiceParameters(serverId?: string, userId?: string): VoiceParameters {
 	// サーバーIDとユーザーIDが指定されていなければデフォルト設定を返す
 	if (!(serverId && userId)) {
 		return { ...DEFAULT_VOICE_PARAMETERS };
@@ -139,7 +139,7 @@ export async function generateVoice(text: string, serverId?: string, userId?: st
  * VOICEVOXサーバーのバージョンを取得する
  * @returns VOICEVOXサーバーのバージョン
  */
-export async function getVoicevoxVersion(): Promise<string> {
+async function getVoicevoxVersion(): Promise<string> {
 	try {
 		return await voicevoxClient.version();
 	} catch (err) {

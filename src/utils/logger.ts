@@ -1,4 +1,4 @@
-export const colors = {
+const colors = {
 	green: "\x1b[32m",
 	blue: "\x1b[34m",
 	yellow: "\x1b[33m",

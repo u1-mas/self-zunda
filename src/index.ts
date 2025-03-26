@@ -19,10 +19,3 @@ if (!client.application) {
 	);
 	process.exit(1);
 }
-
-// HMR (Hot Module Replacement) 対応
-if (import.meta.hot) {
-	import.meta.hot.dispose(() => {
-		logger.log("HMR: モジュールを破棄します");
-	});
-}
