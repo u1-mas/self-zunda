@@ -1,7 +1,7 @@
 import axios, { type AxiosError } from "axios";
 import type { AudioQuery } from "./generated";
 
-const BASE_URL = "http://localhost:50021";
+const BASE_URL = process.env.VOICEVOX_API_URL ?? "http://localhost:50021";
 
 // エラーメッセージの定義
 const ERROR_MESSAGES = {

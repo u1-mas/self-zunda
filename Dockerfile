@@ -32,6 +32,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     python3 \
     build-essential \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 # 依存関係のインストール（開発依存関係は除外）
