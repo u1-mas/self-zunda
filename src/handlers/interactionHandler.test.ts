@@ -34,6 +34,7 @@ const createMockInteraction = (overrides = {}) => {
 		deferred: false,
 		reply: vi.fn().mockResolvedValue(undefined),
 		followUp: vi.fn().mockResolvedValue(undefined),
+		isRepliable: () => true,
 		...overrides,
 	} as unknown as ChatInputCommandInteraction;
 };
@@ -94,7 +95,7 @@ describe("interactionHandler", () => {
 
 		expect(error).toHaveBeenCalled();
 		expect(mockInteraction.reply).toHaveBeenCalledWith({
-			content: "コマンドの実行中にエラーが発生したのだ...",
+			content: "コマンドの実行中にエラーが発生しました",
 			ephemeral: true,
 		});
 	});
@@ -110,7 +111,7 @@ describe("interactionHandler", () => {
 
 		expect(error).toHaveBeenCalled();
 		expect(repliedInteraction.followUp).toHaveBeenCalledWith({
-			content: "コマンドの実行中にエラーが発生したのだ...",
+			content: "コマンドの実行中にエラーが発生しました",
 			ephemeral: true,
 		});
 		expect(repliedInteraction.reply).not.toHaveBeenCalled();
@@ -127,7 +128,7 @@ describe("interactionHandler", () => {
 
 		expect(error).toHaveBeenCalled();
 		expect(deferredInteraction.followUp).toHaveBeenCalledWith({
-			content: "コマンドの実行中にエラーが発生したのだ...",
+			content: "コマンドの実行中にエラーが発生しました",
 			ephemeral: true,
 		});
 		expect(deferredInteraction.reply).not.toHaveBeenCalled();
@@ -153,9 +154,9 @@ describe("interactionHandler", () => {
 
 		await handleInteraction(mockInteraction as Interaction);
 
-		expect(error).toHaveBeenCalledWith("コマンドの実行中にエラーが発生したのだ:", testError);
+		expect(error).toHaveBeenCalledWith("コマンド実行中にエラーが発生しました", testError);
 		expect(mockInteraction.reply).toHaveBeenCalled();
-		expect(error).not.toHaveBeenCalledWith("エラー応答の送信に失敗したのだ:", expect.any(Object));
+		expect(error).not.toHaveBeenCalledWith("エラー通知の返信に失敗しました", expect.any(Object));
 	});
 
 	it("エラー応答中に他のエラーが発生した場合は記録されること", async () => {
@@ -167,7 +168,7 @@ describe("interactionHandler", () => {
 
 		await handleInteraction(mockInteraction as Interaction);
 
-		expect(error).toHaveBeenCalledWith("コマンドの実行中にエラーが発生したのだ:", testError);
-		expect(error).toHaveBeenCalledWith("エラー応答の送信に失敗したのだ:", replyError);
+		expect(error).toHaveBeenCalledWith("コマンド実行中にエラーが発生しました", testError);
+		expect(error).toHaveBeenCalledWith("エラー通知の返信に失敗しました", replyError);
 	});
 });
