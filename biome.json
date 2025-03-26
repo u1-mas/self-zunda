@@ -20,7 +20,14 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"all": true
+			"all": true,
+			"style": {
+				"useNamingConvention": "off"
+			},
+			"correctness": {
+				"noNodejsModules": "off",
+				"useHookAtTopLevel": "off"
+			}
 		}
 	},
 	"javascript": {
@@ -29,5 +36,23 @@
 			"trailingCommas": "all",
 			"semicolons": "always"
 		}
-	}
+	},
+	"overrides": [
+		{
+			"include": ["*.test.ts"],
+			"javascript": {
+				"globals": [
+					"expect",
+					"vi",
+					"describe",
+					"test",
+					"beforeEach",
+					"afterEach",
+					"afterAll",
+					"beforeAll",
+					"it"
+				]
+			}
+		}
+	]
 }

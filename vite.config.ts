@@ -1,6 +1,7 @@
 import { resolve } from "node:path";
 import { defineConfig } from "vitest/config";
 
+// biome-ignore lint/style/noDefaultExport: <explanation>
 export default defineConfig({
 	// ビルド設定
 	build: {

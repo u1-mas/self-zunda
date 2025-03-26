@@ -4,8 +4,8 @@ import { colors, debug, error, getTimeString, info, log, warn } from "./logger.t
 describe("logger", () => {
 	beforeEach(() => {
 		// コンソール出力をモックする
-		vi.spyOn(console, "log").mockImplementation(() => {});
-		vi.spyOn(console, "error").mockImplementation(() => {});
+		vi.spyOn(console, "log");
+		vi.spyOn(console, "error");
 
 		// 日付をモックして固定値を返すようにする
 		vi.useFakeTimers();
