@@ -10,6 +10,7 @@ import {
 	handleShowSettings,
 	handleToggleReadingEnabled,
 	handleServerDefaultSettings,
+	handleListVoices,
 } from "./handlers/index.js";
 
 const commandData = new SlashCommandBuilder()
@@ -56,6 +57,9 @@ const commandData = new SlashCommandBuilder()
 					.setDescription("デフォルトの声のタイプを選ぶのだ")
 					.setRequired(true),
 			),
+	)
+	.addSubcommand((subcommand) =>
+		subcommand.setName("list-voices").setDescription("利用可能なスピーカーの一覧を表示するのだ"),
 	);
 
 export const settings: Command = {
@@ -85,6 +89,9 @@ export const settings: Command = {
 					break;
 				case "server-default":
 					await handleServerDefaultSettings(interaction, serverId);
+					break;
+				case "list-voices":
+					await handleListVoices(interaction);
 					break;
 				default:
 					await interaction.reply({

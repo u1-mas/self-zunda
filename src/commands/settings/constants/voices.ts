@@ -170,5 +170,4 @@ export const VOICES = [
 ] as const;
 
 // 話者一覧（名前だけの一意なリスト）
-// Discord制限（25選択肢）に合わせて、一部の主要キャラクターのみを表示
-export const SPEAKERS = VOICES.map((voice) => voice.name);
+export const SPEAKERS = Array.from(new Set(VOICES.map((voice) => voice.name)));

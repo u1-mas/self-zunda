@@ -1,7 +1,7 @@
 import { REST, Routes } from "discord.js";
 import { config } from "dotenv";
-import { commandsData } from "./handlers/commands.ts";
-import { logger } from "./utils/logger.ts";
+import { commandsData } from "../handlers/commands.ts";
+import { logger } from "../utils/logger.ts";
 
 // 環境変数を読み込む
 config();
@@ -37,7 +37,5 @@ export async function deployCommands() {
 
 // スクリプトが直接実行された場合にコマンドを登録
 if (import.meta.url === `file://${process.argv[1]}`) {
-	deployCommands().catch((_err) => {
-		process.exit(1);
-	});
+	await deployCommands();
 }

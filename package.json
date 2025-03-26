@@ -7,8 +7,9 @@
 	"scripts": {
 		"dev": "vite-node --watch src/index.ts",
 		"dev:validate": "concurrently \"npm run dev\" \"npm run type-check -- --watch\"",
-		"deploy-commands": "tsx src/deploy-commands.ts",
-		"start": "node dist/index.js",
+		"deploy-commands": "tsx src/cli/deploy-commands.ts",
+		"test-voicevox": "tsx src/cli/test-voicevox.ts",
+		"start": "npm run build && node dist/index.js",
 		"build": "vite build",
 		"test": "vitest run",
 		"test:watch": "vitest",
