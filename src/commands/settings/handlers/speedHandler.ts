@@ -1,6 +1,6 @@
 import type { ChatInputCommandInteraction } from "discord.js";
-import { updateUserSettings } from "../../../models/userSettings.js";
-import { SPEED_OPTIONS } from "../constants/index.js";
+import { updateUserSettings } from "../../../models/userSettings";
+import { SPEED_OPTIONS } from "../constants";
 
 /**
  * 読み上げ速度設定ハンドラー

@@ -5,10 +5,10 @@ import {
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
 } from "discord.js";
-import { VOICES } from "../commands/settings/constants/index.ts";
-import { updateUserSettings } from "../models/userSettings.ts";
-import { logger } from "../utils/logger.ts";
-import { commands } from "./commands.ts";
+import { VOICES } from "../commands/settings/constants";
+import { updateUserSettings } from "../models/userSettings";
+import { logger } from "../utils/logger";
+import { commands } from "./commands";
 
 /**
  * エラー応答を送信するのだ

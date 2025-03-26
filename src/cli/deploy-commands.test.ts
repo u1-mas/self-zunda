@@ -102,7 +102,7 @@ describe("deploy-commands", () => {
 		process.env.DISCORD_TOKEN = undefined;
 		process.env.CLIENT_ID = undefined;
 
-		await expect(import("./deploy-commands.ts")).rejects.toThrow(
+		await expect(import("./deploy-commands")).rejects.toThrow(
 			"必要な環境変数が設定されていないのだ！",
 		);
 	});
@@ -111,7 +111,7 @@ describe("deploy-commands", () => {
 		process.env.DISCORD_TOKEN = "test-token";
 		process.env.CLIENT_ID = "test-client-id";
 
-		const { deployCommands } = await import("./deploy-commands.ts");
+		const { deployCommands } = await import("./deploy-commands");
 		await deployCommands();
 
 		expect(mockRest.setToken).toHaveBeenCalledWith("test-token");

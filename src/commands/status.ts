@@ -1,6 +1,6 @@
 import { getVoiceConnection } from "@discordjs/voice";
 import { type ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
-import { getActiveChannels } from "../models/activeChannels.ts";
+import { getActiveChannels } from "../models/activeChannels";
 
 export const status = {
 	data: new SlashCommandBuilder()

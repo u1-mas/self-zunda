@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { logger } from "../utils/logger.ts";
+import { logger } from "../utils/logger";
 
 // ユーザー設定の型定義
 export interface UserSettings {

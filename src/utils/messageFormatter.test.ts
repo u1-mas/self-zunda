@@ -6,7 +6,7 @@ import {
 	formatMessage,
 	formatUrls,
 	formatWhitespace,
-} from "./messageFormatter.ts";
+} from "./messageFormatter";
 
 describe("messageFormatter", () => {
 	// モック用オブジェクト

@@ -7,7 +7,7 @@ import {
 	createAudioResource,
 } from "@discordjs/voice";
 import type { MockedObject } from "vitest";
-import { getPlayer, playAudio, stopAudio } from "./audio.ts";
+import { getPlayer, playAudio, stopAudio } from "./audio";
 
 // fs/promisesをモック
 vi.mock("node:fs/promises");

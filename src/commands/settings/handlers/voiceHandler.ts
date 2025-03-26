@@ -4,9 +4,9 @@ import {
 	StringSelectMenuBuilder,
 	StringSelectMenuOptionBuilder,
 } from "discord.js";
-import { updateUserSettings } from "../../../models/userSettings.js";
-import { logger } from "../../../utils/logger.js";
-import { VOICES } from "../constants/index.js";
+import { updateUserSettings } from "../../../models/userSettings";
+import { logger } from "../../../utils/logger";
+import { VOICES } from "../constants";
 
 /**
  * 声のタイプ設定ハンドラー

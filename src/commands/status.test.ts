@@ -2,8 +2,8 @@ import { getVoiceConnection } from "@discordjs/voice";
 import type { VoiceConnection } from "@discordjs/voice";
 import type { ChatInputCommandInteraction } from "discord.js";
 import { type MockedFunction, vi } from "vitest";
-import { getActiveChannels } from "../models/activeChannels.ts";
-import { status } from "./status.ts";
+import { getActiveChannels } from "../models/activeChannels";
+import { status } from "./status";
 
 vi.mock("@discordjs/voice");
 vi.mock("../models/activeChannels");

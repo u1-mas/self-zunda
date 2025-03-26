@@ -1,7 +1,7 @@
-import type { AudioQuery } from "../api/generated/index.ts";
-import { voicevoxClient } from "../api/voicevoxClient.ts";
-import { getUserSettings } from "../models/userSettings.ts";
-import { logger } from "./logger.ts";
+import type { AudioQuery } from "../api/generated/index";
+import { voicevoxClient } from "../api/voicevoxClient";
+import { getUserSettings } from "../models/userSettings";
+import { logger } from "./logger";
 
 // VOICEVOXのAPIの設定
 const VOICEVOX_API_URL = process.env.VOICEVOX_API_URL || "http://localhost:50021";

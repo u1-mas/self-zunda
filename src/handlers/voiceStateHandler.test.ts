@@ -1,9 +1,9 @@
 import { getVoiceConnection } from "@discordjs/voice";
 import type { Guild, GuildMember, User, VoiceBasedChannel, VoiceState } from "discord.js";
-import { playAudio } from "../utils/audio.ts";
-import { logger } from "../utils/logger.ts";
-import { generateVoice } from "../utils/voicevox.ts";
-import { handleVoiceStateUpdate } from "./voiceStateHandler.ts";
+import { playAudio } from "../utils/audio";
+import { logger } from "../utils/logger";
+import { generateVoice } from "../utils/voicevox";
+import { handleVoiceStateUpdate } from "./voiceStateHandler";
 
 // モック
 vi.mock("@discordjs/voice", () => ({

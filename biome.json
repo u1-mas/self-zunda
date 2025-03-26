@@ -7,9 +7,7 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"ignore": [
-			"**/generated/**"
-		]
+		"ignore": ["**/generated/**"]
 	},
 	"formatter": {
 		"enabled": true,
@@ -29,7 +27,8 @@
 			},
 			"correctness": {
 				"noNodejsModules": "off",
-				"useHookAtTopLevel": "off"
+				"useHookAtTopLevel": "off",
+				"useImportExtensions": "off"
 			}
 		}
 	},
@@ -42,9 +41,7 @@
 	},
 	"overrides": [
 		{
-			"include": [
-				"*.test.ts"
-			],
+			"include": ["*.test.ts"],
 			"javascript": {
 				"globals": [
 					"expect",

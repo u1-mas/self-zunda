@@ -1,5 +1,5 @@
 import type { ChatInputCommandInteraction } from "discord.js";
-import { getUserSettings, updateUserSettings } from "../../../models/userSettings.js";
+import { getUserSettings, updateUserSettings } from "../../../models/userSettings";
 
 /**
  * 読み上げ有効/無効切り替えハンドラー

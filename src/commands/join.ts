@@ -5,9 +5,9 @@ import {
 	SlashCommandBuilder,
 	type VoiceChannel,
 } from "discord.js";
-import { enableTextToSpeech } from "../models/activeChannels.ts";
-import { logger } from "../utils/logger.ts";
-import { checkVoicevoxServerHealth } from "../utils/voicevox.ts";
+import { enableTextToSpeech } from "../models/activeChannels";
+import { logger } from "../utils/logger";
+import { checkVoicevoxServerHealth } from "../utils/voicevox";
 
 // VoiceVoxの疎通確認フラグ
 let hasCheckedVoicevox = false;

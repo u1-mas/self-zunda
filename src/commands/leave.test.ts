@@ -1,8 +1,8 @@
 import { type VoiceConnection, getVoiceConnection } from "@discordjs/voice";
 import type { ChatInputCommandInteraction } from "discord.js";
 import { type MockedFunction, vi } from "vitest";
-import { disableTextToSpeech } from "../models/activeChannels.ts";
-import { leave } from "./leave.ts";
+import { disableTextToSpeech } from "../models/activeChannels";
+import { leave } from "./leave";
 
 vi.mock("@discordjs/voice");
 vi.mock("../models/activeChannels");

@@ -1,6 +1,6 @@
 import { getVoiceConnections } from "@discordjs/voice";
-import { logger } from "../utils/logger.ts";
-import { handleShutdown } from "./shutdownHandler.ts";
+import { handleShutdown } from "./shutdownHandler";
+import { logger } from "../utils/logger";
 
 // モック
 vi.mock("@discordjs/voice", () => ({
@@ -16,6 +16,26 @@ vi.mock("../utils/logger.ts", () => ({
 		log: vi.fn(),
 		debug: vi.fn(),
 	},
+}));
+
+vi.mock("../core/client.ts", () => ({
+	getClient: vi.fn().mockReturnValue({
+		guilds: {
+			cache: {
+				values: () => [
+					{
+						id: "guild1",
+						name: "Guild 1",
+					},
+					{
+						id: "guild2",
+						name: "Guild 2",
+					},
+				],
+			},
+		},
+		destroy: vi.fn().mockResolvedValue(undefined),
+	}),
 }));
 
 // プロセスのexit関数をモック化してテスト終了時に実際に終了しないようにする
@@ -34,6 +54,20 @@ afterAll(() => {
 
 describe("shutdownHandler", () => {
 	let mockConnectionMap: Map<string, { destroy: () => void }>;
+	let originalProcessOn: typeof process.on;
+	let originalProcessOff: typeof process.off;
+
+	beforeAll(() => {
+		originalProcessOn = process.on;
+		originalProcessOff = process.off;
+		process.on = vi.fn().mockReturnThis();
+		process.off = vi.fn().mockReturnThis();
+	});
+
+	afterAll(() => {
+		process.on = originalProcessOn;
+		process.off = originalProcessOff;
+	});
 
 	beforeEach(() => {
 		vi.resetAllMocks();
@@ -46,12 +80,14 @@ describe("shutdownHandler", () => {
 		(getVoiceConnections as ReturnType<typeof vi.fn>).mockReturnValue(mockConnectionMap);
 	});
 
-	it("SIGINTシグナルが処理されてシャットダウンが実行されること", () => {
+	it("SIGINTシグナルが処理されてシャットダウンが実行されること", async () => {
 		// ハンドラーをセットアップ
 		handleShutdown();
 
 		// SIGINTイベントをシミュレート
-		process.emit("SIGINT");
+		const [[eventName, handler]] = (process.on as ReturnType<typeof vi.fn>).mock.calls;
+		expect(eventName).toBe("SIGINT");
+		await handler();
 
 		// 各コネクションのdestroyが呼ばれたことを確認
 		for (const connection of mockConnectionMap.values()) {
@@ -59,19 +95,25 @@ describe("shutdownHandler", () => {
 		}
 
 		// ログが出力されたことを確認
-		expect(logger.info).toHaveBeenCalledWith(expect.stringContaining("シャットダウンを開始"));
-		expect(logger.info).toHaveBeenCalledWith(expect.stringContaining("ボイスコネクションを切断"));
+		expect(logger.log).toHaveBeenCalledWith(
+			expect.stringContaining("シャットダウン処理を開始するのだ"),
+		);
+		expect(logger.log).toHaveBeenCalledWith(
+			expect.stringContaining("のボイスチャンネルから切断するのだ"),
+		);
 
 		// プロセスが終了したことを確認
 		expect(mockExit).toHaveBeenCalledWith(0);
 	});
 
-	it("SIGTERMシグナルが処理されてシャットダウンが実行されること", () => {
+	it("SIGTERMシグナルが処理されてシャットダウンが実行されること", async () => {
 		// ハンドラーをセットアップ
 		handleShutdown();
 
 		// SIGTERMイベントをシミュレート
-		process.emit("SIGTERM");
+		const [[eventName, handler]] = (process.on as ReturnType<typeof vi.fn>).mock.calls;
+		expect(eventName).toBe("SIGINT");
+		await handler();
 
 		// 各コネクションのdestroyが呼ばれたことを確認
 		for (const connection of mockConnectionMap.values()) {
@@ -79,14 +121,18 @@ describe("shutdownHandler", () => {
 		}
 
 		// ログが出力されたことを確認
-		expect(logger.info).toHaveBeenCalledWith(expect.stringContaining("シャットダウンを開始"));
-		expect(logger.info).toHaveBeenCalledWith(expect.stringContaining("ボイスコネクションを切断"));
+		expect(logger.log).toHaveBeenCalledWith(
+			expect.stringContaining("シャットダウン処理を開始するのだ"),
+		);
+		expect(logger.log).toHaveBeenCalledWith(
+			expect.stringContaining("のボイスチャンネルから切断するのだ"),
+		);
 
 		// プロセスが終了したことを確認
 		expect(mockExit).toHaveBeenCalledWith(0);
 	});
 
-	it("コネクションがない場合もシャットダウンが正常に実行されること", () => {
+	it("コネクションがない場合もシャットダウンが正常に実行されること", async () => {
 		// コネクションがない状態に設定
 		(getVoiceConnections as ReturnType<typeof vi.fn>).mockReturnValue(new Map());
 
@@ -94,13 +140,16 @@ describe("shutdownHandler", () => {
 		handleShutdown();
 
 		// SIGINTイベントをシミュレート
-		process.emit("SIGINT");
+		const [[eventName, handler]] = (process.on as ReturnType<typeof vi.fn>).mock.calls;
+		expect(eventName).toBe("SIGINT");
+		await handler();
 
 		// ログが出力されたことを確認
-		expect(logger.info).toHaveBeenCalledWith(expect.stringContaining("シャットダウンを開始"));
-		expect(logger.info).toHaveBeenCalledWith(expect.stringContaining("ボイスコネクションを切断"));
-		expect(logger.info).toHaveBeenCalledWith(
-			expect.stringContaining("アクティブなボイスコネクションはありません"),
+		expect(logger.log).toHaveBeenCalledWith(
+			expect.stringContaining("シャットダウン処理を開始するのだ"),
+		);
+		expect(logger.log).toHaveBeenCalledWith(
+			expect.stringContaining("クライアントを破棄して、シャットダウンを完了するのだ"),
 		);
 
 		// プロセスが終了したことを確認

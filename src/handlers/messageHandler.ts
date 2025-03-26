@@ -1,6 +1,6 @@
 import type { Message } from "discord.js";
-import { handleMessage } from "../features/textToSpeech.ts";
-import { logger } from "../utils/logger.ts";
+import { handleMessage } from "../features/textToSpeech";
+import { logger } from "../utils/logger";
 
 export async function handleMessageCreate(message: Message) {
 	try {

@@ -1,2 +1,0 @@
-#!/bin/bash
-find src -type f -name "*.ts" -not -path "*/node_modules/*" | xargs grep -l "import.*{.*\(debug\|error\|info\|log\|warn\).*} from.*logger" | while read file; do echo "Updating $file"; sed -i -E "s/import[[:space:]]+\{([^}]*)((debug|error|info|log|warn|getTimeString)(,|\})[^}]*)\}[[:space:]]+from[[:space:]]+([\"']\.\/?\.?\/utils\/logger\.ts[\"']);/import { logger } from \5;/g" "$file"; sed -i -E "s/\b(debug|error|info|log|warn)\(([^;]*)\);/logger.\1(\2);/g" "$file"; done; echo "完了したのだ！"

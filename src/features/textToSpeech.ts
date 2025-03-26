@@ -1,10 +1,10 @@
 import { getVoiceConnection } from "@discordjs/voice";
 import { type Message, TextChannel } from "discord.js";
-import { isTextToSpeechEnabled } from "../models/activeChannels.ts";
-import { playAudio } from "../utils/audio.ts";
-import { logger } from "../utils/logger.ts";
-import { formatMessage } from "../utils/messageFormatter.ts";
-import { generateVoice } from "../utils/voicevox.ts";
+import { isTextToSpeechEnabled } from "../models/activeChannels";
+import { playAudio } from "../utils/audio";
+import { logger } from "../utils/logger";
+import { formatMessage } from "../utils/messageFormatter";
+import { generateVoice } from "../utils/voicevox";
 
 /**
  * メッセージ処理のエラー型定義

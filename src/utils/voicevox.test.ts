@@ -1,4 +1,4 @@
-import { checkVoicevoxServerHealth, generateVoice } from "./voicevox.ts";
+import { checkVoicevoxServerHealth, generateVoice } from "./voicevox";
 
 // モックの設定
 vi.mock("axios");

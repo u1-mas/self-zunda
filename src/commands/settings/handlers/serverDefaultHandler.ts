@@ -1,6 +1,6 @@
 import type { ChatInputCommandInteraction } from "discord.js";
-import { setServerDefaultSpeaker } from "../../../models/userSettings.js";
-import { VOICES } from "../constants/index.js";
+import { setServerDefaultSpeaker } from "../../../models/userSettings";
+import { VOICES } from "../constants";
 
 /**
  * サーバーデフォルト設定ハンドラー

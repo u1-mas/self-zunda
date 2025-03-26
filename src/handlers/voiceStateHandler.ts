@@ -1,8 +1,8 @@
 import { getVoiceConnection } from "@discordjs/voice";
 import type { VoiceState } from "discord.js";
-import { playAudio } from "../utils/audio.ts";
-import { logger } from "../utils/logger.ts";
-import { generateVoice } from "../utils/voicevox.ts";
+import { playAudio } from "../utils/audio";
+import { logger } from "../utils/logger";
+import { generateVoice } from "../utils/voicevox";
 
 export async function handleVoiceStateUpdate(oldState: VoiceState, newState: VoiceState) {
 	if (newState.member?.user.bot) {

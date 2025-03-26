@@ -1,7 +1,7 @@
 import { REST, Routes } from "discord.js";
 import { config } from "dotenv";
-import { commandsData } from "../handlers/commands.ts";
-import { logger } from "../utils/logger.ts";
+import { commandsData } from "../handlers/commands";
+import { logger } from "../utils/logger";
 
 // 環境変数を読み込む
 config();

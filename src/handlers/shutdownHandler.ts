@@ -1,6 +1,6 @@
 import { getVoiceConnection } from "@discordjs/voice";
-import { getClient } from "../core/client.ts";
-import { logger } from "../utils/logger.ts";
+import { getClient } from "../core/client";
+import { logger } from "../utils/logger";
 
 let isShuttingDown = false;
 

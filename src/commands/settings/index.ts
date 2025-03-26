@@ -1,7 +1,7 @@
 import type { ChatInputCommandInteraction } from "discord.js";
 import { SlashCommandBuilder } from "discord.js";
-import type { Command } from "../types.js";
-import { SPEED_OPTIONS } from "./constants/index.js";
+import type { Command } from "../types";
+import { SPEED_OPTIONS } from "./constants";
 import {
 	handleListVoices,
 	handleServerDefaultSettings,
@@ -9,7 +9,7 @@ import {
 	handleSpeedSettings,
 	handleToggleReadingEnabled,
 	handleVoiceSettings,
-} from "./handlers/index.ts";
+} from "./handlers";
 
 const commandData = new SlashCommandBuilder()
 	.setName("settings")

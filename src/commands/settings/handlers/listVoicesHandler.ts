@@ -1,5 +1,5 @@
 import type { ChatInputCommandInteraction } from "discord.js";
-import { SPEAKERS } from "../constants/index.js";
+import { SPEAKERS } from "../constants";
 
 /**
  * スピーカー一覧表示ハンドラー

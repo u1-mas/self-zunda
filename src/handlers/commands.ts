@@ -1,10 +1,10 @@
 import { Collection } from "discord.js";
-import { join } from "../commands/join.ts";
-import { leave } from "../commands/leave.ts";
-import { ping } from "../commands/ping.ts";
-import { settings } from "../commands/settings/index.ts";
-import { status } from "../commands/status.ts";
-import type { Command } from "../commands/types.ts";
+import { join } from "../commands/join";
+import { leave } from "../commands/leave";
+import { ping } from "../commands/ping";
+import { settings } from "../commands/settings/index";
+import { status } from "../commands/status";
+import type { Command } from "../commands/types";
 
 // コマンドのコレクションを作成
 export const commands = new Collection<string, Command>();

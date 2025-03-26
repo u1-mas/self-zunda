@@ -8,14 +8,19 @@ import {
 	loadSettings,
 	setServerDefaultSpeaker,
 	updateUserSettings,
-} from "./userSettings.ts";
+} from "./userSettings";
 
 // モックの設定
 vi.mock("node:fs");
 vi.mock("node:path");
 vi.mock("../utils/logger", () => ({
-	log: vi.fn(),
-	error: vi.fn(),
+	logger: {
+		info: vi.fn(),
+		warn: vi.fn(),
+		error: vi.fn(),
+		log: vi.fn(),
+		debug: vi.fn(),
+	},
 }));
 
 describe("ユーザー設定モジュール", () => {
