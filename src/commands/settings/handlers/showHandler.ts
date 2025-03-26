@@ -1,6 +1,6 @@
-import { EmbedBuilder, type ChatInputCommandInteraction } from "discord.js";
-import { SPEED_OPTIONS, VOICES } from "../constants/index.js";
+import { type ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
 import { getUserSettings } from "../../../models/userSettings.js";
+import { SPEED_OPTIONS, VOICES } from "../constants/index.js";
 
 /**
  * 設定表示ハンドラー

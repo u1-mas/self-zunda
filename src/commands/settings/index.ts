@@ -1,17 +1,15 @@
 import type { ChatInputCommandInteraction } from "discord.js";
 import { SlashCommandBuilder } from "discord.js";
 import type { Command } from "../types.js";
-import { logger } from "../../utils/logger.js";
 import { SPEED_OPTIONS } from "./constants/index.js";
 import {
-	handleVoiceSettings,
-	handleStyleSettings,
-	handleSpeedSettings,
-	handleShowSettings,
-	handleToggleReadingEnabled,
-	handleServerDefaultSettings,
 	handleListVoices,
-} from "./handlers/index.js";
+	handleServerDefaultSettings,
+	handleShowSettings,
+	handleSpeedSettings,
+	handleToggleReadingEnabled,
+	handleVoiceSettings,
+} from "./handlers/index.ts";
 
 const commandData = new SlashCommandBuilder()
 	.setName("settings")
@@ -19,9 +17,9 @@ const commandData = new SlashCommandBuilder()
 	.addSubcommand((subcommand) =>
 		subcommand
 			.setName("voice")
-			.setDescription("声のタイプを変更するのだ")
+			.setDescription("声のキャラクターを変更するのだ\n例: /settings voice ずんだもん")
 			.addStringOption((option) =>
-				option.setName("speaker").setDescription("声のタイプを選ぶのだ").setRequired(true),
+				option.setName("speaker").setDescription("キャラクターを選ぶのだ").setRequired(true),
 			),
 	)
 	.addSubcommand((subcommand) =>
@@ -75,9 +73,6 @@ export const settings: Command = {
 				case "voice":
 					await handleVoiceSettings(interaction, serverId, userId);
 					break;
-				case "style":
-					await handleStyleSettings(interaction, serverId, userId);
-					break;
 				case "speed":
 					await handleSpeedSettings(interaction, serverId, userId);
 					break;
@@ -100,11 +95,11 @@ export const settings: Command = {
 					});
 			}
 		} catch (err) {
-			logger.error(`設定コマンドの実行中にエラーが発生したのだ: ${err}`);
 			await interaction.reply({
 				content: "設定の変更中にエラーが発生したのだ...",
 				ephemeral: true,
 			});
+			throw err;
 		}
 	},
 };

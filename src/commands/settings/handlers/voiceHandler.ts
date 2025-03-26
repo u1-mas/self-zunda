@@ -1,6 +1,12 @@
-import type { ChatInputCommandInteraction } from "discord.js";
-import { SPEAKERS, VOICES } from "../constants/index.js";
+import {
+	ActionRowBuilder,
+	type ChatInputCommandInteraction,
+	StringSelectMenuBuilder,
+	StringSelectMenuOptionBuilder,
+} from "discord.js";
 import { updateUserSettings } from "../../../models/userSettings.js";
+import { logger } from "../../../utils/logger.js";
+import { VOICES } from "../constants/index.js";
 
 /**
  * 声のタイプ設定ハンドラー
@@ -13,17 +19,45 @@ export async function handleVoiceSettings(
 	serverId: string,
 	userId: string,
 ): Promise<void> {
-	const speakerName = interaction.options.getString("speaker", true);
+	logger.debug(`声の設定ハンドラーが呼び出されたのだ: ${serverId}, ${userId}`);
 
-	// 存在する声のタイプか確認
-	const speakerInfo = SPEAKERS.find((s) => s === speakerName);
-	const speakerId = VOICES.find((v) => v.name === speakerName)?.id;
+	const selectedSpeaker = interaction.options.getString("speaker", true);
+	logger.debug(`選択された話者: ${selectedSpeaker}`);
 
-	// 設定を更新
-	updateUserSettings(serverId, userId, { speakerId });
+	// 選択された話者の声の一覧を取得
+	const speakerVoices = VOICES.filter((v) => v.name === selectedSpeaker);
+	logger.debug(`選択された話者の声の数: ${speakerVoices.length}`);
+
+	// スタイルが1つしかない場合は直接設定
+	if (speakerVoices.length === 1) {
+		const voice = speakerVoices[0];
+		updateUserSettings(serverId, userId, { speakerId: voice.id });
+
+		await interaction.reply({
+			content: `声を「${voice.name}（${voice.style}）」に変更したのだ！`,
+			ephemeral: true,
+		});
+		return;
+	}
+
+	// スタイル選択メニューを作成
+	const selectMenu = new StringSelectMenuBuilder()
+		.setCustomId(`styleMenu-${serverId}-${userId}`)
+		.setPlaceholder("スタイルを選択するのだ")
+		.addOptions(
+			speakerVoices.map((v) =>
+				new StringSelectMenuOptionBuilder()
+					.setLabel(`${v.style}`)
+					.setDescription(`${v.name}の${v.style}ボイス`)
+					.setValue(v.id.toString()),
+			),
+		);
+
+	const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu);
 
 	await interaction.reply({
-		content: `声を ${speakerInfo} に変更したのだ！`,
+		content: `${selectedSpeaker}のスタイルを選択するのだ！`,
+		components: [row],
 		ephemeral: true,
 	});
 }

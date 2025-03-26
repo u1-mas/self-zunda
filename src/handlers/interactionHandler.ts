@@ -1,4 +1,10 @@
-import { DiscordAPIError, type Interaction } from "discord.js";
+import {
+	ActionRowBuilder,
+	DiscordAPIError,
+	type Interaction,
+	StringSelectMenuBuilder,
+	StringSelectMenuOptionBuilder,
+} from "discord.js";
 import { VOICES } from "../commands/settings/constants/index.ts";
 import { updateUserSettings } from "../models/userSettings.ts";
 import { logger } from "../utils/logger.ts";
@@ -59,6 +65,61 @@ async function handleCommandInteraction(interaction: Interaction) {
 }
 
 /**
+ * 話者メニューのインタラクションを処理するのだ
+ */
+async function handleVoiceMenuInteraction(interaction: Interaction) {
+	if (!interaction.isStringSelectMenu()) {
+		return;
+	}
+
+	const customId = interaction.customId;
+	// カスタムIDは "voiceMenu-{serverId}-{userId}" の形式
+	const parts = customId.split("-");
+
+	if (parts.length !== 3 || parts[0] !== "voiceMenu") {
+		logger.warn(`不正なカスタムID: ${customId}`);
+		return;
+	}
+
+	const serverId = parts[1];
+	const userId = parts[2];
+	const selectedSpeaker = interaction.values[0];
+
+	if (!(serverId && userId && selectedSpeaker)) {
+		logger.warn("選択メニューから必要な情報が取得できませんでした");
+		return;
+	}
+
+	try {
+		// 選択された話者の声の一覧を取得
+		const speakerVoices = VOICES.filter((v) => v.name === selectedSpeaker);
+
+		// スタイル選択メニューを作成
+		const selectMenu = new StringSelectMenuBuilder()
+			.setCustomId(`styleMenu-${serverId}-${userId}`)
+			.setPlaceholder("スタイルを選択するのだ")
+			.addOptions(
+				speakerVoices.map((v) =>
+					new StringSelectMenuOptionBuilder()
+						.setLabel(`${v.style}`)
+						.setDescription(`${v.name}の${v.style}ボイス`)
+						.setValue(v.id.toString()),
+				),
+			);
+
+		const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu);
+
+		await interaction.update({
+			content: `${selectedSpeaker}のスタイルを選択するのだ！`,
+			components: [row],
+		});
+	} catch (err) {
+		logger.error("話者メニュー処理中にエラーが発生しました", err);
+		await sendErrorResponse(interaction, "設定の更新中にエラーが発生しました。");
+	}
+}
+
+/**
  * スタイルメニューのインタラクションを処理するのだ
  */
 async function handleStyleMenuInteraction(interaction: Interaction) {
@@ -106,10 +167,10 @@ async function handleStyleMenuInteraction(interaction: Interaction) {
 			`ユーザー ${userId} の声を ${selectedVoice.name}（${selectedVoice.style}）に変更しました`,
 		);
 
-		await sendErrorResponse(
-			interaction,
-			`声を「${selectedVoice.name}（${selectedVoice.style}）」に変更しました。`,
-		);
+		await interaction.update({
+			content: `声を「${selectedVoice.name}（${selectedVoice.style}）」に変更したのだ！`,
+			components: [],
+		});
 	} catch (err) {
 		logger.error("スタイルメニュー処理中にエラーが発生しました", err);
 		await sendErrorResponse(interaction, "設定の更新中にエラーが発生しました。");
@@ -127,6 +188,12 @@ export async function handleInteraction(interaction: Interaction) {
 		// スタイルメニューインタラクションの処理
 		if (interaction.isStringSelectMenu() && interaction.customId.startsWith("styleMenu-")) {
 			await handleStyleMenuInteraction(interaction);
+			return;
+		}
+
+		// 話者メニューインタラクションの処理
+		if (interaction.isStringSelectMenu() && interaction.customId.startsWith("voiceMenu-")) {
+			await handleVoiceMenuInteraction(interaction);
 			return;
 		}
 	} catch (err) {

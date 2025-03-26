@@ -1,7 +1,15 @@
-export { handleVoiceSettings } from "./voiceHandler.js";
-export { handleStyleSettings } from "./styleHandler.js";
-export { handleSpeedSettings } from "./speedHandler.js";
-export { handleShowSettings } from "./showHandler.js";
-export { handleToggleReadingEnabled } from "./toggleHandler.js";
-export { handleServerDefaultSettings } from "./serverDefaultHandler.js";
-export { handleListVoices } from "./listVoicesHandler.js";
+import { handleListVoices } from "./listVoicesHandler.js";
+import { handleServerDefaultSettings } from "./serverDefaultHandler.js";
+import { handleShowSettings } from "./showHandler.js";
+import { handleSpeedSettings } from "./speedHandler.js";
+import { handleToggleReadingEnabled } from "./toggleHandler.js";
+import { handleVoiceSettings } from "./voiceHandler.js";
+
+export {
+	handleVoiceSettings,
+	handleSpeedSettings,
+	handleShowSettings,
+	handleToggleReadingEnabled,
+	handleServerDefaultSettings,
+	handleListVoices,
+};

@@ -1,4 +1,4 @@
-import type { AudioQuery } from "../api/generated.ts";
+import type { AudioQuery } from "../api/generated/index.ts";
 import { voicevoxClient } from "../api/voicevoxClient.ts";
 import { getUserSettings } from "../models/userSettings.ts";
 import { logger } from "./logger.ts";

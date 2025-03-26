@@ -1,6 +1,7 @@
+import type { SlashCommandBuilder } from "@discordjs/builders";
 import type { SlashCommandSubcommandBuilder } from "discord.js";
 import type { ChatInputCommandInteraction } from "discord.js";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { settings } from "./settings.ts";
 
 // 必要なモジュールをモック
@@ -23,7 +24,18 @@ vi.mock("../utils/logger", () => ({
 	error: vi.fn(),
 }));
 
+vi.mock("discord.js", () => ({
+	CommandInteraction: vi.fn(),
+	SlashCommandBuilder: vi.fn(),
+}));
+
 describe("settings command", () => {
+	let command: SlashCommandBuilder;
+
+	beforeEach(() => {
+		command = settings;
+	});
+
 	it("should have correct name and description", () => {
 		expect(settings.data.name).toBe("settings");
 		expect(settings.data.description).toBe("ずんだもんの設定を変更するのだ");
@@ -47,6 +59,8 @@ describe("settings command", () => {
 		) as SlashCommandSubcommandBuilder;
 
 		expect(voiceSubcommand).toBeDefined();
+		expect(voiceSubcommand?.description).toBe("声のタイプとスタイルを変更するのだ");
+		expect(voiceSubcommand?.options).toHaveLength(0);
 
 		if (voiceSubcommand?.options) {
 			const speakerOption = voiceSubcommand.options[0];
