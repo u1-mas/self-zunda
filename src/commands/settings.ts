@@ -19,17 +19,33 @@ import { error, log } from "../utils/logger";
 import type { Command } from "./types";
 
 // 「声」のオプション一覧
-// ID: ずんだもんのVOICEVOXでのスピーカーID
+// ID: VOICEVOXでのスピーカーID
 // NAME: 日本語での表示名
 // STYLE: スタイルの説明
-const VOICES = [
+export const VOICES = [
+	// 四国めたん
+	{ id: 2, name: "四国めたん", style: "ノーマル" },
+	{ id: 0, name: "四国めたん", style: "あまあま" },
+	{ id: 6, name: "四国めたん", style: "ツンツン" },
+	{ id: 4, name: "四国めたん", style: "セクシー" },
+	{ id: 36, name: "四国めたん", style: "ささやき" },
+	{ id: 37, name: "四国めたん", style: "ヒソヒソ" },
+
+	// ずんだもん
+	{ id: 3, name: "ずんだもん", style: "ノーマル" },
 	{ id: 1, name: "ずんだもん", style: "あまあま" },
-	{ id: 2, name: "ずんだもん", style: "ノーマル" },
-	{ id: 3, name: "ずんだもん", style: "セクシー" },
+	{ id: 7, name: "ずんだもん", style: "ツンツン" },
+	{ id: 5, name: "ずんだもん", style: "セクシー" },
+	{ id: 22, name: "ずんだもん", style: "ささやき" },
+	{ id: 38, name: "ずんだもん", style: "ヒソヒソ" },
+	{ id: 39, name: "ずんだもん", style: "ヘロヘロ" },
+	{ id: 50, name: "ずんだもん", style: "なみだめ" },
+
+	// その他の話者
 	{ id: 8, name: "春日部つむぎ", style: "ノーマル" },
-	{ id: 10, name: "波音リツ", style: "ノーマル" },
 	{ id: 9, name: "雨晴はう", style: "ノーマル" },
-	{ id: 7, name: "ちび式じい", style: "ノーマル" },
+	{ id: 10, name: "波音リツ", style: "ノーマル" },
+	{ id: 11, name: "波音リツ", style: "クイーン" },
 ];
 
 // 読み上げ速度のオプション一覧
@@ -38,6 +54,16 @@ const SPEED_OPTIONS = [
 	{ value: 1.0, label: "普通", description: "標準的な読み上げ速度" },
 	{ value: 1.25, label: "速い", description: "速めの読み上げ速度" },
 	{ value: 1.5, label: "かなり速い", description: "かなり速い読み上げ速度" },
+];
+
+// 話者一覧（名前だけの一意なリスト）
+// Discord制限（25選択肢）に合わせて、一部の主要キャラクターのみを表示
+const SPEAKERS = [
+	{ name: "ずんだもん" },
+	{ name: "四国めたん" },
+	{ name: "春日部つむぎ" },
+	{ name: "雨晴はう" },
+	{ name: "波音リツ" },
 ];
 
 const commandData = new SlashCommandBuilder()
@@ -49,15 +75,40 @@ const commandData = new SlashCommandBuilder()
 			.setDescription("声のタイプを変更するのだ")
 			.addIntegerOption((option) =>
 				option
-					.setName("type")
+					.setName("speaker")
 					.setDescription("声のタイプを選ぶのだ")
 					.setRequired(true)
 					.addChoices(
+						{ name: "ずんだもん", value: 1 },
+						{ name: "四国めたん", value: 2 },
+						{ name: "春日部つむぎ", value: 8 },
+						{ name: "雨晴はう", value: 9 },
+						{ name: "波音リツ", value: 10 },
 						...VOICES.map((voice) => ({
 							name: `${voice.name}（${voice.style}）`,
 							value: voice.id,
 						})),
 					),
+			),
+	)
+	.addSubcommand((subcommand) =>
+		subcommand
+			.setName("style")
+			.setDescription("声のスタイルを変更するのだ")
+			.addStringOption((option) =>
+				option
+					.setName("speaker")
+					.setDescription("話者を選ぶのだ")
+					.setRequired(true)
+					.addChoices(
+						...SPEAKERS.map((speaker) => ({
+							name: speaker.name,
+							value: speaker.name,
+						})),
+					),
+			)
+			.addStringOption((option) =>
+				option.setName("style").setDescription("スタイルを選ぶのだ").setRequired(true),
 			),
 	)
 	.addSubcommand((subcommand) =>
@@ -89,7 +140,7 @@ const commandData = new SlashCommandBuilder()
 			.setDescription("サーバーのデフォルト声を設定するのだ（管理者のみ）")
 			.addIntegerOption((option) =>
 				option
-					.setName("type")
+					.setName("speaker")
 					.setDescription("デフォルトの声のタイプを選ぶのだ")
 					.setRequired(true)
 					.addChoices(
@@ -113,6 +164,9 @@ export const settings: Command = {
 			switch (subcommand) {
 				case "voice":
 					await handleVoiceSettings(interaction, serverId, userId);
+					break;
+				case "style":
+					await handleStyleSettings(interaction, serverId, userId);
 					break;
 				case "speed":
 					await handleSpeedSettings(interaction, serverId, userId);
@@ -148,7 +202,7 @@ async function handleVoiceSettings(
 	serverId: string,
 	userId: string,
 ) {
-	const voiceType = interaction.options.getInteger("type", true);
+	const voiceType = interaction.options.getInteger("speaker", true);
 
 	// 存在する声のタイプか確認
 	const voiceInfo = VOICES.find((v) => v.id === voiceType);
@@ -164,6 +218,65 @@ async function handleVoiceSettings(
 
 	await interaction.reply({
 		content: `声を ${voiceInfo.name}（${voiceInfo.style}）に変更したのだ！`,
+		ephemeral: true,
+	});
+}
+
+// スタイル設定ハンドラー
+async function handleStyleSettings(
+	interaction: ChatInputCommandInteraction,
+	serverId: string,
+	userId: string,
+) {
+	const speakerName = interaction.options.getString("speaker", true);
+	const requestedStyle = interaction.options.getString("style", true);
+
+	// 話者の声のスタイル一覧を取得
+	const speakerVoices = VOICES.filter((v) => v.name === speakerName);
+
+	if (speakerVoices.length === 0) {
+		return await interaction.reply({
+			content: "その話者は存在しないのだ...",
+			ephemeral: true,
+		});
+	}
+
+	// リクエストされたスタイルに対応する声を検索
+	const selectedVoice = speakerVoices.find((v) => v.style === requestedStyle);
+
+	if (selectedVoice) {
+		// 設定を更新
+		updateUserSettings(serverId, userId, { speakerId: selectedVoice.id });
+
+		await interaction.reply({
+			content: `声を ${selectedVoice.name}（${selectedVoice.style}）に変更したのだ！`,
+			ephemeral: true,
+		});
+		return;
+	}
+
+	// リクエストされたスタイルが見つからない場合
+	// スタイル選択メニューを作成
+	const selectMenu = new StringSelectMenuBuilder()
+		.setCustomId(`styleMenu-${serverId}-${userId}`)
+		.setPlaceholder("スタイルを選択するのだ")
+		.addOptions(
+			speakerVoices.map((v) =>
+				new StringSelectMenuOptionBuilder()
+					.setLabel(`${v.style}`)
+					.setDescription(`${v.name}の${v.style}ボイス`)
+					.setValue(v.id.toString()),
+			),
+		);
+
+	const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu);
+
+	// 利用可能なスタイル一覧
+	const availableStyles = speakerVoices.map((v) => v.style);
+
+	await interaction.reply({
+		content: `「${requestedStyle}」というスタイルは「${speakerName}」にはないのだ。\n利用可能なスタイル: ${availableStyles.join(", ")}`,
+		components: [row],
 		ephemeral: true,
 	});
 }
@@ -279,7 +392,7 @@ async function handleServerDefaultSettings(
 		});
 	}
 
-	const voiceType = interaction.options.getInteger("type", true);
+	const voiceType = interaction.options.getInteger("speaker", true);
 
 	// 存在する声のタイプか確認
 	const voiceInfo = VOICES.find((v) => v.id === voiceType);

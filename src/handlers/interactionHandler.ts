@@ -5,6 +5,31 @@ import { error, info, log, warn } from "../utils/logger";
 import { commands } from "./commands";
 
 /**
+ * エラー応答を送信するのだ
+ * DiscordAPIError 40060は無視する
+ */
+async function sendErrorResponse(interaction: Interaction, message: string) {
+	const response = { content: message, ephemeral: true };
+
+	try {
+		if (interaction.isRepliable()) {
+			if (interaction.replied || interaction.deferred) {
+				await interaction.followUp(response);
+			} else {
+				await interaction.reply(response);
+			}
+		}
+	} catch (replyErr) {
+		// すでに応答済みのエラー（40060）は無視
+		if (replyErr instanceof DiscordAPIError && replyErr.code === 40060) {
+			warn("インタラクションが既に返信済みまたは期限切れです");
+			return;
+		}
+		error("エラー通知の返信に失敗しました", replyErr);
+	}
+}
+
+/**
  * コマンドインタラクションを処理するのだ
  */
 async function handleCommandInteraction(interaction: Interaction) {
@@ -20,15 +45,14 @@ async function handleCommandInteraction(interaction: Interaction) {
 	try {
 		await command.execute(interaction);
 	} catch (err) {
-		error("コマンド実行中にエラーが発生しました", err);
-
-		const response = { content: "コマンドの実行中にエラーが発生しました", ephemeral: true };
-
-		if (interaction.replied || interaction.deferred) {
-			await interaction.followUp(response);
-		} else {
-			await interaction.reply(response);
+		// 40060エラーは無視（すでに返信済み）
+		if (err instanceof DiscordAPIError && err.code === 40060) {
+			warn("インタラクションが既に返信済みまたは期限切れです");
+			return;
 		}
+
+		error("コマンド実行中にエラーが発生しました", err);
+		await sendErrorResponse(interaction, "コマンドの実行中にエラーが発生しました");
 	}
 }
 
@@ -58,14 +82,14 @@ async function handleStyleMenuInteraction(interaction: Interaction) {
 
 	try {
 		// 選択された声を見つける
-		const selectedVoice = VOICES.find((voice) => voice.id.toString() === selectedVoiceId);
+		const selectedVoice = VOICES.find(
+			(voice: { id: number; name: string; style: string }) =>
+				voice.id.toString() === selectedVoiceId,
+		);
 
 		if (!selectedVoice) {
 			warn(`選択された声IDが見つかりません: ${selectedVoiceId}`);
-			await interaction.reply({
-				content: "選択された声が見つかりませんでした。",
-				ephemeral: true,
-			});
+			await sendErrorResponse(interaction, "選択された声が見つかりませんでした。");
 			return;
 		}
 
@@ -76,22 +100,16 @@ async function handleStyleMenuInteraction(interaction: Interaction) {
 
 		info(`ユーザー ${userId} の声を ${selectedVoice.name}（${selectedVoice.style}）に変更しました`);
 
-		await interaction.reply({
-			content: `声を「${selectedVoice.name}（${selectedVoice.style}）」に変更しました。`,
-			ephemeral: true,
-		});
+		await sendErrorResponse(
+			interaction,
+			`声を「${selectedVoice.name}（${selectedVoice.style}）」に変更しました。`,
+		);
 	} catch (err) {
 		error("スタイルメニュー処理中にエラーが発生しました", err);
-		await interaction.reply({
-			content: "設定の更新中にエラーが発生しました。",
-			ephemeral: true,
-		});
+		await sendErrorResponse(interaction, "設定の更新中にエラーが発生しました。");
 	}
 }
 
-/**
- * すべてのインタラクションを処理するのだ
- */
 export async function handleInteraction(interaction: Interaction) {
 	try {
 		// コマンドインタラクションの処理
@@ -106,22 +124,12 @@ export async function handleInteraction(interaction: Interaction) {
 			return;
 		}
 	} catch (err) {
-		if (err instanceof DiscordAPIError && err.code === 40060) {
-			warn("インタラクションが既に返信済みまたは期限切れです");
+		if (typeof err === "object" && err !== null && "code" in err && err.code === 40060) {
+			// すでに返信済みのエラーは無視
 			return;
 		}
 
 		error("インタラクション処理中に予期せぬエラーが発生しました", err);
-
-		try {
-			if (interaction.isRepliable() && !interaction.replied) {
-				await interaction.reply({
-					content: "予期せぬエラーが発生しました。",
-					ephemeral: true,
-				});
-			}
-		} catch (replyError) {
-			error("エラー通知の返信に失敗しました", replyError);
-		}
+		await sendErrorResponse(interaction, "予期せぬエラーが発生しました。");
 	}
 }
